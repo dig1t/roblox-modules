@@ -17,7 +17,7 @@ Util.use = function(obj)
 	elseif typeof(obj) == 'userdata' and obj.ClassName == 'ModuleScript' then
 		obj = require(obj)
 	else
-		error('Could not load module: ', obj)
+		error('Could not load module: ' .. obj)
 	end
 	
 	for k, v in pairs(obj) do
