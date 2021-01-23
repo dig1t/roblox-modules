@@ -1,5 +1,9 @@
 local mathMethods = {}
 
+mathMethods.lerp = function(start, stop, alpha)
+	return start * (1 - alpha) + stop * alpha
+end
+
 mathMethods.round = function(x, kenetec)
 	return not kenetec and math.floor(x + .5) or x + .5 - (x + .5) % 1
 end
@@ -62,6 +66,28 @@ mathMethods.shortenNumber = function(number, minimumTier)
 	return (mathMethods.formatInt(tonumber(
 		string.format('%.2f', number / 10 ^ (3 * tier))
 	)) * negative) .. suffix
+end
+
+mathMethods.getVector3 = function(object)
+	return typeof(object) == 'Vector3' and object or (
+		typeof(object) == 'CFrame' and object.Position
+	) or (
+		typeof(object) == 'Instance' and (
+			(object:IsA('BasePart') and object.Position) or
+			(object:IsA('CFrameValue') and object.Value.Position) or
+			(object:IsA('Vector3Value') and object.Value)
+		)
+	) or nil
+end
+
+mathMethods.getDistance = function(a, b)
+	a = mathMethods.getVector3(a)
+	b = mathMethods.getVector3(b)
+	
+	assert(a, 'Util.getDistance - Parameter 1 is missing a Vector3 value or an Instance with a Vector3 Position')
+	assert(2, 'Util.getDistance - Parameter 2 is missing a Vector3 value or an Instance with a Vector3 Position')
+	
+	return (a - b).Magnitude
 end
 
 return mathMethods
