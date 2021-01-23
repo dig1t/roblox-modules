@@ -1,3 +1,10 @@
+--[[
+@name Bootstrap
+@version 1.0.0
+@author dig1t
+@desc Shortcut functions for retrieving libraries and frameworks
+]]
+
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local ServerScriptService = game:GetService('ServerScriptService')
 local RunService = game:GetService('RunService')
@@ -18,7 +25,7 @@ local function import(path, serverLib)
 	assert(modulePath, 'Bootstrap.import - Missing module ' .. path)
 	assert(
 		modulePath:IsA('ModuleScript'),
-		string.format('Bootstrap.import - %s is not a ModuleScript instance', modulePath.ClassName, path)
+		string.format('Bootstrap.import - %s is not a ModuleScript instance', unpack({ modulePath.ClassName, path }))
 	)
 	
 	if modulePath and modulePath:IsA('ModuleScript') then
@@ -34,4 +41,6 @@ local function import(path, serverLib)
 	end
 end
 
-return { import = import }
+return {
+	import = import
+}

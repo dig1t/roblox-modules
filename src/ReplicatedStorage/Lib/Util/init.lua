@@ -34,7 +34,6 @@ Util.use('System')
 Util.use('Tables')
 
 Util.asset = 'rbxassetid://'
-Util.firebitLogo = 'rbxassetid://4904946138'
 Util.defaultWalkSpeed = 16
 
 Util.instance = function(className, ...)
@@ -89,64 +88,54 @@ Util.instance = function(className, ...)
 end
 
 local valueObjects = {
-	'ObjectValue', 'StringValue', 'NumberValue', 'BoolValue', 'CFrameValue', 'Vector3Value', 'Color3Value', 'BrickColorValue'
+	'ObjectValue', 'StringValue', 'IntValue', 'NumberValue', 'BoolValue', 'CFrameValue', 'Vector3Value', 'Color3Value', 'BrickColorValue'
 }
 
 Util.get = function(path, parent) -- expiremental
 	local res = parent
 	
-	--local success, err = pcall(function()
-		local chunks = Util.split(path, '.')
-		
-		if not chunks then
-			return
-		end
-		
-		res = res or (chunks[1] == 'game' and game or game[chunks[1]])
-		
-		table.remove(chunks, 1)
-		
-		for _, child in pairs(chunks) do
-			res = res[child]
-		end
-		--[[
-		for child in chunks do
-			res = res[child]
-		end]]
-	--end)
+	local chunks = Util.split(path, '.')
 	
-	--if not success then
-		--warn(err)
-	--end
+	if not chunks then
+		return
+	end
+	
+	res = res or (chunks[1] == 'game' and game or game[chunks[1]])
+	
+	for _, child in pairs(chunks) do
+		res = res[child]
+	end
+	
+	table.remove(chunks, 1)
 	
 	return res ~= nil and Util.indexOf(valueObjects, res.ClassName) and res.Value or res -- success and res
 end
 
-Util.set = function(parent, name, value) -- Tool to set value instances
-	local valueType = typeof(value)
-	
-	if valueType == 'table' then
-		valueType = 'ObjectValue'
-	elseif valueType == 'string' then
-		valueType = 'StringValue'
-	elseif valueType == 'number' then
-		valueType = 'NumberValue'
-	elseif valueType == 'boolean' then
-		valueType = 'BoolValue'
-	elseif valueType == 'CFrame' then
-		valueType = 'CFrameValue'
-	elseif valueType == 'Vector3' then
-		valueType = 'Vector3Value'
-	elseif valueType == 'Color3' then
-		valueType = 'Color3Value'
-	elseif valueType == 'BrickColor' then
-		valueType = 'BrickColorValue'
-	end
-	
+Util.set = function(parent, name, value, customValueType) -- Tool to set value instances
 	local valueObject
 	
 	pcall(function()
 		if not parent:FindFirstChild(name) then
+			local valueType = customValueType or typeof(value)
+			
+			if valueType == 'table' then
+				valueType = 'ObjectValue'
+			elseif valueType == 'string' then
+				valueType = 'StringValue'
+			elseif valueType == 'number' then
+				valueType = 'NumberValue'
+			elseif valueType == 'boolean' then
+				valueType = 'BoolValue'
+			elseif valueType == 'CFrame' then
+				valueType = 'CFrameValue'
+			elseif valueType == 'Vector3' then
+				valueType = 'Vector3Value'
+			elseif valueType == 'Color3' then
+				valueType = 'Color3Value'
+			elseif valueType == 'BrickColor' then
+				valueType = 'BrickColorValue'
+			end
+			
 			valueObject = Instance.new(valueType)
 			valueObject.Name = name
 			valueObject.Parent = parent
@@ -266,6 +255,23 @@ Util.moveModel = function(model, to)
 end
 
 -- Events
+
+Util.waitForChild = function(parent, name)
+	assert(parent and typeof(parent) == 'Instance', 'Util.waitForChild - Parent must be an instance')
+	assert(name, 'Util.waitForChild - Missing child name')
+	
+	if parent:FindFirstChild(name) then
+		return parent[name]
+	end
+	
+	while true do
+		parent.ChildAdded:Wait()
+		
+		if parent:FindFirstChild(name) then
+			return parent[name]
+		end
+	end
+end
 
 Util.addEventListener = function(obj, event, fn)
 	return obj.Changed:Connect(function(e)
