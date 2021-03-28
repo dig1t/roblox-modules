@@ -108,7 +108,7 @@ Util.get = function(path, parent) -- expiremental
 	
 	table.remove(chunks, 1)
 	
-	return res ~= nil and Util.indexOf(valueObjects, res.ClassName) and res.Value or res -- success and res
+	return res ~= nil and Util.indexOf(valueObjects, res.ClassName) > 0 and res.Value or res -- success and res
 end
 
 Util.set = function(parent, name, value, customValueType) -- Tool to set value instances
@@ -153,6 +153,21 @@ Util.printTable = function(tbl)
 	print(tbl and game:GetService('HttpService'):JSONEncode(tbl))
 end
 
+Util.numberSequence = function(data)
+	assert(data and typeof(data) == 'table', 'Util.numberSequence - Missing data table')
+	assert(#data > 1, 'Util.numberSequence - Must have at least 2 keypoints')
+	
+	local keypoints = Util.map(data, function(keypoint)
+		if #keypoint == 2 then
+			return NumberSequenceKeypoint.new(keypoint[1], keypoint[2])
+		end
+	end)
+	
+	assert(#keypoints > 1, 'Util.numberSequence - Must have at least 2 keypoints')
+	
+	return NumberSequence.new(keypoints)
+end
+
 -- Calls the given function until it successfully runs
 -- Used for retrieving from a DataStore or GET/POST requests
 Util.attempt = function(fn, maxTries, yield)
@@ -168,7 +183,7 @@ Util.attempt = function(fn, maxTries, yield)
 			successful = true
 		end
 		
-		tries = tries + 1
+		tries += 1
 		
 		if not successful then -- or tries <= (maxTries or 3) then
 			Util.yield(yield or 1)
@@ -207,6 +222,16 @@ Util.weld = function(part, attachTo, offset)
 	}
 end
 
+Util.clearWelds = function(instance)
+	assert(typeof(instance) == 'Instance', 'Util.clearWelds - First argument must be an instance')
+	
+	for _, obj in pairs(instance:GetDescendants()) do
+		if obj:IsA('WeldConstraint') or obj:IsA('Weld') then
+			obj:Destroy()
+		end
+	end
+end
+
 -- Models
 
 Util.getModelBounds = function(model)
@@ -221,7 +246,7 @@ Util.getMass = function(model)
 	local mass = 0
 	
 	for _, part in pairs(Util.getDescendantParts(model)) do
-		mass = part:GetMass() + mass
+		mass += part:GetMass()
 	end
 	
 	return mass
@@ -243,7 +268,7 @@ Util.moveModel = function(model, to)
 	if firstPart then
 		local origin = firstPart.CFrame.p
 		
-		for i, object in pairs(model:GetChildren()) do
+		for i, object in pairs(model:GetDescendants()) do
 			if object:IsA('BasePart') then
 				local newPositionInWorld = object.Position - origin + to.p
 				local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = object.CFrame:components()

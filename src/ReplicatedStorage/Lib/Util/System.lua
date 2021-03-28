@@ -7,11 +7,11 @@ sys.print = function(str)
 end
 
 sys.error = function(err)
-	error('Error: '..err, 0)
+	error('Error: ' .. err, 0)
 end
 
 sys.warn = function(str)
-	error('Error: '..str, 0)
+	error('Error: ' .. str, 0)
 end
 
 sys.yield = function(yieldTime)
@@ -40,16 +40,24 @@ sys.interval = function(yieldTime, fn)
 	mt.__index = mt
 	
 	function mt:disconnect()
-		mt.connected = false
+		self.connected = false
 	end
 	
 	local self = setmetatable({}, mt)
 	
 	self.connected = true
+	self.start = os.clock()
+	self.elapsed = 0
 	
 	while self.connected do
-		sys.yield(yieldTime)
-		fn()
+		local success = fn(self.elapsed)
+		
+		if success == false then
+			self:disconnect()
+		else
+			sys.yield(yieldTime)
+			self.elapsed = os.clock() - self.start
+		end
 	end
 	
 	return self
@@ -64,7 +72,7 @@ sys.inTable = function(obj, e)
 		local i = 0
 		
 		for k, v in pairs(e) do
-			i = i + 1
+			i += 1
 			
 			if k ~= i then
 				if not obj[k] then

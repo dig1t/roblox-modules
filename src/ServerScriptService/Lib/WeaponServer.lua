@@ -13,6 +13,7 @@ local Players = game:GetService('Players')
 
 local import = require(ReplicatedStorage.Bootstrap).import
 local Util = import('Lib/Util')
+local WeaponClient = import('Lib/WeaponClient')
 local CollectionService = import('Lib/CollectionService')
 
 -- Amount to subtract from the cooldown since players
@@ -116,9 +117,9 @@ end
 
 function methods:playSFX(state)
 	local id = Util.tableRandom(self.config.sfx[state])
-	self.currentSFX = self.model:FindFirstChild(id) or Util.instance('Sound') {
+	self.currentSFX = self.handle:FindFirstChild(id) or Util.instance('Sound') {
 		Name = id,
-		Parent = self.model,
+		Parent = self.handle,
 		SoundId = Util.asset .. id,
 		Volume = .3
 	}
@@ -190,11 +191,20 @@ function methods:damagePlayer(victim, amount)
 end
 
 --[[
-@param object The projectile reference to save
+@param object The projectile reference to save. This object must be a descendant of ReplicatedStorage
 @desc Saves a reference of the projectile that will be later shot
 ]]
 function methods:setProjectileReference(object)
-	self.projectileReference = typeof(object) == 'function' and object() or object
+	assert(
+		object and typeof(object) == 'Instance',
+		'WeaponServer:setProjectileReference - Object must be an instance'
+	)
+	assert(
+		object:IsDescendantOf(ReplicatedStorage),
+		'WeaponServer:setProjectileReference - Object must be a descendant of ReplicatedStorage'
+	)
+	
+	self.projectileReference = object
 end
 
 function methods:createRemoteConfig(name, value)
@@ -234,13 +244,13 @@ function methods:computeDirection(vec) -- From old roblox rocket launcher
 end
 
 function methods:calcInitialProjectilePosition(target)
-	if not self.model or not self.model.Parent then
+	if not self.handle or not self.handle.Parent then
 		return CFrame.new()
 	end
 	
-	target = target or (self.model.CFrame * CFrame.new(0, 0, -2)).p
+	target = target or (self.handle.CFrame * CFrame.new(0, 0, -2)).p
 	
-	local rootPos = self.model.Position
+	local rootPos = self.handle.Position
 	local direction = self:computeDirection(target - rootPos)
 	local pos = rootPos + (direction * 2)
 	
@@ -272,8 +282,6 @@ function methods:shoot(data)
 		return
 	end
 	
-	data.projectile = data.projectile or self.projectileReference:Clone()
-	
 	local start = os.clock() -- When the projectile first started shooting
 	
 	if self.config.hitscan then
@@ -285,25 +293,33 @@ function methods:shoot(data)
 			passthroughObjects:getAll()
 		)
 		
-		local direction = data.direction or ((data.origin.Position - data.target).Unit)
+		local direction = data.direction or ((data.target - data.origin.Position).Unit)
 		
 		local hit = self:raycast(
 			data.origin,
 			direction
 		)
 		
-		for _, player in pairs(Players:GetPlayers()) do
-			if player ~= self.localPlayer then
-				globalWeaponRemote:FireClient(player, {
-					type = 'WEAPON_TRACER',
-					payload = {
-						origin = data.origin,
-						direction = direction,
-						projectileReference = self.projectileReference,
-						distance = hit.Position and (data.origin.Position - hit.Position).Magnitude or self.config.maxRange,
-						velocity = self.config.projectileVelocity or 16
-					}
-				})
+		if self.config.tracerRound and self.config.tool:IsDescendantOf(Workspace) then
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= self.localPlayer then
+					globalWeaponRemote:FireClient(player, {
+						type = 'WEAPON_TRACER',
+						payload = {
+							origin = data.origin,
+							direction = direction,
+							handle = self.handle,
+							projectileReference = self.projectileReference,
+							useModelAsProjectile = self.config.useModelAsProjectile,
+							--tool = self.config.tool,
+							modelParts = self.modelParts,
+							projectileWeldToHit = self.config.projectileWeldToHit,
+							projectileRotation = self.config.projectileRotation,
+							distance = hit.Position and (data.origin.Position - hit.Position).Magnitude or self.config.maxRange,
+							velocity = self.config.projectileVelocity or 16
+						}
+					})
+				end
 			end
 		end
 		
@@ -318,13 +334,26 @@ function methods:shoot(data)
 		-- The slowest velocity the bullet can travel (max 2)
 		local minVelocity = velocity > 2 and 2 or velocity
 		
-		data.projectile.Anchored = true
-		data.projectile.CanCollide = false
-		data.projectile.Parent = Workspace
+		local projectile = data.projectile or self.projectileReference:Clone()
+		
+		if data.projectile:IsA('Model') then
+			assert(data.projectile.PrimaryPart, 'Projectile model must have a PrimaryPart defined')
+			
+			projectile = data.projectile.PrimaryPart
+		end
+		
+		projectile.Anchored = true
+		projectile.CanCollide = false
+		
+		-- If the weapon server controller has not set the parent,
+		-- then parent the projectile to Workspace
+		if not data.projectile.Parent then
+			data.projectile.Parent = Workspace
+		end
 		
 		Debris:AddItem(data.projectile, self.config.projectileLife or 16)
 		
-		local prevCFrame = data.projectile.CFrame
+		local prevCFrame = projectile.CFrame
 		
 		-- Loop in a separate thread
 		coroutine.wrap(function()
@@ -341,7 +370,7 @@ function methods:shoot(data)
 				local nextCFrame = CFrame.new(prevCFrame.Position, position) * CFrame.new(0, 0, -distance / 2)
 				
 				prevCFrame = nextCFrame
-				data.projectile.CFrame = data.modifider and data.modifider(nextCFrame) or nextCFrame
+				projectile.CFrame = data.modifier and data.modifier(nextCFrame) or nextCFrame
 				
 				if hit.Instance then
 					data.callback(hit)
@@ -353,7 +382,7 @@ function methods:shoot(data)
 				bulletDrop = self.config.projectileDrop and bulletDrop > 0 and bulletDrop + (self.config.projectileDrop or .002) or 0
 				
 				RunService.Heartbeat:Wait()
-			until not data.projectile.Parent or os.clock() - start > (self.config.projectileLife or 8)
+			until not data.projectile.Parent or not projectile.Parent or os.clock() - start > (self.config.projectileLife or 8)
 			
 			-- An instance where this would be set could be where the projectile
 			-- sticks to a part such as a sticky grenade sticking to a wall
@@ -365,14 +394,14 @@ function methods:shoot(data)
 end
 -- End projectile functions
 
-function methods:modelTouched(fn)
-	assert(fn, 'Weapon:modelTouched - No callback function provided')
+function methods:handleTouched(fn)
+	assert(fn, 'Weapon:handleTouched - No callback function provided')
 	
-	if self.connections.modelListener then
-		self.connection.modelListener:Disconnect()
+	if self.connections.handleListener then
+		self.connection.handleListener:Disconnect()
 	end
 	
-	self.connections.modelListener = self.model.Touched:Connect(fn)
+	self.connections.handleListener = self.handle.Touched:Connect(fn)
 end
 
 function methods:destroy()
@@ -380,8 +409,8 @@ function methods:destroy()
 		connection:Disconnect()
 	end
 	
-	if self.model and self.model.Parent then
-		self.model:Destroy()
+	if self.handle and self.handle.Parent then
+		self.handle:Destroy()
 	end
 	
 	self.localPlayer = nil
@@ -392,14 +421,13 @@ function methods:destroy()
 end
 
 function WeaponServer.new(config)
-	assert(config.tool, 'Missing tool object from config')
-	assert(config.tool:FindFirstChild('Handle'), 'Missing tool handle')
+	assert(config.tool and typeof(config.tool) == 'Instance' and config.tool:IsA('Tool'), 'WeaponServer.new - Missing tool object from config')
 	
 	local self = setmetatable({}, methods)
 	
 	self.config = Util.extend(
 		Util.extend({}, config),
-		Util.makeConfig(config.tool)
+		Util.makeConfig(config.tool) -- Values inside the tool will override variables in the shared config
 	)
 	
 	for k, v in pairs(DEFAULT_CONFIG) do
@@ -412,12 +440,40 @@ function WeaponServer.new(config)
 		self:setProjectileReference(self.config.projectileReference)
 	end
 	
+	self.handle = config.tool:FindFirstChild('Handle')
+	self.modelParts = WeaponClient.getModelParts(config.tool)
+	
+	if not self.handle then
+		local toolModel = config.tool:FindFirstChildOfClass('Model')
+		
+		if toolModel then
+			self.handle = toolModel:FindFirstChild('Handle')
+			self.handle.Parent = config.tool
+			
+			assert(self.handle, 'WeaponServer.new - Tool model must have a handle')
+			
+			self.modelParts = Util.map(toolModel:GetDescendants(), function(obj)
+				if obj:IsA('BasePart') then
+					Util.weld(obj, self.handle) -- Weld the part to the handle
+					
+					obj.Anchored = false
+					obj.CanCollide = false
+					
+					return obj
+				end
+			end)
+		end
+	end
+	
+	assert(self.handle, 'WeaponServer.new - Missing tool handle')
+	
+	self.handle.Anchored = false
+	self.handle.CanCollide = false
+	
 	self.sfx = {}
 	self.events = {}
 	self.connections = {}
 	self.lastActions = {}
-	
-	self.model = config.tool.Handle
 	
 	self.remote = Instance.new('RemoteEvent')
 	self.remote.Name = 'Remote'
@@ -427,34 +483,21 @@ function WeaponServer.new(config)
 	self.raycastFilter.FilterType = Enum.RaycastFilterType.Blacklist
 	
 	-- Weld extra parts to the handle
-	for _, obj in pairs(config.tool:GetDescendants()) do
-		if obj:IsA('BasePart') and obj ~= self.model then
-			Util.weld(obj, self.model)
-			obj.Parent = self.model
+	--[[for _, obj in pairs(config.tool:GetDescendants()) do
+		if obj:IsA('BasePart') and obj ~= self.handle then
+			Util.weld(obj, self.handle)
+			obj.Parent = self.handle
 		end
-	end
+	end]]
 	
 	-- Begin weapon configuration
 	if self.config.grip then
-		-- To calculate a grip with a dummy
-		-- print((workspace.Dummy.RightHand.CFrame * CFrame.Angles(math.rad(-90),0,0)):ToObjectSpace(workspace.Dummy.Handle.CFrame):GetComponents())
-		
 		local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = self.config.grip:GetComponents()
 		
 		self.config.tool.GripPos = Vector3.new(x, y, z)
 		self.config.tool.GripRight = Vector3.new(R00, R10, R20)
 		self.config.tool.GripUp = Vector3.new(R01, R11, R21)
 		self.config.tool.GripForward = Vector3.new(R02, R12, R22)
-	end
-	
-	if self.model:FindFirstChild('Mesh') then
-		if self.config.mesh then
-			self.model.Mesh.MeshId = Util.asset .. self.config.mesh
-		end
-		
-		if self.config.texture then
-			self.model.Mesh.TextureId = Util.asset .. self.config.texture
-		end
 	end
 	-- End weapon configuration
 	
@@ -509,6 +552,8 @@ function WeaponServer.new(config)
 		detectLocation()
 		self.connections.equipListener = config.tool:GetPropertyChangedSignal('Parent'):Connect(detectLocation)
 	end)()
+	
+	Util.set(config.tool, 'Ready', true) -- TODO: Replace with config.tool:setAttribute('Ready', true)
 	
 	return self
 end
