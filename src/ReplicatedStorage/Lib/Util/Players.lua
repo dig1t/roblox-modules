@@ -1,20 +1,24 @@
+local Players = game:GetService('Players')
+
 local players = {}
 
 local groupRankCache = {}
 
 players.getGroupRank = function(player, groupId)
+	local uniqueId = player.UserId .. groupId
+	
 	if not player or not groupId then
 		return 0
-	elseif not groupRankCache[player.UserId + groupId] then
+	elseif not groupRankCache[uniqueId] then
 		local success, res = pcall(function()
 			return player:GetRankInGroup(groupId)
 		end)
 		
-		groupRankCache[player.UserId + groupId] = res
+		groupRankCache[uniqueId] = res
 		
 		return success and res or 0
 	else
-		return groupRankCache[player.UserId + groupId]
+		return groupRankCache[uniqueId]
 	end
 end
 
@@ -66,10 +70,10 @@ end
 
 players.getPlayerFromPart = function(part)
 	return (
-		game.Players:GetPlayerFromCharacter(part and part.Parent)
+		Players:GetPlayerFromCharacter(part and part.Parent)
 	) or (
 		-- Check if part is a wearable or tool
-		game.Players:GetPlayerFromCharacter(part and part.Parent and part.Parent.Parent)
+		Players:GetPlayerFromCharacter(part and part.Parent and part.Parent.Parent)
 	)
 end
 

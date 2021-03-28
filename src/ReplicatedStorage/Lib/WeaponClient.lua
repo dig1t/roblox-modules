@@ -10,9 +10,11 @@ local UserInput = game:GetService('UserInputService')
 local Players = game:GetService('Players')
 local RunService = game:GetService('RunService')
 local Workspace = game:GetService('Workspace')
+local Debris = game:GetService('Debris')
 
 local import = require(ReplicatedStorage.Bootstrap).import
 local Util = import('Lib/Util')
+local Animation = import('Lib/Animation')
 local CollectionService = import('Lib/CollectionService')
 
 local DEFAULT_CONFIG = {
@@ -226,7 +228,7 @@ function methods:shoot()
 	end
 	
 	local target = self:getTargetPosition()
-	local direction = (target - origin.Position).unit
+	local direction = (target - origin.Position).Unit
 	
 	origin = origin.CFrame * CFrame.new(0, 1.5, 0)
 	
@@ -239,7 +241,7 @@ function methods:shoot()
 	})
 	
 	-- Fire local tracer
-	if not self.config.projectileReference then
+	if not self.config.projectileReference and not self.config.useModelAsProjectile then
 		return
 	end
 	
@@ -249,11 +251,18 @@ function methods:shoot()
 		self:fireTracer({
 			origin = origin,
 			direction = direction,
-			projectileReference = self.config.projectileReference,
-			velocity = self.config.projectileVelocity,
+			projectile = WeaponClient.getProjectile({
+				handle = self.handle,
+				projectileReference = self.config.projectileReference,
+				useModelAsProjectile = self.config.useModelAsProjectile,
+				modelParts = self.modelParts
+			}),
+			projectileWeldToHit = self.config.projectileWeldToHit,
+			projectileRotation = self.config.projectileRotation,
 			distance = (
 				hit.Position and (origin.Position - hit.Position).Magnitude
 			) or self.config.maxRange or 2048,
+			velocity = self.config.projectileVelocity or 16,
 			localTracer = true
 		})
 	else
@@ -269,33 +278,95 @@ function methods:raycast(origin, direction, maxRange)
 	) or {}
 end
 
+function WeaponClient.getModelParts(tool)
+	return Util.map(tool:GetDescendants(), function(obj)
+		return obj:IsA('BasePart') and obj.Name ~= 'Handle' and obj or nil
+	end)
+end
+
+function WeaponClient.getProjectile(data)
+	assert(data and typeof(data) == 'table', 'WeaponClient.getProjectile - Missing data table')
+	assert(data.handle, 'WeaponClient.getProjectile - Missing weapon handle')
+	
+	local modelParts = data.modelParts or (data.tool and WeaponClient.getModelParts(data.tool)) or {}
+	local projectile
+	
+	if not data.useModelAsProjectile then
+		assert(data.projectileReference, 'WeaponClient.fireTracer - Missing projectile reference')
+		
+		projectile = data.projectileReference:Clone()
+	elseif #modelParts == 0 then
+		projectile = data.handle:Clone()
+	else -- Model extras exist
+		local handleClone = data.handle:Clone()
+		projectile = Instance.new('Model')
+		handleClone.Parent = projectile
+		projectile.PrimaryPart = handleClone
+		projectile.Name = 'Projectile'
+		
+		for _, part in pairs(modelParts) do
+			if part.Parent then
+				part:Clone().Parent = projectile
+			end
+		end
+		
+		Util.clearWelds(projectile)
+	end
+	
+	return projectile
+end
+
 function methods:fireTracer(data)
 	assert(
 		data and typeof(data) == 'table',
 		'WeaponClient.fireTracer - Missing data'
 	)
 	
-	if not self.localPlayer.Character then
+	if not self.localPlayer.Character and data.localTracer then
 		return
 	end
 	
 	data.velocity = data.velocity or 16
 	
 	if not data.origin then
+		warn('WeaponClient:fireTracer - Missing origin')
 		return
 	end
 	
-	local tracer = data.projectileReference:Clone()
-	tracer.Parent = Workspace.CurrentCamera
+	local newTracer = data.localTracer and data.projectile or WeaponClient.getProjectile({
+		handle = data.handle,
+		useModelAsProjectile = data.useModelAsProjectile,
+		projectileReference = data.projectileReference,
+		useModelAsProjectile = data.useModelAsProjectile,
+		-- Avoid unnecessary processing by passing self.modelParts
+		modelParts = data.localTracer and self.modelParts or data.modelParts
+	})
+	
+	local tracer = newTracer
+	
+	if newTracer:IsA('Model') then
+		if not newTracer.PrimaryPart then
+			warn('WeaponClient.fireTracer - Projectile model must have a PrimaryPart defined')
+			return
+		end
+		
+		tracer = newTracer.PrimaryPart
+		
+		Animation.prepareAnimatedModel(newTracer)
+	end
+	
+	newTracer.Parent = Workspace.CurrentCamera
 	
 	self.raycastFilter.FilterDescendantsInstances = Util.extend(
-		data.localTracer and { self.localPlayer.Character, tracer } or { tracer },
+		data.localTracer and { self.localPlayer.Character, newTracer } or { newTracer },
 		passthroughObjects:getAll()
 	)
 	
 	local originPosition = CFrame.lookAt(
 		data.origin.Position, data.origin.Position + data.direction
 	) * CFrame.new(0, 0, -tracer.Size.Z)
+	local rotation = data.projectileRotation or CFrame.new()
+	local start = os.clock()
 	
 	coroutine.wrap(function()
 		local prevCFrame = originPosition
@@ -305,19 +376,36 @@ function methods:fireTracer(data)
 			RunService.Heartbeat:Wait()
 			
 			prevCFrame = prevCFrame * CFrame.new(0, 0, -data.velocity)
-			tracer.CFrame = prevCFrame
+			tracer.CFrame = prevCFrame * rotation
 			
 			local raycastTest = self:raycast(prevCFrame, data.direction, data.velocity)
 			
 			if raycastTest.Instance then
-				hit = true
+				hit = raycastTest
 			end
-		until hit or not tracer.Parent or (
+		until hit or not tracer.Parent or not newTracer.Parent or (
 			data.origin.Position - prevCFrame.Position - Vector3.new(0, 0, -data.velocity)
 		).Magnitude > data.distance
 		
-		if tracer.Parent then
-			tracer:Destroy()
+		if tracer.Parent and newTracer.Parent then
+			if data.projectileWeldToHit and hit then
+				tracer.CFrame = CFrame.lookAt(
+					hit.Position, hit.Position + data.direction
+				) * rotation -- Place tracer at intersection
+				
+				Util.weld(tracer, hit.Instance)
+				
+				for _, part in pairs(newTracer:IsA('Model') and newTracer:GetChildren() or { newTracer }) do
+					part.Anchored = false
+				end
+				
+				Debris:AddItem(
+					newTracer,
+					(data.projectileLife or 10) - (os.clock() - start) + .001
+				) -- TODO: Replace with a better debris collector
+			else
+				newTracer:Destroy()
+			end
 		end
 	end)()
 end
@@ -371,7 +459,11 @@ function WeaponClient.new(config)
 		end
 	end
 	
-	while not Players.LocalPlayer.Character or not Players.LocalPlayer.Character.Parent do
+	while (
+		not Players.LocalPlayer.Character or
+		not Players.LocalPlayer.Character.Parent or
+		not config.tool:FindFirstChild('Ready')
+	) do
 		RunService.RenderStepped:Wait()
 	end
 	
@@ -379,7 +471,8 @@ function WeaponClient.new(config)
 	self.localCharacter = self.localPlayer.Character or self.localPlayer.CharacterAdded:Wait()
 	self.localHumanoid = self.localCharacter:WaitForChild('Humanoid')
 	self.remote = config.tool:WaitForChild('Remote')
-	self.model = config.tool.Handle
+	self.handle = config.tool.Handle
+	self.modelParts = WeaponClient.getModelParts(config.tool)
 	
 	self.raycastFilter = RaycastParams.new()
 	self.raycastFilter.FilterType = Enum.RaycastFilterType.Blacklist

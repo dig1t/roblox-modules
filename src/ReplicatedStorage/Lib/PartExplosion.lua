@@ -97,7 +97,7 @@ function methods:_breakPart(part)
 			force.Parent = fragment
 		end
 		
-		partMagnitude = partMagnitude + fragment.Size.Magnitude
+		partMagnitude += fragment.Size.Magnitude
 		
 		self.fragments[#self.fragments + 1] = fragment
 		fragment.Parent = self.config.parent or Workspace
@@ -143,12 +143,12 @@ return function(part, config)
 	self.fragments = {}
 	
 	coroutine.wrap(function()
-		for _, part in pairs(
-			typeof(part) == 'Instance' and { part } or part
+		for _, obj in pairs(
+			typeof(obj) == 'Instance' and { obj } or obj
 		) do
-			if typeof(part) == 'Instance' and part:IsA('BasePart') then
+			if typeof(obj) == 'Instance' and part:IsA('BasePart') then
 				coroutine.wrap(function()
-					self:_breakPart(part)
+					self:_breakPart(obj)
 				end)()
 			end
 		end

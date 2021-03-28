@@ -33,7 +33,10 @@ tbl.map = function(source, filterFn)
 		res[#res + 1] = filterFn(v, i) or v
 	end]]
 	
-	for k, v in pairs(source) do -- Order not guaranteed
+	for k, v in pairs(
+		-- If instance, convert variable to a table of it's children
+		typeof(source) == 'Instance' and source:GetChildren() or source
+	) do -- Order not guaranteed
 		local index, value = #res + 1, v
 		
 		if filterFn then
@@ -184,7 +187,7 @@ tbl.tableRemove = function(obj, removeTest)
 				obj[i] = nil -- Delete from old index
 			end
 			
-			newIndex = newIndex + 1 -- Increment index
+			newIndex += 1 -- Increment index
 		else
 			obj[i] = nil
 		end
@@ -224,7 +227,7 @@ tbl.tableLength = function(obj)
 	local res = 0
 	
 	for _, v in pairs(obj) do
-		res = res + 1
+		res += 1
 	end
 	
 	return res
@@ -255,6 +258,8 @@ tbl.indexOf = function(obj, value)
 			return k
 		end
 	end
+	
+	return -1 -- Nothing found
 end
 
 tbl.tableRandom = function(obj)

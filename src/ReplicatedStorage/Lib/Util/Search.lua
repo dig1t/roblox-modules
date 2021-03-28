@@ -9,7 +9,7 @@ search.getDescendantCount = function(obj)
 	
 	for _, part in pairs(obj:GetDescendants()) do
 		if part:IsA('BasePart') then
-			count = count + 1
+			count += 1
 		end
 	end
 	
@@ -122,7 +122,7 @@ search.getFirstPart = function(model)
 	local i = 0
 	
 	repeat
-		i = i + 1
+		i += 1
 	until children[i]:IsA('BasePart') or i < #children
 	
 	return children[i]:IsA('BasePart') and children[i]
