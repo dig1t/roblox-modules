@@ -195,14 +195,17 @@ end
 @desc Saves a reference of the projectile that will be later shot
 ]]
 function methods:setProjectileReference(object)
-	assert(
-		object and typeof(object) == 'Instance',
-		'WeaponServer:setProjectileReference - Object must be an instance'
-	)
-	assert(
-		object:IsDescendantOf(ReplicatedStorage),
-		'WeaponServer:setProjectileReference - Object must be a descendant of ReplicatedStorage'
-	)
+	assert(object, 'WeaponServer:setProjectileReference - Missing reference object')
+	if typeof(object) == 'Instance' then
+		--[[assert(
+			object:IsDescendantOf(ReplicatedStorage),
+			'WeaponServer:setProjectileReference - Object must be a descendant of ReplicatedStorage'
+		)]]
+	end
+	
+	if typeof(object) == 'function' then
+		object = object()
+	end
 	
 	self.projectileReference = object
 end

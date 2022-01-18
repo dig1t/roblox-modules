@@ -1,11 +1,13 @@
 local BadgeService = game:GetService('BadgeService')
 
-local badges = {
-	welcome = 2124572597;
-}
+local badges = {}
 
 local Badge = {}
 local cache = {}
+
+function Badge.add(name, badgeId)
+	badges[name] = badgeId
+end
 
 function Badge.has(userId, badgeName)
 	assert(userId, 'Badge.award - Missing user id')
