@@ -1,0 +1,14 @@
+{
+  "name": "dLib Development Place",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+
+      "dLib": {
+        "$path": "src"
+      }
+	}
+  }
+}
