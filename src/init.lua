@@ -1,6 +1,6 @@
 --[[
 @name dLib
-@version 1.1.0
+@version 1.0.1
 @author dig1t
 @desc Tools and libraries made by dig1t
 ]]
