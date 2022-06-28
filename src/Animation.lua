@@ -2,7 +2,7 @@ local TweenService = game:GetService('TweenService')
 local RunService = game:GetService('RunService')
 
 local dLib = require(script.Parent)
-local Util = dLib.use('Util')
+local Util = dLib.import('Util')
 
 local DEFAULT_ANIMATION_CONFIG = {
 	

@@ -2,7 +2,7 @@
 @name Weapon System Server
 @description A weapon library for quickly building weapons.
 @author dig1t
-@version 1.1.0
+@version 1.1.1
 ]]
 
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
@@ -12,9 +12,9 @@ local Debris = game:GetService('Debris')
 local Players = game:GetService('Players')
 
 local dLib = require(script.Parent)
-local Util = dLib.use('Util')
-local WeaponClient = dLib.use('WeaponClient')
-local CollectionService = dLib.use('CollectionService')
+local Util = dLib.import('Util')
+local WeaponClient = dLib.import('WeaponClient')
+local CollectionService = dLib.import('CollectionService')
 
 -- Amount to subtract from the cooldown since players
 -- will always be ready before the server by a small amount

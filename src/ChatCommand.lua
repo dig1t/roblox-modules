@@ -5,7 +5,7 @@
 --- boolean adminsExempt - Any admins included in the command call will not be inserted into the targets table
 
 local dLib = require(script.Parent)
-local Util = dLib.use('Util')
+local Util = dLib.import('Util')
 
 local ChatCommand, methods = {}, {}
 methods.__index = methods
