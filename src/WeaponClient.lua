@@ -12,10 +12,10 @@ local RunService = game:GetService('RunService')
 local Workspace = game:GetService('Workspace')
 local Debris = game:GetService('Debris')
 
-local import = require(ReplicatedStorage.Bootstrap).import
-local Util = import('Lib/Util')
-local Animation = import('Lib/Animation')
-local CollectionService = import('Lib/CollectionService')
+local dLib = require(script.Parent)
+local Util = dLib.use('Util')
+local Animation = dLib.use('Animation')
+local CollectionService = dLib.use('CollectionService')
 
 local DEFAULT_CONFIG = {
 	hitscan = true; -- No projectiles will be rendered

@@ -4,19 +4,16 @@
 @author dig1t
 ]]
 
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Workspace = game:GetService('Workspace')
 local Physics = game:GetService('PhysicsService')
 
-local import = require(ReplicatedStorage.Bootstrap).import
-
-local Util = import('Lib/Util')
+local dLib = require(script.Parent)
+local Util = dLib.use('Util')
 
 local PLAYER_COLLISION_GROUP_NAME = 'Player'
 local PROPS_COLLISION_GROUP_NAME = 'Props'
 local COLLIDABLE = false -- Players cannot interact with these objects
 
-local PartExplosion = {}
 local methods = {}
 methods.__index = methods
 

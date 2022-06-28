@@ -4,10 +4,8 @@
 --- number minimumLevel (default: moderator) - Minimum user level required to use command
 --- boolean adminsExempt - Any admins included in the command call will not be inserted into the targets table
 
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
-
-local import = require(ReplicatedStorage.Bootstrap).import
-local Util = import('Lib/Util')
+local dLib = require(script.Parent)
+local Util = dLib.use('Util')
 
 local ChatCommand, methods = {}, {}
 methods.__index = methods
@@ -124,7 +122,7 @@ function methods:process()
 		end
 	end
 	
-	for i, v in ipairs(self.sections) do
+	for _, v in ipairs(self.sections) do
 		parameters[#parameters + 1] = v
 	end
 	

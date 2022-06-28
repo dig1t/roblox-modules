@@ -1,7 +1,6 @@
 --[[
 @name Palette
 @description Easy color picker using Google Material's color system to pick colors.
-@version 1.0.1
 @author dig1t
 
 Functions

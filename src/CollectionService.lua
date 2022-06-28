@@ -1,8 +1,7 @@
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local CollectionService = game:GetService('CollectionService')
 
-local import = require(ReplicatedStorage.Bootstrap).import
-local Util = import('Lib/Util')
+local dLib = require(script.Parent)
+local Util = dLib.use('Util')
 
 local lib, methods = {}, {}
 methods.__index = methods

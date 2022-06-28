@@ -22,8 +22,6 @@ players.getGroupRank = function(player, groupId)
 	end
 end
 
-local firebitId = 5113589
-
 players.isCreator = function(player)
 	return (
 		game.CreatorType == Enum.CreatorType.Group and players.getGroupRank(player, game.CreatorId) >= 255
@@ -35,10 +33,7 @@ end
 local userLevel = {
 	normal = 0;
 	premium = 1;
-	VIP = 2;
-	moderator = 3;
-	superuser = 4;
-	creator = 5;
+	creator = 2;
 }
 
 players.userLevel = userLevel
@@ -46,8 +41,6 @@ players.userLevel = userLevel
 players.getUserLevel = function(player)
 	return (
 		(players.isCreator(player) and userLevel.creator) or
-		(players.getGroupRank(player, firebitId) >= 253 and userLevel.superuser) or
-		(players.getGroupRank(player, firebitId) >= 99 and userLevel.moderator) or
 		(player.MembershipType == Enum.MembershipType.Premium and userLevel.premium) or
 		userLevel.normal
 	)
