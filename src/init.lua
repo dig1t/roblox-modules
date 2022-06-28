@@ -1,16 +1,16 @@
 --[[
 @name dLib
-@version 1.0.2
 @author dig1t
-@desc Tools and libraries made by dig1t
 ]]
 
 local Util = require(script.Util)
 
-local loadedModules = {}
+local loadedModules = {
+	Util = Util -- We already required the Util module
+}
 
-local function use(path)
-	assert(typeof(path) == 'string', 'dLib.use - Path is not a string')
+local function import(path)
+	assert(typeof(path) == 'string', 'dLib.import - Path is not a string')
 
 	-- Return module if it was already used
 	if loadedModules[path] then
@@ -19,10 +19,10 @@ local function use(path)
 
 	local modulePath = Util.treePath(script, path, '/')
 
-	assert(modulePath, 'dLib.use - Missing module ' .. path)
+	assert(modulePath, 'dLib.import - Missing module ' .. path)
 	--[[assert(
 		modulePath:IsA('ModuleScript'),
-		string.format('dLib.use - %s is not a ModuleScript instance', path)
+		string.format('dLib.import - %s is not a ModuleScript instance', path)
 	)]]
 
 	if modulePath and modulePath:IsA('ModuleScript') then
@@ -31,7 +31,7 @@ local function use(path)
 		end)
 
 		if not success then
-			error('dLib.use - ' .. res)
+			error('dLib.import - ' .. res)
 		end
 
 		loadedModules[path] = res
@@ -41,5 +41,5 @@ local function use(path)
 end
 
 return {
-	use = use
+	import = import
 }

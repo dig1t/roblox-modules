@@ -8,7 +8,7 @@ local Workspace = game:GetService('Workspace')
 local Physics = game:GetService('PhysicsService')
 
 local dLib = require(script.Parent)
-local Util = dLib.use('Util')
+local Util = dLib.import('Util')
 
 local PLAYER_COLLISION_GROUP_NAME = 'Player'
 local PROPS_COLLISION_GROUP_NAME = 'Props'
