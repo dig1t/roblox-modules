@@ -3,13 +3,12 @@
 @author Digitalscape
 ]]
 
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Physics = game:GetService('PhysicsService')
 local Workspace = game:GetService('Workspace')
 local Debris = game:GetService('Debris')
 
-local import = require(ReplicatedStorage.Bootstrap).import
-local Util = import('Lib/Util')
+local dLib = require(script.Parent)
+local Util = dLib.use('Util')
 
 local PLAYER_COLLISION_GROUP_NAME = 'Player'
 local RAGDOLL_COLLISION_GROUP_NAME = 'Ragdoll'
@@ -137,10 +136,10 @@ function Ragdoll.playerDied(player, parent, destroyTime, keepRagdollInWorld)
 	
 	parent = newCharacter -- Assign parent as newCharacter
 	
-	Ragdoll.create(character)
+	Ragdoll.create(player.Character) -- Convert the player's character into a ragdoll
 	
 	if parent then
-		-- Place wanted instances in the ragdoll model
+		-- Place parts inside the ragdoll model (newCharacter)
 		-- and filter out unwanted instances and scripts
 		for _, obj in pairs(player.Character:GetChildren()) do
 			if obj.Name == 'OverheadDisplay' then

@@ -11,10 +11,10 @@ local Workspace = game:GetService('Workspace')
 local Debris = game:GetService('Debris')
 local Players = game:GetService('Players')
 
-local import = require(ReplicatedStorage.Bootstrap).import
-local Util = import('Lib/Util')
-local WeaponClient = import('Lib/WeaponClient')
-local CollectionService = import('Lib/CollectionService')
+local dLib = require(script.Parent)
+local Util = dLib.use('Util')
+local WeaponClient = dLib.use('WeaponClient')
+local CollectionService = dLib.use('CollectionService')
 
 -- Amount to subtract from the cooldown since players
 -- will always be ready before the server by a small amount
