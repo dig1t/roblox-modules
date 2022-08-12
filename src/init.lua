@@ -4,6 +4,7 @@
 ]]
 
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local ServerScriptService = game:GetService('ServerScriptService')
 
 local Util = require(script.Util)
 
@@ -15,21 +16,21 @@ local loadedModules = {
 	Util = Util -- We already required the Util module
 }
 
-function exports.import(path)
+function exports.import(path, serverModule)
 	assert(typeof(path) == 'string', 'dLib.import - Path is not a string')
-
+	
 	-- Return module if it was already used
 	if loadedModules[path] then
 		return loadedModules[path]
 	end
-
+	
 	local modulePath = Util.treePath(script, path, PATH_DIVIDER)
 	
 	-- Tree search through ReplicatedStorage if there is no dLib module found
 	if not modulePath then
-		modulePath = Util.treePath(ReplicatedStorage, path, PATH_DIVIDER)
+		modulePath = Util.treePath(serverModule and ServerScriptService or ReplicatedStorage, path, PATH_DIVIDER)
 	end
-
+	
 	assert(modulePath, 'dLib.import - Missing module ' .. path)
 	assert(
 		modulePath:IsA('ModuleScript'),
