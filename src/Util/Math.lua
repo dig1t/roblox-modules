@@ -85,9 +85,13 @@ mathMethods.getDistance = function(a, b)
 	b = mathMethods.getVector3(b)
 	
 	assert(a, 'Util.getDistance - Parameter 1 is missing a Vector3 value or an Instance with a Vector3 Position')
-	assert(2, 'Util.getDistance - Parameter 2 is missing a Vector3 value or an Instance with a Vector3 Position')
+	assert(b, 'Util.getDistance - Parameter 2 is missing a Vector3 value or an Instance with a Vector3 Position')
 	
 	return (a - b).Magnitude
+end
+
+mathMethods.getPartBottomSurface = function(part: BasePart): CFrame
+	return part.CFrame * CFrame.new(0, -part.Size.Y / 2, 0)
 end
 
 return mathMethods
