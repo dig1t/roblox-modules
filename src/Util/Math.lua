@@ -13,8 +13,8 @@ mathMethods.formatInt = function(number) -- 1000.01 to 1,000.01
 	return minus .. string.gsub(int:reverse(), '(%d%d%d)', '%1,'):reverse():gsub('^,', '') .. fraction
 end
 
-mathMethods.random = function(max, min)
-	return math.floor(math.random() * max - (min and (min + 1) or 0)) + 1
+mathMethods.random = function(min, max)
+	return Random.new():NextInteger(not max and 1 or min, max or 1)
 end
 
 local charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -22,7 +22,7 @@ local charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 mathMethods.randomString = function(length)
 	local res = ''
 	
-	for i = 1, (length or 18) do
+	for _ = 1, (length or 18) do
 		local r = mathMethods.random(62)
 		res = res .. charset:sub(r, r)
 	end
@@ -37,7 +37,7 @@ mathMethods.randomObj = function(obj)
 	end
 	
 	if type(obj) == 'table' then
-		return obj[mathMethods.random(#obj, 1)]
+		return obj[mathMethods.random(1, #obj)]
 	end
 end
 
