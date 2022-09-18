@@ -1,30 +1,34 @@
 local mathMethods = {}
 
-mathMethods.lerp = function(start, stop, alpha)
+mathMethods.lerp = function(start: number, stop: number, alpha: number): number
 	return start * (1 - alpha) + stop * alpha
 end
 
-mathMethods.round = function(x, kenetec)
+mathMethods.round = function(x: number, kenetec): number
 	return not kenetec and math.floor(x + .5) or x + .5 - (x + .5) % 1
 end
 
-mathMethods.formatInt = function(number) -- 1000.01 to 1,000.01
+mathMethods.formatInt = function(number: number): string -- 1000.01 to 1,000.01
 	local minus, int, fraction = tostring(number):match('([-]?)(%d+)([.]?%d*)')
 	return minus .. string.gsub(int:reverse(), '(%d%d%d)', '%1,'):reverse():gsub('^,', '') .. fraction
 end
 
-mathMethods.random = function(min, max)
+--[[
+Util.random(10) -- random number 1 through 10
+Util.random()
+]]
+mathMethods.random = function(min: number, max): number
 	return Random.new():NextInteger(not max and 1 or min, max or 1)
 end
 
-local charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+mathMethods.charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-mathMethods.randomString = function(length)
+mathMethods.randomString = function(length): string
 	local res = ''
 	
 	for _ = 1, (length or 18) do
 		local r = mathMethods.random(62)
-		res = res .. charset:sub(r, r)
+		res = res .. mathMethods.charset:sub(r, r)
 	end
 	
 	return res
@@ -43,7 +47,7 @@ end
 
 local si = { 'K', 'M' , 'B', 'T', 'Q' }
 
-mathMethods.shortenNumber = function(number, minimumTier)
+mathMethods.shortenNumber = function(number: number, minimumTier): string
 	assert(number, 'No number to shorten')
 	
 	number = typeof(number) == 'string' and tonumber(number) or number
@@ -68,7 +72,7 @@ mathMethods.shortenNumber = function(number, minimumTier)
 	)) * negative) .. suffix
 end
 
-mathMethods.getVector3 = function(object)
+mathMethods.getVector3 = function(object: any)
 	return typeof(object) == 'Vector3' and object or (
 		typeof(object) == 'CFrame' and object.Position
 	) or (
