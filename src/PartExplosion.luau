@@ -1,7 +1,7 @@
 --[[
-@name Part Exploder
-@desc Breaks blocks and throws its fragments in it's forward face
-@author dig1t
+-- @name Part Exploder
+-- @desc Breaks blocks and throws its fragments in it's forward face
+-- @author dig1t
 ]]
 
 local Workspace = game:GetService('Workspace')
@@ -14,8 +14,8 @@ local PLAYER_COLLISION_GROUP_NAME = 'Player'
 local PROPS_COLLISION_GROUP_NAME = 'Props'
 local COLLIDABLE = false -- Players cannot interact with these objects
 
-local methods = {}
-methods.__index = methods
+local PartExplosion = {}
+PartExplosion.__index = PartExplosion
 
 -- Insert collision groups if missing
 if not COLLIDABLE then
@@ -48,7 +48,76 @@ if not COLLIDABLE then
 	end
 end
 
-function methods:_breakPart(part)
+--[[
+-- @param part BasePart|table part or list of parts to destroy
+-- @param config table Explosion modifications
+	{
+		clean = true; -- Remove fragments after a set amount of time (cleanTime)
+		cleanTime = 8; -- Time until fragments are removed
+		throw = true; -- Throws fragments forward
+		parent = Workspace -- Where fragments are placed in the World object
+	}
+]]
+function PartExplosion.new(part: BasePart, config: {
+	clean: boolean?,
+	cleanTime: number?,
+	throw: boolean?,
+	parent: Instance?
+}?)
+	assert(typeof(part) == 'Instance' and part:IsA('BasePart') or typeof(part) == 'table', 'Missing part(s) to break')
+	
+	local self = setmetatable({}, PartExplosion)
+	
+	self.config = typeof(config or nil) == 'table' and config or {
+		clean = true;
+		cleanTime = 1;
+		throw = true;
+	}
+	self.fragments = {}
+	
+	task.spawn(function()
+		for _, obj in pairs(
+			typeof(part) == 'Instance' and { part } or part
+		) do
+			if typeof(obj) == 'Instance' and part:IsA('BasePart') then
+				task.spawn(function()
+					self:_breakPart(obj)
+				end)
+			end
+		end
+		
+		task.wait(.85)
+		
+		if self.config.throw then
+			for _, fragment in pairs(self.fragments) do
+				if fragment.Parent then
+					fragment:ClearAllChildren()
+				end
+			end
+		end
+		
+		task.wait(self.config.cleanTime or 8)
+		
+		if self.config.clean and self.fragments then
+			self:destroy()
+		else
+			for _, fragment in pairs(self.fragments) do
+				if fragment.Parent then
+					-- Remove remaining moving parts
+					if fragment.Velocity.Magnitude > .001 then
+						fragment:Destroy()
+					end
+					
+					fragment.Anchored = true
+				end
+			end
+		end
+	end)
+	
+	return self
+end
+
+function PartExplosion:_breakPart(part)
 	local partMagnitude = 0
 	
 	repeat
@@ -105,7 +174,7 @@ function methods:_breakPart(part)
 	return nil
 end
 
-function methods:destroy()
+function PartExplosion:destroy()
 	for _, fragment in pairs(self.fragments) do
 		if fragment.Parent then
 			fragment:Destroy()
@@ -117,66 +186,4 @@ function methods:destroy()
 	return nil
 end
 
---[[
-@param part BasePart|table part or list of parts to destroy
-@param config table Explosion modifications
-	{
-		clean = true; -- Remove fragments after a set amount of time (cleanTime) 
-		cleanTime = 8; -- Time until fragments are removed
-		throw = true; -- Throws fragments forward
-		parent = Workspace -- Where fragments are placed in the World object
-	}
-]]
-return function(part, config)
-	assert(typeof(part) == 'Instance' and part:IsA('BasePart') or typeof(part) == 'table', 'Missing part(s) to break')
-	
-	local self = setmetatable({}, methods)
-	
-	self.config = typeof(config or nil) == 'table' and config or {
-		clean = true;
-		cleanTime = 1;
-		throw = true;
-	}
-	self.fragments = {}
-	
-	coroutine.wrap(function()
-		for _, obj in pairs(
-			typeof(obj) == 'Instance' and { obj } or obj
-		) do
-			if typeof(obj) == 'Instance' and part:IsA('BasePart') then
-				coroutine.wrap(function()
-					self:_breakPart(obj)
-				end)()
-			end
-		end
-		
-		Util.yield(.85)
-		
-		if self.config.throw then
-			for _, fragment in pairs(self.fragments) do
-				if fragment.Parent then
-					fragment:ClearAllChildren()
-				end
-			end
-		end
-		
-		Util.yield(self.config.cleanTime or 8)
-		
-		if self.config.clean and self.fragments then
-			self:destroy()
-		else
-			for _, fragment in pairs(self.fragments) do
-				if fragment.Parent then
-					-- Remove remaining moving parts
-					if fragment.Velocity.Magnitude > .001 then
-						fragment:Destroy()
-					end
-					
-					fragment.Anchored = true
-				end
-			end
-		end
-	end)()
-	
-	return self
-end
+return PartExplosion

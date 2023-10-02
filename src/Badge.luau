@@ -1,3 +1,5 @@
+--!strict
+
 local BadgeService = game:GetService('BadgeService')
 
 local badges = {}
@@ -32,11 +34,11 @@ function Badge.award(userId, badgeName)
 	assert(userId, 'Badge.award - Missing user id')
 	assert(badgeName, 'Badge.award - Missing badge name')
 	
-	coroutine.wrap(function()
+	task.spawn(function()
 		if not Badge.has(userId, badgeName) then
 			BadgeService:AwardBadge(userId, badges[badgeName])
 		end
-	end)()
+	end)
 end
 
 return Badge

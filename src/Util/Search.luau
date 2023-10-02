@@ -1,6 +1,8 @@
+--!strict
+
 local search = {}
 
-search.getDescendantCount = function(obj)
+search.getDescendantCount = function(obj): number?
 	if not obj then
 		return
 	end
@@ -16,7 +18,7 @@ search.getDescendantCount = function(obj)
 	return count
 end
 
-search.getDescendantParts = function(obj)
+search.getDescendantParts = function(obj): { BasePart }?
 	if not obj then
 		return
 	end
@@ -32,12 +34,12 @@ search.getDescendantParts = function(obj)
 	return parts
 end
 
-search.getAncestor = function(child, condition)
+search.getAncestor = function(child, condition): Instance?
 	if not child or not condition then
 		return
 	end
 	
-	if type(condition) == 'string' then
+	if typeof(condition) == 'string' then
 		local searchString = condition
 		
 		condition = function(obj)
@@ -54,7 +56,7 @@ search.getAncestor = function(child, condition)
 	end
 end
 
-search.find = function(parent, condition, maxRounds, round)
+search.find = function(parent, condition, maxRounds, round): Instance?
 	if not parent or not condition then
 		return
 	end
@@ -63,7 +65,7 @@ search.find = function(parent, condition, maxRounds, round)
 		round = 1
 	end
 	
-	local test = type(condition) == 'string' and function(obj)
+	local test = typeof(condition) == 'string' and function(obj)
 		return obj and obj.Name == condition
 	end or condition
 	
@@ -94,14 +96,14 @@ search.find = function(parent, condition, maxRounds, round)
 	return match
 end
 
-search.exists = function(obj, name)
+search.exists = function(obj, name): boolean
 	if not obj then
-		return
+		return false
 	end
 	
-	if type(name) == 'string' then
+	if typeof(name) == 'string' then
 		return typeof(obj) == 'Instance' and obj:FindFirstChild(name) or obj[name]
-	elseif type(name) == 'table' then
+	elseif typeof(name) == 'table' then
 		for _, v in pairs(name) do
 			if not obj[v] then
 				return false
@@ -112,8 +114,8 @@ search.exists = function(obj, name)
 	end
 end
 
-search.getFirstPart = function(model)
-	local children = type(model) == 'table' and model or model:GetChildren()
+search.getFirstPart = function(model): BasePart?
+	local children = typeof(model) == 'table' and model or model:GetChildren()
 	
 	if not children or #children == 0 then
 		return

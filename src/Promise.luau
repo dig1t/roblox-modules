@@ -1,7 +1,7 @@
 --[[
-@name Promise
-@version 1.0.0
-@author dig1t
+-- @name Promise
+-- @version 1.0.0
+-- @author dig1t
 
 Variables
 	Promise.status Current status of the promise
@@ -172,7 +172,7 @@ function Promise.new(fn)
 	
 	self.status = Promise.status.pending
 	
-	coroutine.wrap(function()
+	task.spawn(function()
 		local success, err = pcall(
 			fn,
 			function(...)
@@ -186,7 +186,7 @@ function Promise.new(fn)
 		if err and self.stauts == Promise.status.pending then
 			self:reject(err)
 		end
-	end)()
+	end)
 	
 	return self
 end

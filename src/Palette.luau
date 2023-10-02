@@ -1,7 +1,7 @@
 --[[
-@name Palette
-@description Easy color picker using Google Material's color system to pick colors.
-@author dig1t
+-- @name Palette
+-- @description Easy color picker using Google Material's color system to pick colors.
+-- @author dig1t
 
 Functions
 	Palette(color, shade: 500) => Color3 Creates a Color3 object from the given color

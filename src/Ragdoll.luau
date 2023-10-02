@@ -1,6 +1,6 @@
 --[[
-@name Character Ragdoll
-@author Digitalscape
+-- @name Character Ragdoll
+-- @author Digitalscape
 ]]
 
 local Physics = game:GetService('PhysicsService')
@@ -65,8 +65,8 @@ function Ragdoll.setup(character) -- Sets up the player's collision group
 end
 
 --[[
-@desc Transforms a humanoid into a ragdoll
-@param character - Character Model
+-- @desc Transforms a humanoid into a ragdoll
+-- @param character - Character Model
 ]]
 function Ragdoll.create(character)
 	if not character or not character.Parent then
@@ -156,7 +156,7 @@ function Ragdoll.playerDied(player, parent, destroyTime, keepRagdollInWorld)
 	player.Character:Destroy()
 	player.Character = nil
 	
-	Util.yield(destroyTime or RAGDOLL_DESTROY_TIME)
+	task.wait(destroyTime or RAGDOLL_DESTROY_TIME)
 	
 	if not parent or not parent.Parent then
 		return

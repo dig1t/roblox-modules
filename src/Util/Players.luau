@@ -1,10 +1,12 @@
+--!strict
+
 local Players = game:GetService('Players')
 
 local players = {}
 
 local groupRankCache = {}
 
-players.getGroupRank = function(player, groupId)
+players.getGroupRank = function(player, groupId): number
 	local uniqueId = player.UserId .. groupId
 	
 	if not player or not groupId then
@@ -22,7 +24,7 @@ players.getGroupRank = function(player, groupId)
 	end
 end
 
-players.isCreator = function(player)
+players.isCreator = function(player): boolean
 	return (
 		game.CreatorType == Enum.CreatorType.Group and players.getGroupRank(player, game.CreatorId) >= 255
 	) or (
@@ -38,7 +40,7 @@ local userLevel = {
 
 players.userLevel = userLevel
 
-players.getUserLevel = function(player)
+players.getUserLevel = function(player): number
 	return (
 		(players.isCreator(player) and userLevel.creator) or
 		(player.MembershipType == Enum.MembershipType.Premium and userLevel.premium) or
@@ -46,7 +48,7 @@ players.getUserLevel = function(player)
 	)
 end
 
-players.getHumanoid = function(obj)
+players.getHumanoid = function(obj): Humanoid?
 	return obj and typeof(obj) == 'Instance' and (
 		(obj:IsA('Player') and obj.Character and obj.Character:FindFirstChild('Humanoid')) or
 		(obj:IsA('Model') and obj:FindFirstChildOfClass('Humanoid')) or
@@ -55,19 +57,35 @@ players.getHumanoid = function(obj)
 	)
 end
 
-players.isAlive = function(obj)
+players.isAlive = function(obj): boolean
 	local humanoid = players.getHumanoid(obj)
 	
 	return humanoid and humanoid.Health ~= 0
 end
 
-players.getPlayerFromPart = function(part)
-	return (
-		Players:GetPlayerFromCharacter(part and part.Parent)
-	) or (
-		-- Check if part is a wearable or tool
-		Players:GetPlayerFromCharacter(part and part.Parent and part.Parent.Parent)
-	)
+players.hasHumanoid = function(obj): boolean
+	return players.getHumanoid(obj) ~= nil
+end
+
+players.getPlayerFromPart = function(part): Player?
+	if not typeof(part) == 'Instance' or not part:IsA('BasePart') then
+		return
+	end
+	
+	local node: BasePart = part
+	local hasHumanoid
+	
+	-- Move up the tree until we find a model with a humanoid
+	while (
+		node and
+		not hasHumanoid and
+        node.Parent ~= game
+	) do
+		hasHumanoid = node and node:FindFirstChildOfClass('Humanoid')
+		node = node.Parent
+	end
+	
+	return hasHumanoid and Players:GetPlayerFromCharacter(node) or nil
 end
 
 return players
