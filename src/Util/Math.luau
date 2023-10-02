@@ -12,7 +12,7 @@ end
 
 mathMethods.formatInt = function(number: number): string -- 1000.01 to 1,000.01
 	local minus, int, fraction = tostring(number):match('([-]?)(%d+)([.]?%d*)')
-	return minus .. string.gsub(int:reverse(), '(%d%d%d)', '%1,'):reverse():gsub('^,', '') .. fraction
+	return minus .. string.gsub(int:reverse(), '(%d%d%d)', '%1,'):reverse():gsub('^,', "") .. fraction
 end
 
 --[[
@@ -26,10 +26,10 @@ mathMethods.random = function(number1: number, number2: number?, float: boolean?
     return float and Random.new():NextNumber(min, max) or Random.new():NextInteger(min, max)
 end
 
-mathMethods.charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+mathMethods.charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 mathMethods.randomString = function(length): string
-	local res = ''
+	local res = ""
 	
 	for _ = 1, (length or 18) do
 		local r = mathMethods.random(62)
@@ -40,24 +40,24 @@ mathMethods.randomString = function(length): string
 end
 
 mathMethods.randomObj = function(obj)
-	if typeof(obj) == 'Instance' then
+	if typeof(obj) == "Instance" then
 		-- convert to a table
 		obj = obj:GetChildren()
 	end
 	
-	if typeof(obj) == 'table' then
+	if typeof(obj) == "table" then
 		return obj[mathMethods.random(1, #obj)]
 	end
 end
 
-local si = { 'K', 'M' , 'B', 'T', 'Q' }
+local si = { "K", "M" , "B", "T", "Q" }
 
 mathMethods.shortenNumber = function(number: number, minimumTier): string
-	assert(number, 'No number to shorten')
+	assert(number, "No number to shorten")
 	
-	number = typeof(number) == 'string' and tonumber(number) or number
+	number = typeof(number) == "string" and tonumber(number) or number
 	
-	assert(typeof(number) == 'number', 'Number to shorten must be a number')
+	assert(typeof(number) == "number", "Number to shorten must be a number")
 	
 	local negative = math.abs(number) == number and 1 or -1
 	number = math.abs(number)
@@ -78,13 +78,13 @@ mathMethods.shortenNumber = function(number: number, minimumTier): string
 end
 
 mathMethods.getVector3 = function(object: any)
-	return typeof(object) == 'Vector3' and object or (
-		typeof(object) == 'CFrame' and object.Position
+	return typeof(object) == "Vector3" and object or (
+		typeof(object) == "CFrame" and object.Position
 	) or (
-		typeof(object) == 'Instance' and (
-			(object:IsA('BasePart') and object.Position) or
-			(object:IsA('CFrameValue') and object.Value.Position) or
-			(object:IsA('Vector3Value') and object.Value)
+		typeof(object) == "Instance" and (
+			(object:IsA("BasePart") and object.Position) or
+			(object:IsA("CFrameValue") and object.Value.Position) or
+			(object:IsA("Vector3Value") and object.Value)
 		)
 	) or nil
 end

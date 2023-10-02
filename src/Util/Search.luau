@@ -10,7 +10,7 @@ search.getDescendantCount = function(obj): number?
 	local count = 0
 	
 	for _, part in pairs(obj:GetDescendants()) do
-		if part:IsA('BasePart') then
+		if part:IsA("BasePart") then
 			count += 1
 		end
 	end
@@ -26,7 +26,7 @@ search.getDescendantParts = function(obj): { BasePart }?
 	local parts = {}
 	
 	for _, part in pairs(obj:GetDescendants()) do
-		if part:IsA('BasePart') then
+		if part:IsA("BasePart") then
 			parts[#parts + 1] = part
 		end
 	end
@@ -39,7 +39,7 @@ search.getAncestor = function(child, condition): Instance?
 		return
 	end
 	
-	if typeof(condition) == 'string' then
+	if typeof(condition) == "string" then
 		local searchString = condition
 		
 		condition = function(obj)
@@ -65,7 +65,7 @@ search.find = function(parent, condition, maxRounds, round): Instance?
 		round = 1
 	end
 	
-	local test = typeof(condition) == 'string' and function(obj)
+	local test = typeof(condition) == "string" and function(obj)
 		return obj and obj.Name == condition
 	end or condition
 	
@@ -101,9 +101,9 @@ search.exists = function(obj, name): boolean
 		return false
 	end
 	
-	if typeof(name) == 'string' then
-		return typeof(obj) == 'Instance' and obj:FindFirstChild(name) or obj[name]
-	elseif typeof(name) == 'table' then
+	if typeof(name) == "string" then
+		return typeof(obj) == "Instance" and obj:FindFirstChild(name) or obj[name]
+	elseif typeof(name) == "table" then
 		for _, v in pairs(name) do
 			if not obj[v] then
 				return false
@@ -115,7 +115,7 @@ search.exists = function(obj, name): boolean
 end
 
 search.getFirstPart = function(model): BasePart?
-	local children = typeof(model) == 'table' and model or model:GetChildren()
+	local children = typeof(model) == "table" and model or model:GetChildren()
 	
 	if not children or #children == 0 then
 		return
@@ -125,9 +125,9 @@ search.getFirstPart = function(model): BasePart?
 	
 	repeat
 		i += 1
-	until children[i]:IsA('BasePart') or i < #children
+	until children[i]:IsA("BasePart") or i < #children
 	
-	return children[i]:IsA('BasePart') and children[i]
+	return children[i]:IsA("BasePart") and children[i]
 end
 
 return search

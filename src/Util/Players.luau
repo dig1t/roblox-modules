@@ -1,6 +1,6 @@
 --!strict
 
-local Players = game:GetService('Players')
+local Players = game:GetService("Players")
 
 local players = {}
 
@@ -35,7 +35,10 @@ end
 local userLevel = {
 	normal = 0;
 	premium = 1;
-	creator = 2;
+	VIP = 2;
+	moderator = 3;
+	superuser = 4;
+	creator = 5;
 }
 
 players.userLevel = userLevel
@@ -49,10 +52,10 @@ players.getUserLevel = function(player): number
 end
 
 players.getHumanoid = function(obj): Humanoid?
-	return obj and typeof(obj) == 'Instance' and (
-		(obj:IsA('Player') and obj.Character and obj.Character:FindFirstChild('Humanoid')) or
-		(obj:IsA('Model') and obj:FindFirstChildOfClass('Humanoid')) or
-		(obj:IsA('Humanoid') and obj) or
+	return obj and typeof(obj) == "Instance" and (
+		(obj:IsA("Player") and obj.Character and obj.Character:FindFirstChild("Humanoid")) or
+		(obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid")) or
+		(obj:IsA("Humanoid") and obj) or
 		nil -- Did not find a humanoid object
 	)
 end
@@ -68,7 +71,7 @@ players.hasHumanoid = function(obj): boolean
 end
 
 players.getPlayerFromPart = function(part): Player?
-	if not typeof(part) == 'Instance' or not part:IsA('BasePart') then
+	if not typeof(part) == "Instance" or not part:IsA("BasePart") then
 		return
 	end
 	
@@ -81,7 +84,7 @@ players.getPlayerFromPart = function(part): Player?
 		not hasHumanoid and
         node.Parent ~= game
 	) do
-		hasHumanoid = node and node:FindFirstChildOfClass('Humanoid')
+		hasHumanoid = node and node:FindFirstChildOfClass("Humanoid")
 		node = node.Parent
 	end
 	

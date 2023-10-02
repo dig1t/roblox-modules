@@ -4,8 +4,8 @@
 -- @desc Game pass library that caches results and watches for pass purchases.
 ]]
 
-local Marketplace = game:GetService('MarketplaceService')
-local Players = game:GetService('Players')
+local Marketplace = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
 
 local GamePass = {}
 

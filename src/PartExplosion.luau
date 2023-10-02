@@ -4,14 +4,14 @@
 -- @author dig1t
 ]]
 
-local Workspace = game:GetService('Workspace')
-local Physics = game:GetService('PhysicsService')
+local Workspace = game:GetService("Workspace")
+local Physics = game:GetService("PhysicsService")
 
 local dLib = require(script.Parent)
-local Util = dLib.import('Util')
+local Util = dLib.import("Util")
 
-local PLAYER_COLLISION_GROUP_NAME = 'Player'
-local PROPS_COLLISION_GROUP_NAME = 'Props'
+local PLAYER_COLLISION_GROUP_NAME = "Player"
+local PROPS_COLLISION_GROUP_NAME = "Props"
 local COLLIDABLE = false -- Players cannot interact with these objects
 
 local PartExplosion = {}
@@ -64,11 +64,11 @@ function PartExplosion.new(part: BasePart, config: {
 	throw: boolean?,
 	parent: Instance?
 }?)
-	assert(typeof(part) == 'Instance' and part:IsA('BasePart') or typeof(part) == 'table', 'Missing part(s) to break')
+	assert(typeof(part) == "Instance" and part:IsA("BasePart") or typeof(part) == "table", 'Missing part(s) to break')
 	
 	local self = setmetatable({}, PartExplosion)
 	
-	self.config = typeof(config or nil) == 'table' and config or {
+	self.config = typeof(config or nil) == "table" and config or {
 		clean = true;
 		cleanTime = 1;
 		throw = true;
@@ -77,9 +77,9 @@ function PartExplosion.new(part: BasePart, config: {
 	
 	task.spawn(function()
 		for _, obj in pairs(
-			typeof(part) == 'Instance' and { part } or part
+			typeof(part) == "Instance" and { part } or part
 		) do
-			if typeof(obj) == 'Instance' and part:IsA('BasePart') then
+			if typeof(obj) == "Instance" and part:IsA("BasePart") then
 				task.spawn(function()
 					self:_breakPart(obj)
 				end)
@@ -148,14 +148,14 @@ function PartExplosion:_breakPart(part)
 		)
 		
 		if self.config.throw then
-			local attachment = Instance.new('Attachment')
-			attachment.Name = 'GlassAttachment'
+			local attachment = Instance.new("Attachment")
+			attachment.Name = "GlassAttachment"
 			attachment.Position = fragment.CFrame:ToObjectSpace(
 				newPosition + (fragment.CFrame.LookVector * 4)
 			).Position
 			attachment.Parent = fragment
 			
-			local force = Instance.new('VectorForce')
+			local force = Instance.new("VectorForce")
 			force.Force = fragment.CFrame:ToObjectSpace(
 				newPosition + (fragment.CFrame.LookVector * 40)
 			).Position

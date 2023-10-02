@@ -1,6 +1,6 @@
 --!strict
 
-local RunService = game:GetService('RunService')
+local RunService = game:GetService("RunService")
 
 local sys = {}
 
@@ -9,11 +9,11 @@ sys.print = function(str): nil
 end
 
 sys.error = function(err): nil
-	error('Error: ' .. err, 0)
+	error("Error: " .. err, 0)
 end
 
 sys.warn = function(str): nil
-	error('Error: ' .. str, 0)
+	error("Error: " .. str, 0)
 end
 
 sys.yield = function(yieldTime): nil
@@ -70,7 +70,7 @@ sys.inTable = function(obj, e): boolean
 		return false
 	end
 	
-	if typeof(e) == 'table' then
+	if typeof(e) == "table" then
 		local i = 0
 		
 		for k, v in pairs(e) do

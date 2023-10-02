@@ -1,6 +1,6 @@
 --!strict
 
-local BadgeService = game:GetService('BadgeService')
+local BadgeService = game:GetService("BadgeService")
 
 local badges = {}
 
@@ -16,7 +16,7 @@ function Badge.has(userId, badgeName)
 	assert(badgeName, 'Badge.award - Missing badge name')
 	
 	if not badges[badgeName] then
-		warn('"' .. badgeName .. '" badge does not exist')
+		warn("\"" .. badgeName .. "\" badge does not exist")
 		return
 	end
 	
@@ -31,8 +31,8 @@ function Badge.has(userId, badgeName)
 end
 
 function Badge.award(userId, badgeName)
-	assert(userId, 'Badge.award - Missing user id')
-	assert(badgeName, 'Badge.award - Missing badge name')
+	assert(userId, "Badge.award - Missing user id")
+	assert(badgeName, "Badge.award - Missing badge name")
 	
 	task.spawn(function()
 		if not Badge.has(userId, badgeName) then
