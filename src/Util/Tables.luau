@@ -1,9 +1,11 @@
+--!strict
+
 local tbl = {}
 
 --[[
 Flip the table's keys with its values
-@param source The table you want to flip
-@param mergeDupes Merge key duplicates into a table instead of overwriting them
+-- @param source The table you want to flip
+-- @param mergeDupes Merge key duplicates into a table instead of overwriting them
 ]]
 tbl.flip = function(source, mergeDupes)
 	local res = {}
@@ -25,8 +27,10 @@ tbl.flip = function(source, mergeDupes)
 	return res
 end
 
--- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
-tbl.map = function(source, filterFn)
+-- @desc Returns a table of filtered values from the original table or instance
+-- @reference https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+-- @return table: filtered table
+tbl.map = function(source: table, filterFn: (any) -> any)
 	local res = {}
 	
 	--[[for i, v in ipairs(source) do
@@ -40,13 +44,14 @@ tbl.map = function(source, filterFn)
 		local index, value = #res + 1, v
 		
 		if filterFn then
-			local fnVal, fnKey = filterFn(v, k)
+			local result, secondResult = filterFn(v, k)
 			
-			if fnKey ~= nil then
-				index = fnKey
+			if secondResult ~= nil then -- Both the index and value are specified
+				index = result
+				value = secondResult
+			else -- If there is no second result, we will use "#res + 1" as the index
+				value = result -- Use the first result as the value
 			end
-			
-			value = fnVal
 		end
 		
 		res[index] = value
@@ -307,7 +312,7 @@ tbl.makeNestLoop = function(name, data, parent)
 	end
 	
 	for k, v in pairs(data) do
-		if type(v) == 'table' then
+		if typeof(v) == 'table' then
 			tbl.makeNestLoop(k, v, context)
 		end
 	end

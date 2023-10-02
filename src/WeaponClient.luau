@@ -1,8 +1,8 @@
 --[[
-@name Weapon System Client
-@description A weapon library for quickly building weapons.
-@author dig1t
-@version 1.1.0
+-- @name Weapon System Client
+-- @description A weapon library for quickly building weapons.
+-- @author dig1t
+-- @version 1.1.0
 ]]
 
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
@@ -335,7 +335,6 @@ function methods:fireTracer(data)
 	
 	local newTracer = data.localTracer and data.projectile or WeaponClient.getProjectile({
 		handle = data.handle,
-		useModelAsProjectile = data.useModelAsProjectile,
 		projectileReference = data.projectileReference,
 		useModelAsProjectile = data.useModelAsProjectile,
 		-- Avoid unnecessary processing by passing self.modelParts
@@ -368,7 +367,7 @@ function methods:fireTracer(data)
 	local rotation = data.projectileRotation or CFrame.new()
 	local start = os.clock()
 	
-	coroutine.wrap(function()
+	task.spawn(function()
 		local prevCFrame = originPosition
 		local hit
 		
@@ -407,7 +406,7 @@ function methods:fireTracer(data)
 				newTracer:Destroy()
 			end
 		end
-	end)()
+	end)
 end
 
 function WeaponClient.watch()
@@ -422,7 +421,7 @@ function WeaponClient.watch()
 	self.localPlayer = Players.LocalPlayer
 	
 	self.raycastFilter = RaycastParams.new()
-	self.raycastFilter.FilterType = Enum.RaycastFilterType.Blacklist
+	self.raycastFilter.FilterType = Enum.RaycastFilterType.Exclude
 	
 	self.remote = Util.waitForChild(ReplicatedStorage, 'WeaponRemote')
 	
@@ -475,7 +474,7 @@ function WeaponClient.new(config)
 	self.modelParts = WeaponClient.getModelParts(config.tool)
 	
 	self.raycastFilter = RaycastParams.new()
-	self.raycastFilter.FilterType = Enum.RaycastFilterType.Blacklist
+	self.raycastFilter.FilterType = Enum.RaycastFilterType.Exclude
 	
 	config.tool.Equipped:Connect(function()
 		if not Util.isAlive(self.localHumanoid) then

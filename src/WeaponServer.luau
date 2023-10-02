@@ -1,8 +1,8 @@
 --[[
-@name Weapon System Server
-@description A weapon library for quickly building weapons.
-@author dig1t
-@version 1.1.1
+-- @name Weapon System Server
+-- @description A weapon library for quickly building weapons.
+-- @author dig1t
+-- @version 1.1.1
 ]]
 
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
@@ -45,8 +45,8 @@ if not globalWeaponRemote then
 end
 
 --[[
-@param type The type of action to identify the aciton by.
-@desc Binds an action to the remote listener
+-- @param type The type of action to identify the aciton by.
+-- @desc Binds an action to the remote listener
 so it can later be called by client-side code.
 ]]
 function methods:bind(type, fn)
@@ -57,8 +57,8 @@ function methods:bind(type, fn)
 end
 
 --[[
-@param actionType The action type to check
-@desc Checks if an action is in cooldown (example: A gun reloading)
+-- @param actionType The action type to check
+-- @desc Checks if an action is in cooldown (example: A gun reloading)
 ]]
 function methods:inCooldown(actionType)
 	if not self.lastActions[actionType] then
@@ -69,8 +69,8 @@ function methods:inCooldown(actionType)
 end
 
 --[[
-@param action The action to process
-@desc Simplified "red" store. Processes an action. The action must include
+-- @param action The action to process
+-- @desc Simplified "red" store. Processes an action. The action must include
 an action type for it to successfully processed
 ]]
 function methods:processAction(action)
@@ -106,8 +106,8 @@ function methods:processAction(action)
 end
 
 --[[
-@param actionType The action type to check
-@desc Makes sure the action is ready to be further processed
+-- @param actionType The action type to check
+-- @desc Makes sure the action is ready to be further processed
 by checking if the player is alive and the weapon is not currently
 in a cooldown
 ]]
@@ -128,16 +128,16 @@ function methods:playSFX(state)
 end
 
 --[[
-@param player The target player
-@desc Returns the player's team color, if available
-@return Color3|nil
+-- @param player The target player
+-- @desc Returns the player's team color, if available
+-- @return Color3|nil
 ]]
 function methods:getTeam(player)
 	return player and player.Character and player.Character:FindFirstChild('Team') and player.Character.Team.Value
 end
 
 --[[
-@desc Tags the player with a kill tag of the local
+-- @desc Tags the player with a kill tag of the local
 player's UserId to later track who they were killed by
 ]]
 function methods:tag(player)
@@ -158,12 +158,12 @@ function methods:tag(player)
 end
 
 --[[
-@param victim The player to damage
-@param amount Amount to damage player
-@desc Damages a player. If friendly fire is disabled, it will check
+-- @param victim The player to damage
+-- @param amount Amount to damage player
+-- @desc Damages a player. If friendly fire is disabled, it will check
 to make sure they are not damaging teammates. If successfully damaged
 the function will return true to let the caller know the victim was damaged
-@return true|nil
+-- @return true | nil
 ]]
 function methods:damagePlayer(victim, amount)
 	if not victim or victim == self.localPlayer then
@@ -191,8 +191,8 @@ function methods:damagePlayer(victim, amount)
 end
 
 --[[
-@param object The projectile reference to save. This object must be a descendant of ReplicatedStorage
-@desc Saves a reference of the projectile that will be later shot
+-- @param object The projectile reference to save. This object must be a descendant of ReplicatedStorage
+-- @desc Saves a reference of the projectile that will be later shot
 ]]
 function methods:setProjectileReference(object)
 	assert(object, 'WeaponServer:setProjectileReference - Missing reference object')
@@ -359,7 +359,7 @@ function methods:shoot(data)
 		local prevCFrame = projectile.CFrame
 		
 		-- Loop in a separate thread
-		coroutine.wrap(function()
+		task.spawn(function()
 			repeat
 				local direction = prevCFrame.LookVector
 				local position = prevCFrame.Position + (direction * velocity) - Vector3.new(0, bulletDrop, 0)
@@ -392,7 +392,7 @@ function methods:shoot(data)
 			if not self.config.projectileKeepAlive then
 				data.projectile:Destroy()
 			end
-		end)()
+		end)
 	end
 end
 -- End projectile functions
@@ -483,7 +483,7 @@ function WeaponServer.new(config)
 	self.remote.Parent = config.tool
 	
 	self.raycastFilter = RaycastParams.new()
-	self.raycastFilter.FilterType = Enum.RaycastFilterType.Blacklist
+	self.raycastFilter.FilterType = Enum.RaycastFilterType.Exclude
 	
 	-- Weld extra parts to the handle
 	--[[for _, obj in pairs(config.tool:GetDescendants()) do
@@ -539,7 +539,7 @@ function WeaponServer.new(config)
 		self:processAction(action)
 	end)
 	
-	coroutine.wrap(function()
+	task.spawn(function()
 		repeat
 			RunService.Heartbeat:Wait()
 		until self.localPlayer and self.localHumanoid
@@ -554,7 +554,7 @@ function WeaponServer.new(config)
 		
 		detectLocation()
 		self.connections.equipListener = config.tool:GetPropertyChangedSignal('Parent'):Connect(detectLocation)
-	end)()
+	end)
 	
 	Util.set(config.tool, 'Ready', true) -- TODO: Replace with config.tool:setAttribute('Ready', true)
 	

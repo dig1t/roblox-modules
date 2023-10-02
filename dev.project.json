@@ -1,0 +1,26 @@
+{
+  "name": "dLib dev",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+
+      "Packages": {
+        "$className": "Folder",
+
+        "dLib": {
+          "$path": "src"
+        }
+      }
+	  },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+
+      "ServerSample": {
+        "$path": "sample"
+      }
+    }
+  }
+}

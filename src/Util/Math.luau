@@ -1,3 +1,5 @@
+--!strict
+
 local mathMethods = {}
 
 mathMethods.lerp = function(start: number, stop: number, alpha: number): number
@@ -17,8 +19,11 @@ end
 Util.random(10) -- random number 1 through 10
 Util.random()
 ]]
-mathMethods.random = function(min: number, max): number
-	return Random.new():NextInteger(not max and 1 or min, max or 1)
+mathMethods.random = function(number1: number, number2: number?, float: boolean?): number
+    local min = not number2 and 1 or number1 -- If number2 is not defined, use 1 as min
+    local max = number2 or 1 -- If number2 is not defined, use number1 as max
+    
+    return float and Random.new():NextNumber(min, max) or Random.new():NextInteger(min, max)
 end
 
 mathMethods.charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -35,12 +40,12 @@ mathMethods.randomString = function(length): string
 end
 
 mathMethods.randomObj = function(obj)
-	if type(obj) == 'userdata' then
+	if typeof(obj) == 'Instance' then
 		-- convert to a table
 		obj = obj:GetChildren()
 	end
 	
-	if type(obj) == 'table' then
+	if typeof(obj) == 'table' then
 		return obj[mathMethods.random(1, #obj)]
 	end
 end

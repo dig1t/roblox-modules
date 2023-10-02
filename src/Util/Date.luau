@@ -1,22 +1,24 @@
+--!strict
+
 local date = {}
 
-date.unix = function()
+date.unix = function(): number
 	return string.gsub(tostring(os.clock()), '%.', '')
 end
 
-date.timeAgo = function(timestamp)
+date.timeAgo = function(timestamp): string
 	assert(typeof(timestamp) == 'number', 'Timestamp must be a number')
 	
 	return date.unix() - timestamp
 end
 
-date.getMinutes = function(timestamp)
+date.getMinutes = function(timestamp): number
 	assert(typeof(timestamp) == 'number', 'Timestamp must be a number')
 	
 	return math.floor(timestamp / 60)
 end
 
-date.getSeconds = function(timestamp)
+date.getSeconds = function(timestamp): number
 	assert(typeof(timestamp) == 'number', 'Timestamp must be a number')
 	
 	if timestamp / 60 == math.floor(timestamp / 60) then
@@ -26,7 +28,7 @@ date.getSeconds = function(timestamp)
 	return timestamp - (60 * math.floor(timestamp / 60))
 end
 
-date.unixToClockFormat = function(timestamp) -- TODO: add support for hours and milliseconds
+date.unixToClockFormat = function(timestamp): string -- TODO: add support for hours and milliseconds
 	assert(typeof(timestamp) == 'number', 'Timestamp must be a number')
 	
 	local minutes = tostring(date.getMinutes(timestamp))

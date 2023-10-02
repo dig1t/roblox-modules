@@ -1,0 +1,22 @@
+{
+  "name": "dlib-library",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:rojo": "rojo build -o dLib.rbxl dev.project.json",
+    "build": "npm run build:rojo",
+    "dev": "npm run build && dLib.rbxl && npm start",
+    "start": "rojo serve dev.project.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dig1t/dlib.git"
+  },
+  "author": "dig1t",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dig1t/dlib/issues"
+  },
+  "homepage": "https://github.com/dig1t/dlib#readme"
+}
