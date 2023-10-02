@@ -39,7 +39,7 @@ tbl.map = function(source: table, filterFn: (any) -> any)
 	
 	for k, v in pairs(
 		-- If instance, convert variable to a table of it's children
-		typeof(source) == 'Instance' and source:GetChildren() or source
+		typeof(source) == "Instance" and source:GetChildren() or source
 	) do -- Order not guaranteed
 		local index, value = #res + 1, v
 		
@@ -90,7 +90,7 @@ tbl.split = function(str, sep, trim)
 	if not str then
 		return {}
 	elseif not sep then
-		sep = ' '
+		sep = " "
 	end
 	
 	str = tostring(str)
@@ -98,15 +98,15 @@ tbl.split = function(str, sep, trim)
 	local chunks = {}
 	
 	if not trim and str:sub(0, 1) == sep then
-		chunks[1] = ''
+		chunks[1] = ""
 	end
 	
-	str:gsub('([^' .. sep .. ']+)', function(x)
+	str:gsub("([^" .. sep .. "]+)", function(x)
 		chunks[#chunks + 1] = x
 	end)
 	
 	if not trim and str:sub(-1, -1) == sep then
-		chunks[#chunks + 1] = ''
+		chunks[#chunks + 1] = ""
 	end
 	
 	return chunks
@@ -114,8 +114,8 @@ end
 --[[
 -- Todo: add nested merge
 tbl.merge = function(to, from) -- Merges to the first given table
-	assert(typeof(to) == 'table', 'First argument must be a table')
-	assert(typeof(from) == 'table', 'Second argument must be a table')
+	assert(typeof(to) == "table", "First argument must be a table")
+	assert(typeof(from) == "table", "Second argument must be a table")
 	
 	for k, v in pairs(from) do
 		to[k] = v
@@ -123,10 +123,10 @@ tbl.merge = function(to, from) -- Merges to the first given table
 end]]
 
 tbl.join = function(obj, separator)
-	local res = ''
+	local res = ""
 	
 	for i, v in ipairs(obj) do
-		if typeof(v) == 'string' or typeof(v) == 'number' then
+		if typeof(v) == "string" or typeof(v) == "number" then
 			res = res .. (i == #obj and v or v .. separator)
 		end
 	end
@@ -135,8 +135,8 @@ tbl.join = function(obj, separator)
 end
 
 tbl.extend = function(to, from)
-	assert(typeof(to) == 'table', 'First argument must be a table')
-	assert(typeof(from) == 'table', 'Second argument must be a table')
+	assert(typeof(to) == "table", "First argument must be a table")
+	assert(typeof(from) == "table", "Second argument must be a table")
 	
 	for k, v in pairs(from) do
 		to[k] = v
@@ -148,8 +148,8 @@ end
 tbl.treePath = function(tree, str, divider)
 	local res = tree
 	
-	for _, childName in pairs(tbl.split(str, divider or '.', true)) do
-		if (typeof(res) ~= 'Instance' and res[childName]) or (typeof(res) == 'Instance' and res:FindFirstChild(childName)) then
+	for _, childName in pairs(tbl.split(str, divider or ".", true)) do
+		if (typeof(res) ~= "Instance" and res[childName]) or (typeof(res) == "Instance" and res:FindFirstChild(childName)) then
 			res = res[childName]
 		else
 			return nil
@@ -160,7 +160,7 @@ tbl.treePath = function(tree, str, divider)
 end
 
 tbl.insertIf = function(to, bool, value)
-	assert(typeof(to) == 'table', 'Table is missing')
+	assert(typeof(to) == "table", "Table is missing")
 	
 	if bool then
 		to[#to + 1] = value
@@ -171,11 +171,11 @@ tbl.tableRemove = function(obj, removeTest)
 	 -- Convert to a test function if the test value is a number or table
 	local test
 	
-	if typeof(removeTest) == 'number' then
+	if typeof(removeTest) == "number" then
 		test = function(value, newIndex, i)
 			return i == removeTest
 		end
-	elseif typeof(removeTest) == 'table' then
+	elseif typeof(removeTest) == "table" then
 		test = function(value, newIndex, i)
 			for _, v in ipairs(removeTest) do
 				return value == v
@@ -240,9 +240,9 @@ end
 
 tbl.tableRandomIndex = function(obj)
 	assert(obj, 'tbl.tableRandomIndex - Missing object')
-	assert(typeof(obj) == 'table' or typeof(obj) == 'Instance', 'tbl.tableRandomIndex - Cannot index ' .. typeof(obj))
+	assert(typeof(obj) == "table" or typeof(obj) == "Instance", 'tbl.tableRandomIndex - Cannot index ' .. typeof(obj))
 	
-	obj = typeof(obj) == 'Instance' and obj:GetChildren() or obj
+	obj = typeof(obj) == "Instance" and obj:GetChildren() or obj
 	
 	local indexes = {}
 	
@@ -256,7 +256,7 @@ end
 
 tbl.indexOf = function(obj, value)
 	assert(obj, 'tbl.indexOf - Missing object')
-	assert(typeof(obj) == 'table', 'tbl.indexOf - Cannot index ' .. typeof(obj))
+	assert(typeof(obj) == "table", 'tbl.indexOf - Cannot index ' .. typeof(obj))
 	
 	for k, v in pairs(obj) do
 		if v == value then
@@ -269,9 +269,9 @@ end
 
 tbl.tableRandom = function(obj)
 	assert(obj, 'tbl.tableRandom - Missing object')
-	assert(typeof(obj) == 'table' or typeof(obj) == 'Instance', 'tbl.tableRandomIndex - Cannot index ' .. typeof(obj))
+	assert(typeof(obj) == "table" or typeof(obj) == "Instance", 'tbl.tableRandomIndex - Cannot index ' .. typeof(obj))
 	
-	obj = typeof(obj) == 'Instance' and obj:GetChildren() or obj
+	obj = typeof(obj) == "Instance" and obj:GetChildren() or obj
 	
 	return obj[tbl.tableRandomIndex(obj)]
 end
@@ -282,7 +282,7 @@ tbl.makeConfig = function(folder)
 	local res = {}
 	
 	for _, obj in pairs(folder:GetChildren()) do
-		if obj:IsA('Folder') or obj:IsA('Configuration') then -- Nest
+		if obj:IsA("Folder") or obj:IsA("Configuration") then -- Nest
 			res[obj.Name] = tbl.makeConfig(obj)
 		elseif valueClasses[obj.ClassName] then
 			res[obj.Name] = obj.Value
@@ -312,7 +312,7 @@ tbl.makeNestLoop = function(name, data, parent)
 	end
 	
 	for k, v in pairs(data) do
-		if typeof(v) == 'table' then
+		if typeof(v) == "table" then
 			tbl.makeNestLoop(k, v, context)
 		end
 	end

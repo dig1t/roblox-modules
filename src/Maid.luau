@@ -1,7 +1,7 @@
-local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local import = require(ReplicatedStorage.Packages.dLib).import
-local Util = import('Util')
+local Util = import("Util")
 
 local Maid = {}
 Maid.__index = Maid
@@ -47,15 +47,15 @@ function Maid:cleanTasks(taskIds: table?): nil
 	for taskId, _ in pairs(tasks) do
 		local taskType = typeof(task)
 		
-		if taskType == 'function' then
+		if taskType == "function" then
 			task() -- Run cleaning task
-		elseif taskType == 'RBXScriptConnection' and task.Connected then
+		elseif taskType == "RBXScriptConnection" and task.Connected then
 			task:Disconnect()
 		elseif task.Destroy then
 			task:Destroy()
 		elseif task.destroy then -- UIKit object
 			task:destroy()
-		elseif taskType == 'table' then
+		elseif taskType == "table" then
 			if task.destructor then
 				task.destructor(task.task or task)
 			end
