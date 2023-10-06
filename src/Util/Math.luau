@@ -11,8 +11,8 @@ mathMethods.round = function(x: number, kenetec): number
 end
 
 mathMethods.formatInt = function(number: number): string -- 1000.01 to 1,000.01
-	local minus, int, fraction = tostring(number):match('([-]?)(%d+)([.]?%d*)')
-	return minus .. string.gsub(int:reverse(), '(%d%d%d)', '%1,'):reverse():gsub('^,', "") .. fraction
+	local minus, int, fraction = tostring(number):match("([-]?)(%d+)([.]?%d*)")
+	return minus .. string.gsub(int:reverse(), "(%d%d%d)", "%1,"):reverse():gsub("^,", "") .. fraction
 end
 
 --[[

@@ -85,7 +85,7 @@ tbl.mapIndex = function(source, fn)
 	return res
 end
 
--- assert(table.concat('111, 222, 333', ',') == '111, 222, 333')
+-- assert(table.concat("111, 222, 333", ",") == "111, 222, 333")
 tbl.split = function(str, sep, trim)
 	if not str then
 		return {}
