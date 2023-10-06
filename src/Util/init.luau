@@ -187,7 +187,7 @@ Util.numberSequence = function(data: { { number } })
 end
 
 -- Calls the given function until it successfully runs
--- Used for retrieving from a DataStore or GET/POST requests
+-- Used for retrieving from a data store or GET/POST requests
 Util.attempt = function(fn: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
 	local res: any
 	local successful: boolean = false
