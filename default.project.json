@@ -1,10 +1,6 @@
 {
-	"name": "dLib",
-	"tree": {
-		"$path": "src/Packages",
-
-		"red": {
-			"$path": "src"
-		}
-	}
+  "name": "dlib",
+  "tree": {
+    "$path": "src"
+  }
 }
