@@ -44,7 +44,7 @@ end
 
 local Ragdoll = {}
 
-function Ragdoll.setup(character) -- Sets up the player's collision group
+function Ragdoll.setup(character: Model) -- Sets up the player's collision group
 	local successful, humanoid, tries = Util.attempt(function()
 		return character:FindFirstChild("Humanoid")
 	end, 80, .1) -- 80 tries * .1 yield times = 8 second max yield
@@ -62,13 +62,15 @@ function Ragdoll.setup(character) -- Sets up the player's collision group
 			end
 		end
 	end
+	
+	character:SetAttribute("RagdollReady", true)
 end
 
 --[[
 -- @desc Transforms a humanoid into a ragdoll
 -- @param character - Character Model
 ]]
-function Ragdoll.create(character)
+function Ragdoll.create(character: Model)
 	if not character or not character.Parent then
 		return
 	end
@@ -119,14 +121,14 @@ function Ragdoll.create(character)
 	end
 end
 
-function Ragdoll.playerDied(player, parent, destroyTime, keepRagdollInWorld)
-	if not player.Character then
+function Ragdoll.playerDied(player: Player, parent, destroyTime, keepRagdollInWorld)
+	if not player.Character or not player.Character:GetAttribute("RagdollReady") then
 		return
 	end
 	
 	parent = parent or Workspace -- Default parent to Workspace
 	
-	local newCharacter = Instance.new("Model")
+	local newCharacter: Model = Instance.new("Model")
 	newCharacter.Name = player.Character.Name
 	newCharacter.Parent = parent
 	

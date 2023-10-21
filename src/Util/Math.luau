@@ -21,18 +21,18 @@ Util.random()
 ]]
 mathMethods.random = function(number1: number, number2: number?, float: boolean?): number
     local min = not number2 and 1 or number1 -- If number2 is not defined, use 1 as min
-    local max = number2 or 1 -- If number2 is not defined, use number1 as max
+    local max = not number2 and number1 or number2 -- If number2 is not defined, use number1 as max
     
     return float and Random.new():NextNumber(min, max) or Random.new():NextInteger(min, max)
 end
 
 mathMethods.charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-mathMethods.randomString = function(length): string
-	local res = ""
+mathMethods.randomString = function(length: number?): string
+	local res: string = ""
 	
 	for _ = 1, (length or 18) do
-		local r = mathMethods.random(62)
+		local r = mathMethods.random(#mathMethods.charset)
 		res = res .. mathMethods.charset:sub(r, r)
 	end
 	

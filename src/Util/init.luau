@@ -246,14 +246,14 @@ Util.weldModel = function(model: Model): Model
 	if not model or not model:IsA("Model") or not model.PrimaryPart then
 		return
 	end
-    
-    for _, part: BasePart in pairs(model:GetDescendants()) do
-        if part:IsA("BasePart") and part ~= model.PrimaryPart then
-			Util.weld(part, model.PrimaryPart)
-        end
-    end
 	
-    return model
+	for _, part: BasePart in pairs(model:GetDescendants()) do
+		if part:IsA("BasePart") and part ~= model.PrimaryPart then
+			Util.weld(part, model.PrimaryPart)
+		end
+	end
+	
+	return model
 end
 
 Util.clearWelds = function(instance: Instance): nil
