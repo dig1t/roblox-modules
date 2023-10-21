@@ -82,7 +82,7 @@ players.getPlayerFromPart = function(part): Player?
 	while (
 		node and
 		not hasHumanoid and
-        node.Parent ~= game
+		node.Parent ~= game
 	) do
 		hasHumanoid = node and node:FindFirstChildOfClass("Humanoid")
 		node = node.Parent

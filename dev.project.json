@@ -7,7 +7,7 @@
       "$className": "ReplicatedStorage",
 
       "Packages": {
-        "$path": "src/Packages",
+        "$className": "Folder",
 
         "dLib": {
           "$path": "src"
