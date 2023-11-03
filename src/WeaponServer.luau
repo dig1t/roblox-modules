@@ -145,16 +145,7 @@ function methods:tag(player)
 		return
 	end
 	
-	local tag = player.Character:FindFirstChild("KillTag")
-	
-	if not tag then
-		tag = Instance.new("NumberValue")
-		tag.Name = "KillTag"
-		tag.Value = self.localPlayer.UserId
-		tag.Parent = player.Character
-	else
-		tag.Value = self.localPlayer.UserId
-	end
+	player.Character:SetAttribute("KillTag", self.localPlayer.UserId)
 end
 
 --[[
@@ -508,13 +499,13 @@ function WeaponServer.new(config)
 	animations.Name = "Animations"
 	
 	Util.map(self.config.animations, function(idList, state)
-		return Util.map(idList, function(id)
+		return state, Util.map(idList, function(id)
 			Util.instance("Animation") {
 				Name = id,
 				AnimationId = Util.asset .. id,
 				Parent = animations
 			}
-		end), state
+		end)
 	end)
 	
 	animations.Parent = self.config.tool

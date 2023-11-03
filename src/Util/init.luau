@@ -16,24 +16,29 @@ setmetatable({}, {
 	end
 })
 
-Util.use = function(obj: string | ModuleScript): nil
+Util.use = function(moduleName: string | ModuleScript): nil
 	local module: table
 	
-	if typeof(obj) == "string" then
-		if script:FindFirstChild(obj) then
-			module = require(script[obj])
-		elseif script.Parent:FindFirstChild(obj) then
-			module = require(script.Parent[obj])
+	if typeof(moduleName) == "string" then
+		if script:FindFirstChild(moduleName) then
+			module = require(script[moduleName])
+		elseif script.Parent:FindFirstChild(moduleName) then
+			module = require(script.Parent[moduleName])
 		else
-			error("Could not load module: " .. obj)
+			error("Could not load module: " .. moduleName)
 		end
-	elseif typeof(obj) == "Instance" and obj.ClassName == "ModuleScript" then
-		module = require(obj)
+	elseif typeof(moduleName) == "Instance" and moduleName.ClassName == "ModuleScript" then
+		module = require(moduleName)
 	else
-		error("Could not load module: " .. obj)
+		error("Could not load module: " .. moduleName)
 	end
 	
 	for key, value in pairs(module) do
+		assert(
+			Util[key] ~= nil,
+			string.format("Util.use - Attempted to add utility %q from module %q", key, moduleName)
+		)
+		
 		Util[key] = value
 	end
 end
@@ -366,9 +371,12 @@ Util.onTouch = function(part: BasePart, fn: () -> any): RBXScriptConnection
 end
 
 Util.onPlayerTouch = function(
-	obj: BasePart, fn: (Player, BasePart) -> any, ignoreIfDead: boolean?, offsetPart: Vector3?
+	obj: BasePart,
+	fn: (Player, BasePart) -> any,
+	ignoreIfDead: boolean?,
+	offsetPart: boolean?
 ): RBXScriptConnection
-	local callback: () -> nil = function(part)
+	local callback: () -> nil = function(part: BasePart)
 		local player: Player = Util.getPlayerFromPart(part)
 		
 		if player then

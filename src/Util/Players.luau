@@ -70,25 +70,20 @@ players.hasHumanoid = function(obj): boolean
 	return players.getHumanoid(obj) ~= nil
 end
 
-players.getPlayerFromPart = function(part): Player?
-	if not typeof(part) == "Instance" or not part:IsA("BasePart") then
+players.getPlayerFromPart = function(part: BasePart): Player?
+	if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
 		return
 	end
 	
-	local node: BasePart = part
-	local hasHumanoid
+	local node: Instance = part
+	local humanoid: Humanoid?
 	
-	-- Move up the tree until we find a model with a humanoid
-	while (
-		node and
-		not hasHumanoid and
-		node.Parent ~= game
-	) do
-		hasHumanoid = node and node:FindFirstChildOfClass("Humanoid")
-		node = node.Parent
-	end
+	repeat
+		humanoid = node and node:FindFirstChildOfClass("Humanoid")
+		node = node.Parent :: Instance
+	until not node or humanoid or node == game or node == nil
 	
-	return hasHumanoid and Players:GetPlayerFromCharacter(node) or nil
+	return humanoid and Players:GetPlayerFromCharacter(humanoid.Parent) or nil
 end
 
 return players
