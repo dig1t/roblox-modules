@@ -549,9 +549,9 @@ function WeaponClient.new(config)
 	
 	-- Load animations
 	self.animations = Util.map(config.animations, function(idList, state)
-		return Util.map(idList, function(id)
+		return state, Util.map(idList, function(id)
 			return self.localHumanoid:LoadAnimation(config.tool.Animations:WaitForChild(id))
-		end), state
+		end)
 	end)
 	
 	self.remote:FireServer({

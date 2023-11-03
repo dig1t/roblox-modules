@@ -200,7 +200,7 @@ tbl.tableRemove = function(obj, removeTest)
 end
 
 tbl.modelToTable = function(model)
-	assert(model, "tbl.modelToTable - Missing model object")
+	assert(model, "Util.modelToTable - Missing model object")
 	
 	local obj = {}
 	
@@ -227,11 +227,11 @@ local valueClasses = {
 }
 
 tbl.tableLength = function(obj)
-	assert(obj, "tbl.tableLength - Missing object")
+	assert(obj, "Util.tableLength - Missing object")
 	
 	local res = 0
 	
-	for _, v in pairs(obj) do
+	for _, _v in pairs(obj) do
 		res += 1
 	end
 	
@@ -239,8 +239,8 @@ tbl.tableLength = function(obj)
 end
 
 tbl.tableRandomIndex = function(obj)
-	assert(obj, "tbl.tableRandomIndex - Missing object")
-	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "tbl.tableRandomIndex - Cannot index " .. typeof(obj))
+	assert(obj, "Util.tableRandomIndex - Missing object")
+	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Util.tableRandomIndex - Cannot index " .. typeof(obj))
 	
 	obj = typeof(obj) == "Instance" and obj:GetChildren() or obj
 	
@@ -251,12 +251,12 @@ tbl.tableRandomIndex = function(obj)
 		indexes[#indexes + 1] = k
 	end
 	
-	return #indexes > 0 and indexes[math.random(1, #indexes)] or nil
+	return #indexes > 0 and indexes[Random.new():NextInteger(1, #indexes)] or nil
 end
 
 tbl.indexOf = function(obj, value)
-	assert(obj, "tbl.indexOf - Missing object")
-	assert(typeof(obj) == "table", "tbl.indexOf - Cannot index " .. typeof(obj))
+	assert(obj, "Util.indexOf - Missing object")
+	assert(typeof(obj) == "table", "Util.indexOf - Cannot index " .. typeof(obj))
 	
 	for k, v in pairs(obj) do
 		if v == value then
@@ -264,12 +264,12 @@ tbl.indexOf = function(obj, value)
 		end
 	end
 	
-	return -1 -- Nothing found
+	return 0 -- No index found
 end
 
 tbl.tableRandom = function(obj)
-	assert(obj, "tbl.tableRandom - Missing object")
-	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "tbl.tableRandomIndex - Cannot index " .. typeof(obj))
+	assert(obj, "Util.tableRandom - Missing object")
+	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Util.tableRandomIndex - Cannot index " .. typeof(obj))
 	
 	obj = typeof(obj) == "Instance" and obj:GetChildren() or obj
 	
@@ -296,8 +296,9 @@ end
 
 -- Create instances from a nested table
 tbl.makeNestLoop = function(name, data, parent)
-	local context = Instance.new(data.class, parent)
+	local context = Instance.new(data.class)
 	context.Name = name
+	context.Parent = parent
 	
 	if data.value then
 		context.Value = data.value
