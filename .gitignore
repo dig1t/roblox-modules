@@ -1,5 +1,4 @@
-.env
-env.luau
+*.code-workspace
 
 # dependency directories
 Packages
@@ -7,11 +6,12 @@ ServerPackages
 node_modules
 
 # build files
-placeAssets
+sourcemap.json
 
-# Project place file
+# project place file
 *.rbxlx
 *.rbxl
 
-# temporary files
+# lock files
 *.lock
+package-lock.json

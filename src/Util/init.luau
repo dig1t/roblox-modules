@@ -17,7 +17,8 @@ setmetatable({}, {
 })
 
 Util.use = function(moduleName: string | ModuleScript): nil
-	local module: table
+	print('importing', moduleName)
+	local module: { [any]: any }
 	
 	if typeof(moduleName) == "string" then
 		if script:FindFirstChild(moduleName) then
@@ -34,12 +35,9 @@ Util.use = function(moduleName: string | ModuleScript): nil
 	end
 	
 	for key, value in pairs(module) do
-		assert(
-			Util[key] ~= nil,
-			string.format("Util.use - Attempted to add utility %q from module %q", key, moduleName)
-		)
-		
-		Util[key] = value
+		if Util[key] == nil then
+			Util[key] = value
+		end
 	end
 end
 
@@ -55,8 +53,8 @@ Util.asset = "rbxassetid://" :: string
 Util.defaultWalkSpeed = 16 :: number
 
 Util.instance = function(className: string, ...): Instance
-	local props: table = {}
-	local extraProps: table = {...}
+	local props: { [any]: any } = {}
+	local extraProps: { [any]: any } = {...}
 	
 	for i = 1, #extraProps do
 		if typeof(extraProps[i]) == "table" then
@@ -66,7 +64,7 @@ Util.instance = function(className: string, ...): Instance
 		end
 	end
 	
-	return function(data: table)
+	return function(data: { [any]: any })
 		local obj: Instance = Instance.new(className)
 		
 		if data then
@@ -172,7 +170,7 @@ Util.set = function(
 	end)
 end
 
-Util.printTable = function(tbl: table): nil
+Util.printTable = function(tbl: { [any]: any }): nil
 	print(tbl and HttpService:JSONEncode(tbl))
 end
 
@@ -180,7 +178,7 @@ Util.numberSequence = function(data: { { number } })
 	assert(data and typeof(data) == "table", "Util.numberSequence - Missing data table")
 	assert(#data > 1, "Util.numberSequence - Must have at least 2 keypoints")
 	
-	local keypoints: table = Util.map(data, function(keypoint: { number })
+	local keypoints: { [any]: any } = Util.map(data, function(keypoint: { number })
 		if #keypoint == 2 then
 			return NumberSequenceKeypoint.new(keypoint[1], keypoint[2])
 		end

@@ -6,7 +6,7 @@ local players = {}
 
 local groupRankCache = {}
 
-players.getGroupRank = function(player, groupId): number
+function players.getGroupRank(player, groupId): number
 	local uniqueId = player.UserId .. groupId
 	
 	if not player or not groupId then
@@ -24,7 +24,7 @@ players.getGroupRank = function(player, groupId): number
 	end
 end
 
-players.isCreator = function(player): boolean
+function players.isCreator(player: Player): boolean
 	return (
 		game.CreatorType == Enum.CreatorType.Group and players.getGroupRank(player, game.CreatorId) >= 255
 	) or (
@@ -43,7 +43,7 @@ local userLevel = {
 
 players.userLevel = userLevel
 
-players.getUserLevel = function(player): number
+function players.getUserLevel(player): number
 	return (
 		(players.isCreator(player) and userLevel.creator) or
 		(player.MembershipType == Enum.MembershipType.Premium and userLevel.premium) or
@@ -51,7 +51,7 @@ players.getUserLevel = function(player): number
 	)
 end
 
-players.getHumanoid = function(obj): Humanoid?
+function players.getHumanoid(obj): Humanoid?
 	return obj and typeof(obj) == "Instance" and (
 		(obj:IsA("Player") and obj.Character and obj.Character:FindFirstChild("Humanoid")) or
 		(obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid")) or
@@ -60,17 +60,17 @@ players.getHumanoid = function(obj): Humanoid?
 	)
 end
 
-players.isAlive = function(obj): boolean
+function players.isAlive(obj): boolean
 	local humanoid = players.getHumanoid(obj)
 	
 	return humanoid and humanoid.Health ~= 0
 end
 
-players.hasHumanoid = function(obj): boolean
+function players.hasHumanoid(obj): boolean
 	return players.getHumanoid(obj) ~= nil
 end
 
-players.getPlayerFromPart = function(part: BasePart): Player?
+function players.getPlayerFromPart(part: BasePart): Player?
 	if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
 		return
 	end

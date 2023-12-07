@@ -63,19 +63,15 @@ function dLib.import(path: string, isServerModule: boolean?): any
 	
 	local modulePath: ModuleScript = (
 		-- Check if the module is a dLib module
-		Util.treePath(script, path, dLib._pathDivider) or
-		
-		-- If it's a server module, check if it's a server dependency or
-		-- if it exists in the server folder
-		(
+		Util.treePath(script, path, dLib._pathDivider) or (
+			-- If it's a server module, check if it's a server dependency or
+			-- if it exists in the server folder
 			isServerModule and (
 				ServerPackages and Util.treePath(ServerPackages, path, dLib._pathDivider) or
 				Util.treePath(dLib._rootPaths[dLib.ROOT_PATH_TYPES.SERVER], path, dLib._pathDivider)
 			)
-		) or
-		
-		-- Check if it's a dependency or if it exists in the shared folder
-		(
+		) or (
+			-- Check if it's a dependency or if it exists in the shared folder
 			Packages and Util.treePath(Packages, path, dLib._pathDivider) or
 			Util.treePath(dLib._rootPaths[dLib.ROOT_PATH_TYPES.SHARED], path, dLib._pathDivider)
 		)
