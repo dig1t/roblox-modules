@@ -30,7 +30,7 @@ end
 -- @desc Returns a table of filtered values from the original table or instance
 -- @reference https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
 -- @return table: filtered table
-tbl.map = function(source: table, filterFn: (any) -> any)
+tbl.map = function(source: { [any]: any }, filterFn: (any) -> any)
 	local res = {}
 	
 	--[[for i, v in ipairs(source) do

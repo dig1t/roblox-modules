@@ -6,7 +6,7 @@ local Util = import("Util")
 local Maid = {}
 Maid.__index = Maid
 
-function Maid.hire(): table
+function Maid.hire(): { [any]: any }
 	local self = setmetatable({}, Maid)
 	
 	self._tasks = {}
@@ -33,7 +33,7 @@ function Maid:removeTask(taskToRemove: any): nil
 	end
 end
 
-function Maid:cleanTasks(taskIds: table?): nil
+function Maid:cleanTasks(taskIds: { [any]: any }?): nil
 	local tasks = taskIds and {} or self._tasks
 	
 	if taskIds then

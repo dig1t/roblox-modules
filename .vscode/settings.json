@@ -1,0 +1,13 @@
+{
+  "luau-lsp.require.mode": "relativeToFile",
+	"luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
+  
+	"[lua]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "EditorConfig.EditorConfig"
+	},
+	"[luau]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "EditorConfig.EditorConfig"
+	}
+}

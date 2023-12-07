@@ -20,10 +20,10 @@ Util.random(10) -- random number 1 through 10
 Util.random()
 ]]
 mathMethods.random = function(number1: number, number2: number?, float: boolean?): number
-    local min = not number2 and 1 or number1 -- If number2 is not defined, use 1 as min
-    local max = not number2 and number1 or number2 -- If number2 is not defined, use number1 as max
-    
-    return float and Random.new():NextNumber(min, max) or Random.new():NextInteger(min, max)
+	local min = not number2 and 1 or number1 -- If number2 is not defined, use 1 as min
+	local max = not number2 and number1 or number2 -- If number2 is not defined, use number1 as max
+	
+	return float and Random.new():NextNumber(min, max) or Random.new():NextInteger(min, max)
 end
 
 mathMethods.charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
