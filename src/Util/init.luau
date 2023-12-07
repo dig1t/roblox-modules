@@ -17,7 +17,6 @@ setmetatable({}, {
 })
 
 Util.use = function(moduleName: string | ModuleScript): nil
-	print('importing', moduleName)
 	local module: { [any]: any }
 	
 	if typeof(moduleName) == "string" then
