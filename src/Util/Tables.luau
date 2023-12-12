@@ -425,8 +425,8 @@ function tableUtil.treePath(tree: { [any]: any } | Instance, path: string, delim
 	if #steps == 0 then
 		return node -- Return the root node
 	end
-
-	while node ~= nil and #steps > stepIndex do
+	
+	while node ~= nil and stepIndex <= #steps do
 		local childNode = steps[stepIndex]
 
 		if typeof(node) ~= "Instance" and node[childNode] then

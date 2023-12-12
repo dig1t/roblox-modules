@@ -1,6 +1,6 @@
 {
   "name": "dlib-library",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "A library for Roblox development",
   "main": "src/init.luau",
   "scripts": {

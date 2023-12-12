@@ -114,8 +114,6 @@ function dLib.import(path: string): ImportResult
 		`dLib.import - Could not find module {path} in {rootPath:GetFullName()}`
 	)
 
-	print(modulePath, module:GetFullName())
-
 	assert(
 		module:IsA("ModuleScript"),
 		string.format("dLib.import - %s is not a ModuleScript instance", path)
