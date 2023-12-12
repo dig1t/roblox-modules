@@ -28,11 +28,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: yarn
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm install
       - name: Build documentation
-        run: yarn build:docs
+        run: npm run build:docs
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
