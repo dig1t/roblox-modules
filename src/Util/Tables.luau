@@ -610,7 +610,11 @@ end
 	@return { [string]: any }
 ]=]
 function tableUtil.makeConfigFromValues(folder: Folder | Configuration): { [string]: any }
-	assert(typeof(folder) == "Folder" or typeof(folder) == "Configuration", "Util.makeConfigFromValues - Folder is missing")
+	assert(
+		typeof(folder) == "Instance" and
+		(folder:IsA("Folder") or folder:IsA("Configuration")),
+		"Util.makeConfigFromValues - Folder is missing"
+	)
 
 	local config: { [string]: any } = {}
 
@@ -625,6 +629,59 @@ function tableUtil.makeConfigFromValues(folder: Folder | Configuration): { [stri
 	end
 
 	return config
+end
+
+--[=[
+	Removes a value from a table or instance.
+
+	#### Example:
+	```lua
+	tableRemove({ 1, 2, 3 }, 2) -- { 1, 3 }
+	tableRemove({ 1, 2, 3 }, { 2, 3 }) -- { 1 }
+	tableRemove({ 1, 2, 3 }, function(value, newIndex, i)
+		return value == 2
+	end) -- { 1, 3 }
+	```
+
+	@within Util
+	@param obj { [any]: any } | Instance -- The table or instance you want to remove the value from
+	@param removeTest number | { any } | (any, number, number) -> boolean -- The value or test function to remove
+	@return nil
+]=]
+function tableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }): nil
+	-- Convert to a test function if the test value is a number or table
+	local test: (any, number, number) -> boolean
+
+	if typeof(removeTest) == "number" then
+		test = function(_value, _newIndex, i)
+			return i == removeTest
+		end
+	elseif typeof(removeTest) == "table" then
+		test = function(value, _newIndex, _i)
+			for _, v in ipairs(removeTest) do
+				return value == v
+			end
+
+			return false
+		end
+	end
+
+	local newIndex = 1
+
+	for i, value in ipairs(obj) do
+		if not test(value, newIndex, i) then
+			if i ~= newIndex then
+				obj[newIndex] = obj[i] -- Move to new index
+				obj[i] = nil -- Delete from old index
+			end
+
+			newIndex += 1 -- Increment index
+		else
+			obj[i] = nil
+		end
+	end
+
+	return nil
 end
 
 return tableUtil
