@@ -19,7 +19,7 @@ jobs:
           node-version: '20.x'
 
       - name: install dependencies
-        run: npm ci
+        run: npm install
 
       - name: publish documentation to GitHub pages
-        run: moonwave build --publish
+        run: npx moonwave build --publish
