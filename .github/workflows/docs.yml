@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Deploy to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -35,7 +35,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-      - name: Build Documentation
+      - name: Build documentation
         run: |
           npx moonwave build
 
