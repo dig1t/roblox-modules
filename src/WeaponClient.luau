@@ -13,9 +13,9 @@ local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris")
 
 local dLib = require(script.Parent)
-local Util = dLib.import("Util")
-local Animation = dLib.import("Animation")
-local CollectionService = dLib.import("CollectionService")
+local Util = dLib.import("dLib/Util")
+local Animation = dLib.import("dLib/Animation")
+local CollectionService = dLib.import("dLib/CollectionService")
 
 local DEFAULT_CONFIG = {
 	hitscan = true; -- No projectiles will be rendered

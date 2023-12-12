@@ -12,9 +12,9 @@ local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 
 local dLib = require(script.Parent)
-local Util = dLib.import("Util")
-local WeaponClient = dLib.import("WeaponClient")
-local CollectionService = dLib.import("CollectionService")
+local Util = dLib.import("dLib/Util")
+local WeaponClient = dLib.import("dLib/WeaponClient")
+local CollectionService = dLib.import("dLib/CollectionService")
 
 -- Amount to subtract from the cooldown since players
 -- will always be ready before the server by a small amount
