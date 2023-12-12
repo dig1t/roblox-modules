@@ -1,3 +1,7 @@
+# Roblox .gitignore
+
+.env
+env.luau
 *.code-workspace
 
 # dependency directories
@@ -6,7 +10,9 @@ ServerPackages
 node_modules
 
 # build files
+placeAssets
 sourcemap.json
+build
 
 # project place file
 *.rbxlx
@@ -14,4 +20,3 @@ sourcemap.json
 
 # lock files
 *.lock
-package-lock.json

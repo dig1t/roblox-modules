@@ -4,99 +4,101 @@ local RunService = game:GetService("RunService")
 
 local sys = {}
 
-sys.print = function(str): nil
-	print(str)
-end
+--[=[
+	Runs a function after `yieldTime` seconds.
 
-sys.error = function(err): nil
-	error("Error: " .. err, 0)
-end
+	#### Example:
+	```lua
+	sys.timeout(1, function()
+		print("Hello, world!")
+	end)
+	```
 
-sys.warn = function(str): nil
-	error("Error: " .. str, 0)
-end
-
-sys.yield = function(yieldTime): nil
-	yieldTime = yieldTime or .0001
-	
-	if yieldTime <= 0 then
-		return
-	end
-	
-	local start = os.clock()
-	
-	repeat
-		RunService.Stepped:Wait()
-	until os.clock() - start >= yieldTime
-end
-
-sys.timeout = function(yieldTime, fn): nil
+	@within Util
+	@param yieldTime number
+	@param fn function
+	@return nil
+]=]
+function sys.timeout(yieldTime, fn)
 	task.spawn(function()
-		task.wait(yieldTime)
-		fn()
+		local start = os.clock()
+		local connection: RBXScriptConnection
+
+		connection = RunService.RenderStepped:Connect(function()
+			if os.clock() - start >= yieldTime then
+				connection:Disconnect()
+				fn()
+			end
+		end)
 	end)
 end
 
-sys.interval = function(yieldTime, fn): nil
-	local mt = {}
-	mt.__index = mt
-	
-	function mt:disconnect()
-		self.connected = false
-	end
-	
-	local self = setmetatable({}, mt)
-	
-	self.connected = true
-	self.start = os.clock()
-	self.elapsed = 0
-	
-	while self.connected do
-		local success = fn(self.elapsed)
-		
-		if success == false then
-			self:disconnect()
-		else
-			task.wait(yieldTime)
-			self.elapsed = os.clock() - self.start
+--[=[
+	Runs a function every `interval` in seconds.
+	Return `false` within the callback to stop the interval or call `:disconnect()` on the returned object.
+
+	#### Example:
+	```lua
+	sys.interval(1, function(elapsed)
+		print(elapsed)
+	end)
+	```
+
+	@within Util
+	@param interval number
+	@param callback function
+	@return table
+]=]
+function sys.interval(interval: number, callback: (any) -> (boolean?)): any
+	local elapsed: number = 0
+	local lastEventAt: number = os.clock()
+
+	local connection: RBXScriptConnection
+
+	connection = RunService.RenderStepped:Connect(function(deltaTime: number)
+		elapsed += deltaTime
+
+		if os.clock() - lastEventAt >= interval then
+			lastEventAt = os.clock()
+
+			task.spawn(function()
+				local success = callback(elapsed)
+
+				if success == false then
+					connection:Disconnect()
+				end
+			end)
 		end
-	end
-	
-	return self
+	end)
+
+	return connection
 end
 
-sys.inTable = function(obj, e): boolean
-	if not obj then
-		return false
-	end
-	
-	if typeof(e) == "table" then
-		local i = 0
-		
-		for k, v in pairs(e) do
-			i += 1
-			
-			if k ~= i then
-				if not obj[k] then
-					return false
-				end
-			else
-				if not obj[v] then
-					return false
-				end
-			end
+--[=[
+	Checks if a value is in a table.
+
+	#### Example:
+	```lua
+	inTable({ 1, 2, 3 }, 2) -- true
+	inTable({ 1, 2, 3 }, 4) -- false
+	inTable({ Part, 2, 3, Part2 = true }, Part) -- true
+	```
+
+	@within Util
+	@param searchTable { [any]: any }
+	@param target any
+	@return boolean
+]=]
+function sys.inTable(searchTable: { [any]: any }, target: any): boolean
+	assert(typeof(searchTable) == "table", "searchTable must be a table")
+
+	for _, value: any in pairs(searchTable) do
+		if value == target then
+			return true
 		end
-		
-		return true
-	else
-		for _, v in pairs(obj) do
-			if v == e then
-				return true
-			end
-		end
-		
-		return false
 	end
+
+	return false
 end
 
 return sys

@@ -1,6 +1,6 @@
 {
   "name": "dlib-library",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "",
   "main": "src/init.luau",
   "scripts": {
@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/dig1t/dlib/issues"
   },
-  "homepage": "https://github.com/dig1t/dlib#readme"
+  "homepage": "https://github.com/dig1t/dlib#readme",
+  "dependencies": {
+    "moonwave": "^1.1.2"
+  }
 }

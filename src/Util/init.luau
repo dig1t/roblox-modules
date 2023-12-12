@@ -7,6 +7,7 @@
 
 local HttpService = game:GetService("HttpService")
 
+--- @class Util
 local Util = {}
 
 setmetatable({}, {
@@ -16,23 +17,23 @@ setmetatable({}, {
 	end
 })
 
-Util.use = function(moduleName: string | ModuleScript): nil
+Util.use = function(moduleName: string | ModuleScript)
 	local module: { [any]: any }
-	
+
 	if typeof(moduleName) == "string" then
 		if script:FindFirstChild(moduleName) then
-			module = require(script[moduleName])
+			module = require(script[moduleName]) :: { [any]: any }
 		elseif script.Parent:FindFirstChild(moduleName) then
-			module = require(script.Parent[moduleName])
+			module = require(script.Parent[moduleName]) :: { [any]: any }
 		else
 			error("Could not load module: " .. moduleName)
 		end
 	elseif typeof(moduleName) == "Instance" and moduleName.ClassName == "ModuleScript" then
-		module = require(moduleName)
+		module = require(moduleName) :: { [any]: any }
 	else
-		error("Could not load module: " .. moduleName)
+		error("Could not load module: " .. moduleName.Name)
 	end
-	
+
 	for key, value in pairs(module) do
 		if Util[key] == nil then
 			Util[key] = value
@@ -40,13 +41,14 @@ Util.use = function(moduleName: string | ModuleScript): nil
 	end
 end
 
--- Import modules
+-- Import util modules
 Util.use("Date")
 Util.use("Math")
 Util.use("Players")
 Util.use("Search")
 Util.use("System")
 Util.use("Tables")
+Util.use("UI")
 
 Util.asset = "rbxassetid://" :: string
 Util.defaultWalkSpeed = 16 :: number
@@ -54,7 +56,7 @@ Util.defaultWalkSpeed = 16 :: number
 Util.instance = function(className: string, ...): Instance
 	local props: { [any]: any } = {}
 	local extraProps: { [any]: any } = {...}
-	
+
 	for i = 1, #extraProps do
 		if typeof(extraProps[i]) == "table" then
 			for name: string, value: any in pairs(extraProps[i]) do
@@ -62,42 +64,42 @@ Util.instance = function(className: string, ...): Instance
 			end
 		end
 	end
-	
+
 	return function(data: { [any]: any })
 		local obj: Instance = Instance.new(className)
-		
+
 		if data then
 			Util.extend(props, data)
-			
+
 			if props.children then
 				for _, child in pairs(props.children) do
 					if typeof(child) == "function" then
 						child = child()
 					end
-					
+
 					child.Parent = obj
 				end
-				
+
 				props.children = nil
 			end
-			
+
 			for prop, value in pairs(props) do
 				if typeof(prop) == "number" then -- Instance?
 					if typeof(value) == "function" then
 						value = value()
 					end
-					
+
 					value.Parent = obj
 				elseif prop ~= "Parent" then -- Apply properties
 					obj[prop] = value
 				end
 			end
-			
+
 			if props.Parent then
 				obj.Parent = props.Parent -- Always set parent last
 			end
 		end
-		
+
 		return obj
 	end
 end
@@ -108,21 +110,21 @@ local valueObjects = {
 
 Util.get = function(path, parent) -- expiremental
 	local res = parent
-	
+
 	local chunks = Util.split(path, ".")
-	
+
 	if not chunks then
 		return
 	end
-	
+
 	res = res or (chunks[1] == "game" and game or game[chunks[1]])
-	
+
 	for _, child in pairs(chunks) do
 		res = res[child]
 	end
-	
+
 	table.remove(chunks, 1)
-	
+
 	return res ~= nil and Util.indexOf(valueObjects, res.ClassName) > 0 and res.Value or res -- success and res
 end
 
@@ -132,10 +134,10 @@ Util.set = function(
 ) : Instance
 	return Util.try(function()
 		local valueObject: Instance
-		
+
 		if not parent:FindFirstChild(name) then
 			local valueType: string = customValueType or typeof(value)
-			
+
 			if valueType == "table" then
 				valueType = "ObjectValue"
 			elseif valueType == "string" then
@@ -153,16 +155,16 @@ Util.set = function(
 			elseif valueType == "BrickColor" then
 				valueType = "BrickColorValue"
 			end
-			
+
 			valueObject = Instance.new(valueType)
 			valueObject.Name = name
 			valueObject.Parent = parent
 		else
 			valueObject = parent[name]
 		end
-		
+
 		valueObject.Value = value
-		
+
 		return
 	end, function(err)
 		warn("Util.set - " .. err)
@@ -176,15 +178,15 @@ end
 Util.numberSequence = function(data: { { number } })
 	assert(data and typeof(data) == "table", "Util.numberSequence - Missing data table")
 	assert(#data > 1, "Util.numberSequence - Must have at least 2 keypoints")
-	
+
 	local keypoints: { [any]: any } = Util.map(data, function(keypoint: { number })
 		if #keypoint == 2 then
 			return NumberSequenceKeypoint.new(keypoint[1], keypoint[2])
 		end
 	end)
-	
+
 	assert(#keypoints > 1, "Util.numberSequence - Must have at least 2 keypoints")
-	
+
 	return NumberSequence.new(keypoints)
 end
 
@@ -194,32 +196,32 @@ Util.attempt = function(fn: () -> any, maxTries: number?, yield: number?): (bool
 	local res: any
 	local successful: boolean = false
 	local tries: number = 0
-	
+
 	repeat
 		local success: boolean, _res: any = pcall(fn)
-		
+
 		if success then
 			res = _res
 			successful = true
 		end
-		
+
 		tries += 1
-		
+
 		if not successful then -- or tries <= (maxTries or 3) then
 			task.wait(yield or 1)
 		end
 	until successful or tries > (maxTries or 3)
-	
+
 	return successful, res, tries
 end
 
 Util.try = function(fn: () -> any, catch: (any) -> any): any
 	local success: boolean, res: any = pcall(fn)
-	
+
 	if not success then
 		catch(res)
 	end
-	
+
 	return res
 end
 
@@ -232,11 +234,11 @@ Util.weld = function(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldC
 	if not part or not part.Parent or not attachTo or not attachTo.Parent then
 		return
 	end
-	
+
 	if offset then
 		part.CFrame = attachTo.CFrame * offset
 	end
-	
+
 	return Util.instance("WeldConstraint") {
 		Part0 = part;
 		Part1 = attachTo;
@@ -248,19 +250,19 @@ Util.weldModel = function(model: Model): Model
 	if not model or not model:IsA("Model") or not model.PrimaryPart then
 		return
 	end
-	
+
 	for _, part: BasePart in pairs(model:GetDescendants()) do
 		if part:IsA("BasePart") and part ~= model.PrimaryPart then
 			Util.weld(part, model.PrimaryPart)
 		end
 	end
-	
+
 	return model
 end
 
 Util.clearWelds = function(instance: Instance): nil
 	assert(typeof(instance) == "Instance", "Util.clearWelds - First argument must be an instance")
-	
+
 	for _, obj: WeldConstraint | Weld in pairs(instance:GetDescendants()) do
 		if obj:IsA("WeldConstraint") or obj:IsA("Weld") then
 			obj:Destroy()
@@ -278,19 +280,19 @@ Util.getMass = function(model: Model): number
 	if not model or not model:IsA("Model") then
 		return
 	end
-	
+
 	local mass: number = 0
-	
+
 	for _, part: BasePart in pairs(Util.getDescendantParts(model)) do
 		mass += part:GetMass()
 	end
-	
+
 	return mass
 end
 
 Util.rotateModel = function(model: Model, angle: number): nil
 	local rotate: CFrame = CFrame.fromEulerAnglesXYZ(0, angle, 0)
-	
+
 	for i, object: BasePart in pairs(model:GetChildren()) do
 		if object:IsA("BasePart") then
 			object.CFrame = rotate * object.CFrame
@@ -300,18 +302,18 @@ end
 
 Util.moveModel = function(model: Model, to: CFrame): nil
 	local firstPart: BasePart = Util.getFirstPart(model)
-	
+
 	if firstPart then
 		local origin: Vector3 = firstPart.CFrame.Position
-		
+
 		for _, part: BasePart in pairs(model:GetDescendants()) do
 			if not part:IsA("BasePart") then
 				continue
 			end
-			
+
 			local newPositionInWorld: Vector3 = part.Position - origin + to.Position
 			local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
-			
+
 			part.CFrame = CFrame.new(newPositionInWorld.X, newPositionInWorld.Y, newPositionInWorld.Z, R00, R01, R02, R10, R11, R12, R20, R21, R22)
 		end
 	end
@@ -322,14 +324,14 @@ end
 Util.waitForChild = function(parent: Instance, name: string): Instance
 	assert(parent and typeof(parent) == "Instance", "Util.waitForChild - Parent must be an instance")
 	assert(name, "Util.waitForChild - Missing child name")
-	
+
 	if parent:FindFirstChild(name) then
 		return parent[name]
 	end
-	
+
 	while true do
 		parent.ChildAdded:Wait()
-		
+
 		if parent:FindFirstChild(name) then
 			return parent[name]
 		end
@@ -359,11 +361,11 @@ Util.onTouch = function(part: BasePart, fn: () -> any): RBXScriptConnection
 	) -- Place on top of the current part, then offset by half of ON_TOUCH_OFFSET
 	detector.CanCollide = false
 	detector.Parent = part
-	
+
 	if not part.Anchored then
 		Util.weld(detector, part)
 	end
-	
+
 	return detector.Touched:Connect(fn)
 end
 
@@ -375,16 +377,16 @@ Util.onPlayerTouch = function(
 ): RBXScriptConnection
 	local callback: () -> nil = function(part: BasePart)
 		local player: Player = Util.getPlayerFromPart(part)
-		
+
 		if player then
 			local alive: boolean = Util.isAlive(player)
-			
+
 			if alive or (not alive and ignoreIfDead) then
 				fn(player, part)
 			end
 		end
 	end
-	
+
 	return offsetPart and Util.onTouch(obj, callback) or obj.Touched:Connect(callback)
 end
 
