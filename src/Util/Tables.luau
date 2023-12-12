@@ -244,13 +244,17 @@ end
 	```
 
 	@within Util
-	@param text string
+	@param text string | number?
 	@param delimiter string?
 	@param trimTrailingDelimiter boolean?
 	@param trim boolean? -- Trim whitespace from each chunk
 	@return { string }
 ]=]
-function tableUtil.split(text: string?, delimiter: string?, trimTrailingDelimiter: boolean?, trim: boolean?): { string }
+function tableUtil.split(text: string | number?, delimiter: string?, trimTrailingDelimiter: boolean?, trim: boolean?): { string }
+	if typeof(text) == "number" then
+		text = tostring(text) :: string
+	end
+	
 	if not text then
 		return {}
 	end
