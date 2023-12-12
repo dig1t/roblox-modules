@@ -1,6 +1,32 @@
 --!strict
 
-local tbl = {}
+local valueClasses = {
+	BoolValue = true;
+	BrickColorValue = true;
+	CFrameValue = true;
+	Color3Value = true;
+	IntValue = true;
+	NumberValue = true;
+	ObjectValue = true;
+	RayValue = true;
+	StringValue = true;
+	Vector3Value = true;
+}
+
+--[=[
+	Used to type check a value instance.
+
+	#### Example:
+	```lua
+	local value: ValueBaseType = Instance.new("BoolValue")
+	```
+
+	@type ValueBaseType ValueBase & { Value: any }
+	@within Util
+]=]
+export type ValueBaseType = ValueBase & { Value: any }
+
+local tableUtil = {}
 
 --[=[
 	Flips the table's keys with its values.
@@ -16,19 +42,19 @@ local tbl = {}
 	@param mergeDuplicates boolean? -- Merge key duplicates into a table instead of overwriting them
 	@return { [any]: any }
 ]=]
-function tbl.flip(source: { [any]: any }, mergeDuplicates: boolean?): { [any]: any }
+function tableUtil.flip(source: { [any]: any }, mergeDuplicates: boolean?): { [any]: any }
 	local res: { [any]: any } = {}
-	local dupes: { [any]: {any} } = {}
+	local duplicates: { [any]: {any} } = {}
 
 	for key: any, value: any in pairs(source) do
 		if res[value] == nil then
 			res[value] = key
 		elseif mergeDuplicates then
-			if not dupes[value] then
-				dupes[value] = { key }
-				res[value] = dupes[value]
+			if not duplicates[value] then
+				duplicates[value] = { key }
+				res[value] = duplicates[value]
 			else
-				dupes[value][#dupes[value] + 1] = key
+				duplicates[value][#duplicates[value] + 1] = key
 			end
 		end
 	end
@@ -59,7 +85,7 @@ end
 	@param filterFn (any, any) -> any -- The function to filter the table with
 	@return { [any]: any }
 ]=]
-function tbl.map(source: { [any]: any }, filterFn: (any, any) -> (any, any)): { [any]: any }
+function tableUtil.map(source: { [any]: any }, filterFn: (any, any) -> (any, any)): { [any]: any }
 	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
 	assert(filterFn == nil or typeof(filterFn) == "function", "filterFn must be a function or nil")
 
@@ -117,7 +143,7 @@ end
 	@param filterFn (key: any, value: any) -> (value: any, key: any?) -- The function to filter the table with
 	@return { [any]: any }
 ]=]
-function tbl.mapIndex(source: { [any]: any }, filterFn: (any, any) -> (any, any)): { [any]: any }
+function tableUtil.mapIndex(source: { [any]: any }, filterFn: (any, any) -> (any, any)): { [any]: any }
 	assert(typeof(source) == "table", "source must be a table")
 	assert(filterFn == nil or typeof(filterFn) == "function", "filterFn must be a function or nil")
 
@@ -156,7 +182,9 @@ end
 	@param text string
 	@return string
 ]=]
-function tbl.trimWhitespace(text: string): string
+function tableUtil.trimWhitespace(text: string): string
+	assert(typeof(text) == "string", "text must be a string")
+
 	return string.match(text, "^%s*(.-)%s*$") :: string
 end
 
@@ -172,7 +200,9 @@ end
 	@param text string
 	@return string
 ]=]
-function tbl.trimLeadingWhitespace(text: string): string
+function tableUtil.trimLeadingWhitespace(text: string): string
+	assert(typeof(text) == "string", "text must be a string")
+
 	return string.match(text, "^%s*(.-)$") :: string
 end
 
@@ -188,7 +218,9 @@ end
 	@param text string
 	@return string
 ]=]
-function tbl.trimTrailingWhitespace(text: string): string
+function tableUtil.trimTrailingWhitespace(text: string): string
+	assert(typeof(text) == "string", "text must be a string")
+
 	return string.match(text, "^(.-)%s*$") :: string
 end
 
@@ -218,7 +250,7 @@ end
 	@param trim boolean? -- Trim whitespace from each chunk
 	@return { string }
 ]=]
-function tbl.split(text: string?, delimiter: string?, trimTrailingDelimiter: boolean?, trim: boolean?): { string }
+function tableUtil.split(text: string?, delimiter: string?, trimTrailingDelimiter: boolean?, trim: boolean?): { string }
 	if not text then
 		return {}
 	end
@@ -254,7 +286,7 @@ function tbl.split(text: string?, delimiter: string?, trimTrailingDelimiter: boo
 	end
 
 	for match: string in string.gmatch(text, `([^{delimiter}]+)`) do
-		chunks[#chunks + 1] = trim and tbl.trimWhitespace(match) or match
+		chunks[#chunks + 1] = trim and tableUtil.trimWhitespace(match) or match
 	end
 
 	if not trimTrailingDelimiter and text:sub(-1, -1) == delimiter then
@@ -266,7 +298,7 @@ end
 
 --[[
 -- Todo: add nested merge
-tbl.merge = function(to, from) -- Merges to the first given table
+tableUtil.merge = function(to, from) -- Merges to the first given table
 	assert(typeof(to) == "table", "First argument must be a table")
 	assert(typeof(from) == "table", "Second argument must be a table")
 
@@ -276,54 +308,93 @@ tbl.merge = function(to, from) -- Merges to the first given table
 end]]
 
 --[=[
-	Joins a table of strings into a single string using a separator.
+	Joins a table of strings and numbers into a single string.
+
+	The string is joined using a separator, which defaults to a comma.
 
 	#### Example:
 	```lua
-	join({"Hello", "world!"}) -- "Hello world!"
+	join({"Hello", "world!"}) -- "Hello,world!"
 	join({"Hello", "world!"}, ", ") -- "Hello, world!"
 	```
 
 	@within Util
-	@param obj { [any]: any } -- The table you want to join
-	@param separator string? -- The separator to use when joining the table (defaults to "")
+	@param stringTable { [any]: string | number } -- The table you want to join
+	@param separator string? -- The separator to use when joining the table (defaults to ",")
 	@return string
 ]=]
-function tbl.join(obj: { [any]: any }, separator: string): string
-	assert(obj, "Util.join - Missing object")
-	assert(typeof(obj) == "table", "Util.join - Cannot index " .. typeof(obj))
+function tableUtil.join(stringTable: { [any]: string | number }, separator: string): string
+	assert(stringTable, "Util.join - Missing object")
+	assert(typeof(stringTable) == "table", "Util.join - Cannot index " .. typeof(stringTable))
 	assert(typeof(separator) == "string", "Util.join - Separator must be a string or nil")
 
 	if not separator then
-		separator = ""
+		separator = ","
 	end
 
 	local res: string = ""
 
-	for i, v in ipairs(obj) do
-		local value: string? = v
+	for index: number, value: string | number in ipairs(stringTable) do
+		local _value: string | number? = value
 
-		if typeof(value) == "number" then
-			value = tostring(value)
+		if typeof(_value) == "number" then
+			_value = tostring(_value) :: string
 		end
 
-		if typeof(v) == "string" then
-			res = res .. (i == #obj and v or v .. separator)
+		if typeof(_value) == "string" then
+			res = res .. (index == #stringTable and _value or _value .. separator)
 		end
 	end
 
 	return res
 end
 
-function tbl.extend(to, from)
-	assert(typeof(to) == "table", "First argument must be a table")
-	assert(typeof(from) == "table", "Second argument must be a table")
+--[=[
+	Extends a table with one or more tables.
 
-	for k, v in pairs(from) do
-		to[k] = v
+	#### Example:
+	```lua
+	extend({ a = 1 }, { b = 2 }, { c = 3 }) -- { a = 1, b = 2, c = 3 }
+	extend({ a = 1 }, { a = 2 }, { a = 3 }) -- { a = 3 }
+	extend({ a = 1 }, { a = 2 }, { a = 3 }, true) -- Error: 4th argument must be a table
+	```
+
+	#### Config override example:
+	```lua
+	local function getDefaultConfig()
+		return {
+			health = 100
+		}
 	end
 
-	return to
+	local buffConfig = {
+		health = 150,
+		speed = 1.5
+	}
+
+	-- { health = 150, speed = 1.5 }
+	local playerConfig = extend(getDefaultConfig(), buffConfig)
+	```
+
+	@within Util
+	@param targetTable { [any]: any } -- The table you want to extend
+	@param ... { [any]: any } -- The tables you want to extend the target table with
+	@return { [any]: any }
+]=]
+function tableUtil.extend(targetTable: { [any]: any }, ...): { [any]: any }
+	assert(typeof(targetTable) == "table", "targetTable must be a table")
+
+	local args: { [any]: any } = {...}
+
+	for argIndex: number, sourceTable in pairs(args) do
+		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)
+
+		for key, value in pairs(sourceTable) do
+			targetTable[key] = value
+		end
+	end
+
+	return targetTable
 end
 
 --[=[
@@ -343,12 +414,12 @@ end
 	@param delimiter string? -- The delimiter to use when splitting the path
 	@return any
 ]=]
-function tbl.treePath(tree: { [any]: any } | Instance, path: string, delimiter: string?): any
+function tableUtil.treePath(tree: { [any]: any } | Instance, path: string, delimiter: string?): any
 	assert(typeof(tree) == "table" or typeof(tree) == "Instance", "Tree must be a table or instance")
 	assert(typeof(path) == "string", "path must be a string")
 
 	local node = tree
-	local steps: { string } = tbl.split(path, delimiter or ".")
+	local steps: { string } = tableUtil.split(path, delimiter or ".")
 	local stepIndex: number = 1
 
 	if #steps == 0 then
@@ -391,8 +462,9 @@ end
 	@param target { [any]: any } -- The table you want to insert the value into
 	@param value any -- The value you want to insert
 	@param condition boolean | () -> boolean -- The test condition
+	@return nil
 ]=]
-function tbl.insertIf(target: { [any]: any }, value: any, condition: () -> boolean)
+function tableUtil.insertIf(target: { [any]: any }, value: any, condition: () -> boolean): nil
 	assert(typeof(target) == "table", "Target is missing")
 	assert(typeof(value) ~= "nil", "Value is missing")
 	assert(
@@ -405,6 +477,8 @@ function tbl.insertIf(target: { [any]: any }, value: any, condition: () -> boole
 	if canInsert then
 		target[#target + 1] = value
 	end
+
+	return nil
 end
 
 --[=[
@@ -420,7 +494,7 @@ end
 	@param instance Instance -- The instance you want to collect children from
 	@return { [string]: Instance }
 ]=]
-function tbl.instanceChildrenToTable(instance: Instance): { [string]: Instance }
+function tableUtil.instanceChildrenToTable(instance: Instance): { [string]: Instance }
 	assert(typeof(instance) == "Instance", "Instance is missing")
 
 	local children = {}
@@ -445,12 +519,12 @@ end
 	@param source { [any]: any }
 	@return number
 ]=]
-function tbl.tableLength(source: { [any]: any }): number
+function tableUtil.tableLength(source: { [any]: any }): number
 	assert(source, "Util.tableLength - Missing object")
 
 	local length: number = 0
 
-	for _, _v in pairs(source) do
+	for _index, _value in pairs(source) do
 		length += 1
 	end
 
@@ -470,7 +544,7 @@ end
 	@param obj { [any]: any } | Instance -- The table or instance you want to get a random index from
 	@return any
 ]=]
-function tbl.tableRandomIndex(obj: { [any]: any } | Instance): any
+function tableUtil.tableRandomIndex(obj: { [any]: any } | Instance): any
 	assert(
 		typeof(obj) == "table" or typeof(obj) == "Instance",
 		"Util.tableRandomIndex - Cannot index " .. typeof(obj)
@@ -488,7 +562,7 @@ function tbl.tableRandomIndex(obj: { [any]: any } | Instance): any
 	return #indexes > 0 and indexes[Random.new():NextInteger(1, #indexes)] or nil
 end
 
-function tbl.indexOf(obj, value)
+function tableUtil.indexOf(obj, value)
 	assert(obj, "Util.indexOf - Missing object")
 	assert(typeof(obj) == "table", "Util.indexOf - Cannot index " .. typeof(obj))
 
@@ -501,34 +575,21 @@ function tbl.indexOf(obj, value)
 	return 0 -- No index found
 end
 
-function tbl.tableRandom(obj: { [any]: any } | Instance): any
+function tableUtil.tableRandom(obj: { [any]: any } | Instance): any
 	assert(obj, "Util.tableRandom - Missing object")
 	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Util.tableRandomIndex - Cannot index " .. typeof(obj))
 
 	local collection: { [any]: any } = if typeof(obj) == "Instance" then obj:GetChildren() else obj
 
-	return collection[tbl.tableRandomIndex(collection)]
+	return collection[tableUtil.tableRandomIndex(collection)]
 end
-
-local valueClasses = {
-	BoolValue = true;
-	BrickColorValue = true;
-	CFrameValue = true;
-	Color3Value = true;
-	IntValue = true;
-	NumberValue = true;
-	ObjectValue = true;
-	RayValue = true;
-	StringValue = true;
-	Vector3Value = true;
-}
 
 --[=[
 	Creates a nested table of value instances from a Folder or Configuration instance.
 
 	#### Example:
 
-	- Config (Folder)
+	- Config (Folder) -- in ReplicatedStorage
 	  - Origin (CFrameValue), Value = CFrame.new(0, 1, 0)
 	  - WelcomeMessage (StringValue), Value = "Hello, world!"
 
@@ -536,6 +597,7 @@ local valueClasses = {
 	makeConfigFromValues(game.ReplicatedStorage.Config)
 	```
 
+	Result:
 	```lua
 	{
 		Origin = CFrame.new(0, 1, 0),
@@ -547,22 +609,22 @@ local valueClasses = {
 	@param folder Folder | Configuration -- The folder or Configuration you want to make a table from
 	@return { [string]: any }
 ]=]
-function tbl.makeConfigFromValues(folder: Folder | Configuration): { [string]: any }
+function tableUtil.makeConfigFromValues(folder: Folder | Configuration): { [string]: any }
 	assert(typeof(folder) == "Folder" or typeof(folder) == "Configuration", "Util.makeConfigFromValues - Folder is missing")
 
 	local config: { [string]: any } = {}
 
-	for _, obj in pairs(folder:GetChildren()) do
-		if obj:IsA("Folder") or obj:IsA("Configuration") then -- Nest
-			config[obj.Name] = tbl.makeConfigFromValues(obj)
-		elseif valueClasses[obj.ClassName] then
-			config[obj.Name] = obj.Value
+	for _, child: Instance in pairs(folder:GetChildren()) do
+		if child:IsA("Folder") or child:IsA("Configuration") then -- Nest
+			config[child.Name] = tableUtil.makeConfigFromValues(child)
+		elseif valueClasses[child.ClassName] then
+			config[child.Name] = (child :: ValueBaseType).Value
 		else --elseif configClasses[el.ClassName] then
-			config[obj.Name] = obj
+			config[child.Name] = child
 		end
 	end
 
 	return config
 end
 
-return tbl
+return tableUtil

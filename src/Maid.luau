@@ -31,6 +31,8 @@ function Maid:removeTask(taskToRemove: any): nil
 			self._tasks[taskId] = nil
 		end
 	end
+	
+	return
 end
 
 function Maid:cleanTasks(taskIds: { [any]: any }?): nil
@@ -53,7 +55,7 @@ function Maid:cleanTasks(taskIds: { [any]: any }?): nil
 			task:Disconnect()
 		elseif task.Destroy then
 			task:Destroy()
-		elseif task.destroy then -- UIKit object
+		elseif task.destroy then
 			task:destroy()
 		elseif taskType == "table" then
 			if task.destructor then
