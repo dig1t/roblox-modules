@@ -135,7 +135,7 @@ function dateUtil.unixToClockFormat(timestamp: number, format: string?, locale: 
 end
 
 --[=[
-	Converts a unix timestamp to a read-able time ago format (e.g. 1 minute ago, 1 minute 20 seconds ago).
+	Converts a unix timestamp to a readable time ago format (e.g. 1 minute ago, 1 minute 20 seconds ago).
 
 	#### Example
 	```lua
