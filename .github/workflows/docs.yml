@@ -18,11 +18,8 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install Dependencies
-        run: npm install
-
       - name: Publish Documentation to GitHub Pages
         run: |
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
-          moonwave build --publish
+          npx moonwave build --publish

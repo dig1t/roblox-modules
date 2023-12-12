@@ -18,8 +18,5 @@
   "bugs": {
     "url": "https://github.com/dig1t/dlib/issues"
   },
-  "homepage": "https://github.com/dig1t/dlib#readme",
-  "dependencies": {
-    "moonwave": "^1.1.2"
-  }
+  "homepage": "https://github.com/dig1t/dlib#readme"
 }
