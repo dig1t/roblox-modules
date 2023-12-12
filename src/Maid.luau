@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local import = require(ReplicatedStorage.Packages.dLib).import
-local Util = import("Util")
+local Util = import("dLib/Util")
 
 local Maid = {}
 Maid.__index = Maid

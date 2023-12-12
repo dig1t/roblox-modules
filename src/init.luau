@@ -9,8 +9,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
+local Shared: any = ReplicatedStorage:FindFirstChild("Shared")
 local Packages: any = ReplicatedStorage:FindFirstChild("Packages")
-local ServerPackages: any = ServerScriptService:FindFirstChild("ServerPackages")
 local Util: any = require(script.Util)
 
 --[=[
@@ -20,23 +20,11 @@ local Util: any = require(script.Util)
 ]=]
 local dLib = {}
 
-dLib.ROOT_PATH_TYPES = {
-	SHARED = "SHARED";
-	SERVER = "SERVER";
-}
-
 dLib._loadedModules = {
 	Util = Util -- We already required the Util module above
 }
-dLib._rootPaths = {
-	[dLib.ROOT_PATH_TYPES.SHARED] = ReplicatedStorage,
-	[dLib.ROOT_PATH_TYPES.SERVER] = ServerScriptService,
-}
+dLib._rootPaths = {}
 dLib._pathDivider = "/"
-
--- @desc Sets the divider used to separate paths
--- @param divider: string
--- @returns nil
 
 --[=[
 	Sets the divider used to separate paths.
@@ -102,28 +90,39 @@ function dLib.import(path: string): ImportResult
 	local splitPath = Util.split(path, dLib._pathDivider)
 	local rootPath: Instance = game
 
-	if #splitPath > 1 then
-		rootPath = script:FindFirstChild(splitPath[2])
+	assert(
+		#splitPath > 1,
+		"dLib.import - Path must be a valid path"
+	)
 
-		assert(
-			rootPath,
-			"dLib.import - Could not find root path " .. splitPath[2] .. ". please set it using dLib.setRootPath."
-		)
-	end
-
-	local modulePath: ModuleScript = Util.treePath("Shared", rootPath, dLib._pathDivider)
+	rootPath = dLib._rootPaths[splitPath[1]]
 
 	assert(
-		modulePath,
+		rootPath,
+		"dLib.import - Could not find root path " .. splitPath[1] .. ". please set it using dLib.setRootPath."
+	)
+
+	table.remove(splitPath, 1)
+
+	local modulePath: string = Util.join(splitPath, dLib._pathDivider)
+	local module: ModuleScript = Util.treePath(
+		rootPath, modulePath, dLib._pathDivider
+	)
+
+	assert(
+		module,
 		`dLib.import - Could not find module {path} in {rootPath:GetFullName()}`
 	)
+
+	print(modulePath, module:GetFullName())
+
 	assert(
-		modulePath:IsA("ModuleScript"),
+		module:IsA("ModuleScript"),
 		string.format("dLib.import - %s is not a ModuleScript instance", path)
 	)
 
 	local requiredModule = Util.try(function()
-		return require(modulePath) :: any
+		return require(module) :: any
 	end, function(err)
 		error("dLib.import - " .. err)
 	end)
@@ -135,14 +134,24 @@ end
 
 -- Set default root paths
 dLib.setRootPath("dLib", script)
-dLib.setRootPath("Shared", ReplicatedStorage)
+dLib.setRootPath("Shared", Shared)
+dLib.setRootPath("Packages", Packages)
 
 if RunService:IsServer() then
-	dLib.setRootPath("Server", ServerScriptService)
+	local ServerPackages: any = ServerScriptService:FindFirstChild("ServerPackages")
+	local Server: any = ServerScriptService:FindFirstChild("Server")
+	
+	if Server then
+		dLib.setRootPath("Server", Server)
+	end
+	
+	if ServerPackages then
+		dLib.setRootPath("ServerPackages", ServerPackages)
+	end
 end
 
 if RunService:IsClient() then
-	dLib.setRootPath("Client", Players.LocalPlayer)
+	dLib.setRootPath("Client", Players.LocalPlayer.PlayerScripts.Client)
 end
 
 return dLib

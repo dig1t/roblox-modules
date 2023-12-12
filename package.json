@@ -1,7 +1,7 @@
 {
   "name": "dlib-library",
   "version": "1.1.7",
-  "description": "",
+  "description": "A library for Roblox development",
   "main": "src/init.luau",
   "scripts": {
     "build:rojo": "rojo build -o dLib.rbxl dev.project.json",
