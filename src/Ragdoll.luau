@@ -1,94 +1,111 @@
---[[
--- @name Character Ragdoll
--- @author Digitalscape
-]]
+--!strict
 
 local PhysicsService = game:GetService("PhysicsService")
 local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris")
 
-local dLib = require(script.Parent)
-local Util = dLib.import("dLib/Util")
+local Util = require(script.Parent.Util)
 
 local PLAYER_COLLISION_GROUP_NAME = "Player"
 local RAGDOLL_COLLISION_GROUP_NAME = "Ragdoll"
-local RAGDOLL_COLLIDABLE = true
-local RAGDOLL_DESTROY_TIME = 5 -- Roblox default
 
--- Insert collision groups if missing
-if not RAGDOLL_COLLIDABLE then
-	local playerGroupExists
-	local ragdollGroupExists
-	
-	for _, group in pairs(PhysicsService:GetCollisionGroups()) do
-		if group.name == PLAYER_COLLISION_GROUP_NAME then
-			playerGroupExists = true
-		elseif group.name == RAGDOLL_COLLISION_GROUP_NAME then
-			ragdollGroupExists = true
-		end
-	end
-	
-	if not playerGroupExists then
-		PhysicsService:CreateCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
-	end
-	
-	if not ragdollGroupExists then
-		PhysicsService:CreateCollisionGroup(RAGDOLL_COLLISION_GROUP_NAME)
-	end
-	
-	if not playerGroupExists or not ragdollGroupExists then
-		-- Disable collisions with ragdoll characters
-		PhysicsService:CollisionGroupSetCollidable(PLAYER_COLLISION_GROUP_NAME, RAGDOLL_COLLISION_GROUP_NAME, false)
-	end
-end
-
+--[=[
+	@class Ragdoll
+]=]
 local Ragdoll = {}
 
-function Ragdoll.setup(character: Model) -- Sets up the player's collision group
-	local successful, humanoid, tries = Util.attempt(function()
+--[=[
+	Whether or not the ragdoll is collidable (default: false)
+
+	@within Ragdoll
+	@prop isCollidable boolean
+]=]
+Ragdoll.isCollidable = false
+
+--[=[
+	Seconds before the ragdoll is destroyed (default: 5)
+
+	@within Ragdoll
+	@prop destroyTime number
+]=]
+Ragdoll.destroyTime = 5 -- Roblox default for characters
+
+--[=[
+	Sets up the player's collision group and sets the RagdollReady attribute to true.
+
+	This should be run when the player's character is created or loaded.
+
+	@param character Model -- The player's character
+	@return nil
+]=]
+function Ragdoll.setup(character: Model): nil -- Sets up the player's collision group
+	-- Insert collision groups if missing or if isCollidable changed
+	if not Ragdoll.isCollidable then
+		local playerGroupExists
+		local ragdollGroupExists
+
+		for _, group in pairs(PhysicsService:GetCollisionGroups()) do
+			if group.name == PLAYER_COLLISION_GROUP_NAME then
+				playerGroupExists = true
+			elseif group.name == RAGDOLL_COLLISION_GROUP_NAME then
+				ragdollGroupExists = true
+			end
+		end
+
+		if not playerGroupExists then
+			PhysicsService:CreateCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
+		end
+
+		if not ragdollGroupExists then
+			PhysicsService:CreateCollisionGroup(RAGDOLL_COLLISION_GROUP_NAME)
+		end
+
+		if not playerGroupExists or not ragdollGroupExists then
+			-- Disable collisions with ragdoll characters
+			PhysicsService:CollisionGroupSetCollidable(PLAYER_COLLISION_GROUP_NAME, RAGDOLL_COLLISION_GROUP_NAME, false)
+		end
+	end
+
+	local _successful, humanoid, _tries = Util.attempt(function()
 		return character:FindFirstChild("Humanoid")
 	end, 80, .1) -- 80 tries * .1 yield times = 8 second max yield
-	
+
 	if not humanoid then
 		return
 	end
-	
+
 	humanoid.BreakJointsOnDeath = false
-	
-	if not RAGDOLL_COLLIDABLE then
+
+	if not Ragdoll.isCollidable then
 		for _, obj in pairs(character:GetDescendants()) do
 			if obj:IsA("BasePart") then
 				PhysicsService:SetPartCollisionGroup(obj, PLAYER_COLLISION_GROUP_NAME)
 			end
 		end
 	end
-	
+
 	character:SetAttribute("RagdollReady", true)
+
+	return nil
 end
 
---[[
--- @desc Transforms a humanoid into a ragdoll
--- @param character - Character Model
-]]
-function Ragdoll.create(character: Model)
+-- Convert the player's character into a ragdoll
+local function createRagdoll(character: Model): nil
 	if not character or not character.Parent then
 		return
 	end
-	
-	local partAttachment = Util.instance("Attachment") {
-		Parent = character:FindFirstChild("Head") or character.PrimaryPart or Util.getFirstPart(character);
-	}
-	
+
+	local partAttachment = Instance.new("Attachment")
+	partAttachment.Parent = character:FindFirstChild("Head") or character.PrimaryPart or Util.getFirstPart(character)
+
 	-- Push player backwards
 	if partAttachment.Parent then
-		Util.instance("VectorForce") {
-			--ApplyAtCenterOfMass = true;
-			Force = Vector3.new(0, -200, 60);
-			Attachment0 = partAttachment;
-			Parent = partAttachment;
-		}
+		local force: VectorForce = Instance.new("VectorForce")
+		force.Force = Vector3.new(0, -200, 60)
+		force.Attachment0 = partAttachment
+		force.Parent = partAttachment
 	end
-	
+
 	for _, obj in pairs(character:GetDescendants()) do
 		if obj:IsA("Motor6D") then
 			local root = Instance.new("Attachment")
@@ -97,49 +114,62 @@ function Ragdoll.create(character: Model)
 			root.Parent = obj.Part0
 			attachment.CFrame = obj.C1
 			attachment.Parent = obj.Part1
-			
+
 			local ballSocket = Instance.new("BallSocketConstraint")
 			ballSocket.LimitsEnabled = true
 			ballSocket.TwistLimitsEnabled = true -- Disable joints from freely rotating
 			ballSocket.Attachment0 = root
 			ballSocket.Attachment1 = attachment
 			ballSocket.Parent = obj.Parent
-			
+
 			obj:Destroy() -- Remove the Motor6D instance
 		end
-		
+
 		if obj:IsA("BasePart") then
 			-- Switch collision group so players can't interact with the ragdoll
 			obj.CanCollide = true
-			
-			if not RAGDOLL_COLLIDABLE then
+
+			if not Ragdoll.isCollidable then
 				PhysicsService:SetPartCollisionGroup(obj, RAGDOLL_COLLISION_GROUP_NAME)
 			end
 		elseif obj:IsA("Script") then
 			obj:Destroy()
 		end
 	end
+
+	return nil
 end
 
-function Ragdoll.playerDied(player: Player, parent, destroyTime, keepRagdollInWorld)
+--[=[
+	Converts the player's character into a ragdoll and removes the player's character.
+
+	This should be run when the player dies.
+
+	@param player Player -- The player
+	@param parent Instance? -- The parent of the ragdoll
+	@param destroyTime number? -- The time in seconds before the ragdoll is destroyed
+	@param keepRagdollInWorld boolean? -- Whether or not to keep the ragdoll in the world
+	@return nil
+]=]
+function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: number?, keepRagdollInWorld: boolean?): nil
 	if not player.Character or not player.Character:GetAttribute("RagdollReady") then
 		return
 	end
-	
+
 	parent = parent or Workspace -- Default parent to Workspace
-	
+
 	local newCharacter: Model = Instance.new("Model")
 	newCharacter.Name = player.Character.Name
 	newCharacter.Parent = parent
-	
+
 	-- Ragdolls automatically disappear after 2 minutes
 	-- whether or not keepRagdollInWorld is enabled
 	Debris:AddItem(newCharacter, 120)
-	
+
 	parent = newCharacter -- Assign parent as newCharacter
-	
-	Ragdoll.create(player.Character) -- Convert the player's character into a ragdoll
-	
+
+	createRagdoll(player.Character) -- Convert the player's character into a ragdoll
+
 	if parent then
 		-- Place parts inside the ragdoll model (newCharacter)
 		-- and filter out unwanted instances and scripts
@@ -149,17 +179,21 @@ function Ragdoll.playerDied(player: Player, parent, destroyTime, keepRagdollInWo
 			elseif not obj:IsA("Tool") then
 				obj.Parent = parent
 			elseif obj:FindFirstChild("Handle") then
-				obj.Handle.Parent = parent
-				obj.Parent = player:FindFirstChild("Backpack")
+				local handle = obj:FindFirstChild("Handle")
+
+				if handle then
+					handle.Parent = parent
+					obj.Parent = player:FindFirstChild("Backpack")
+				end
 			end
 		end
 	end
-	
+
 	player.Character:Destroy()
 	player.Character = nil
-	
-	task.wait(destroyTime or RAGDOLL_DESTROY_TIME)
-	
+
+	task.wait(destroyTime or Ragdoll.destroyTime)
+
 	if not parent or not parent.Parent then
 		return
 	elseif not keepRagdollInWorld then
@@ -171,6 +205,11 @@ function Ragdoll.playerDied(player: Player, parent, destroyTime, keepRagdollInWo
 			end
 		end
 	end
+
+	return nil
 end
 
 return Ragdoll
+
+
+

@@ -7,8 +7,8 @@
 local dLib = require(script.Parent)
 local Util = dLib.import("dLib/Util")
 
-local ChatCommand, methods = {}, {}
-methods.__index = methods
+local ChatCommand = {}
+ChatCommand.__index = ChatCommand
 
 local PREFIX = "/"
 local PREFIX_LENGTH = #PREFIX
@@ -88,7 +88,7 @@ function ChatCommand.exists(name)
 	return _commands[name] ~= nil
 end
 
-function methods:process()
+function ChatCommand:process()
 	if not self.valid then
 		return
 	end
@@ -133,7 +133,7 @@ function ChatCommand.new(data)
 	assert(data.player, "ChatCommand.new - Player missing")
 	assert(typeof(data.text) == "string", "ChatCommand.new - Text argument must be a string")
 
-	local self = setmetatable({}, methods)
+	local self = setmetatable({}, ChatCommand)
 
 	-- Make sure the string starts with the defined prefix
 	if ChatCommand.test(data.text) then

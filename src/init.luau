@@ -1,7 +1,3 @@
--- @name dLib
--- @desc bootstraps the library
--- @author dig1t
-
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,7 +10,27 @@ local Packages: any = ReplicatedStorage:FindFirstChild("Packages")
 local Util: any = require(script.Util)
 
 --[=[
-	Bootrapping library to allow for importing modules.
+	Bootstrapping library to allow for importing modules.
+
+	```lua
+	local dLib = require(ReplicatedStorage.Packages.dLib)
+	local Util = dLib.import("dLib/Util")
+	```
+
+	You can also import modules from other roots:
+	```lua
+	local PlayerUtil = dLib.import("Shared/Util/PlayerUtil") -- ReplicatedStorage.Shared.Util.PlayerUtil
+	local Knit = dLib.import("Packages/Knit") -- ServerScriptService.Server.Packages.Knit
+	```
+
+	Custom root paths can be set using `dLib.setRootPath`:
+	```lua
+	dLib.setRootPath("ServerFolder", ServerScriptService.ServerFolder)
+
+	local ServerModule = dLib.import("ServerFolder/Module") -- ServerScriptService.ServerFolder.Module
+	```
+
+	Any custom root paths should be the first thing set before importing any modules.
 
 	@class dLib
 ]=]
@@ -132,17 +148,23 @@ end
 
 -- Set default root paths
 dLib.setRootPath("dLib", script)
-dLib.setRootPath("Shared", Shared)
-dLib.setRootPath("Packages", Packages)
+
+if Shared then
+	dLib.setRootPath("Shared", Shared)
+end
+
+if Packages then
+	dLib.setRootPath("Packages", Packages)
+end
 
 if RunService:IsServer() then
 	local ServerPackages: any = ServerScriptService:FindFirstChild("ServerPackages")
 	local Server: any = ServerScriptService:FindFirstChild("Server")
-	
+
 	if Server then
 		dLib.setRootPath("Server", Server)
 	end
-	
+
 	if ServerPackages then
 		dLib.setRootPath("ServerPackages", ServerPackages)
 	end

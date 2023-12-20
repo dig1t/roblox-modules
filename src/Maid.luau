@@ -1,75 +1,205 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+--!strict
 
-local import = require(ReplicatedStorage.Packages.dLib).import
-local Util = import("dLib/Util")
+local Util = require(script.Parent.Util)
 
-local Maid = {}
+type MaidClass = {
+	__index: MaidClass,
+	new: () -> Maid,
+	task: (self: Maid, task: any, cleaner: () -> any) -> string,
+	removeTask: (self: Maid, taskToRemove: MaidTask) -> nil,
+	clean: (self: Maid) -> nil,
+	destroy: (any) -> nil
+}
+
+type MaidInstance = {
+	_tasks: { [string]: MaidTask },
+	[any]: any
+}
+
+export type Maid = typeof(setmetatable(
+	{} :: MaidInstance,
+	{} :: MaidClass
+))
+
+type MaidTask = {
+	Connected: boolean?,
+	Disconnect: () -> nil?,
+	Destroy: (any) -> nil?,
+	destroy: (any) -> nil?,
+	destructor: (task: any) -> nil?,
+	[any]: any
+}? | () -> nil? | Instance;
+
+--[=[
+	Task management class for cleaning up things for garbage collection.
+
+	@class Maid
+]=]
+local Maid: MaidClass = {} :: MaidClass
 Maid.__index = Maid
 
-function Maid.hire(): { [any]: any }
+--[=[
+	Creates a new Maid instance.
+
+	```lua
+	local maid = Maid.new()
+	```
+
+	@return Maid
+]=]
+function Maid.new()
 	local self = setmetatable({}, Maid)
-	
+
 	self._tasks = {}
-	
+
 	return self
 end
 
-function Maid:assign(task: any, destructor: any?): string
+--[=[
+	Adds a task to the Maid instance.
+
+	```lua
+	local maid = Maid.new()
+
+	maid:task(function()
+		print("Hello world!")
+	end)
+	```
+
+	Multiple types of tasks can be added to the Maid instance.
+
+	```lua
+	local maid = Maid.new()
+
+	-- Functions
+	maid:task(function()
+		print("Hello world!")
+	end)
+
+	-- RBXScriptConnections
+	maid:task(workspace.ChildAdded:Connect(function()
+		print("Hello world!")
+	end))
+
+	-- Instances with "Destroy" methods
+	maid:task(Instance.new("Part"))
+
+	-- Packages with "Destroy", "destroy", or "destructor" methods
+	local instance = Package.new({
+		PackageVariable = "Hello world!",
+		Destroy = function()
+			-- destroy this package instance
+		end
+	})
+
+	maid:task(instance)
+	```
+
+	@param _task any -- The task to add.
+	@return string -- The task id.
+]=]
+function Maid:task(_task: MaidTask): string
 	local taskId = Util.randomString(14)
-	
-	self._tasks[taskId] = destructor and {
-		task = task,
-		destructor = destructor
-	} or task
-	
+
+	self._tasks[taskId] = _task
+
 	return taskId
 end
 
-function Maid:removeTask(taskToRemove: any): nil
-	for taskId, task in pairs(self._tasks) do
-		if task == taskToRemove then
+--[=[
+	Removes a task from the Maid instance.
+
+	```lua
+	local maid = Maid.new()
+
+	local taskId = maid:task(function()
+		print("Hello world!")
+	end)
+
+	maid:removeTask(taskId)
+	```
+
+	@param taskToRemove any -- The task item to remove.
+	@return nil
+]=]
+function Maid:removeTask(taskToRemove: string | MaidTask): nil
+	-- Remove by task id
+	if typeof(taskToRemove) == "string" then
+		self._tasks[taskToRemove] = nil
+
+		return
+	end
+
+	-- Remove by task
+	for taskId, _task: MaidTask in pairs(self._tasks) do
+		if _task == taskToRemove then
 			self._tasks[taskId] = nil
 		end
 	end
-	
+
 	return
 end
 
-function Maid:cleanTasks(taskIds: { [any]: any }?): nil
-	local tasks = taskIds and {} or self._tasks
-	
-	if taskIds then
-		for _, taskId in pairs(taskIds) do
-			if self._tasks[taskId] then
-				tasks[taskId] = self._tasks[taskId]
+--[=[
+	Cleans up all tasks in the Maid instance.
+
+	```lua
+	local maid = Maid.new()
+
+	maid:task(function()
+		print("Hello world!")
+	end)
+
+	maid:clean() -- Hello world!
+	```
+
+	@return nil
+]=]
+function Maid:clean(): nil
+	for taskId, _task: MaidTask in pairs(self._tasks) do
+		if typeof(_task) == "function" then
+			_task() -- Run cleaning _task
+		elseif typeof(_task) == "RBXScriptConnection" and _task.Connected then
+			_task:Disconnect()
+		elseif typeof(_task) == "Instance" or (_task and _task.Destroy) then
+			_task:Destroy()
+		elseif _task and _task.destroy then
+			_task:destroy()
+		elseif typeof(_task) == "table" then
+			if _task.destructor then
+				_task.destructor(_task.task)
 			end
 		end
-	end
-	
-	for taskId, _ in pairs(tasks) do
-		local taskType = typeof(task)
-		
-		if taskType == "function" then
-			task() -- Run cleaning task
-		elseif taskType == "RBXScriptConnection" and task.Connected then
-			task:Disconnect()
-		elseif task.Destroy then
-			task:Destroy()
-		elseif task.destroy then
-			task:destroy()
-		elseif taskType == "table" then
-			if task.destructor then
-				task.destructor(task.task or task)
-			end
-		end
-		
+
 		self._tasks[taskId] = nil
 	end
+
+	return
 end
 
-function Maid:clean(): nil
-	self:cleanTasks()
-	self._tasks = nil
+--[=[
+	Destroys the Maid instance.
+
+	```lua
+	local maid = Maid.new()
+
+	maid:task(function()
+		print("Hello world!")
+	end)
+
+	maid:destroy()
+
+	maid:clean() -- method no longer exists
+	```
+
+	@return nil
+]=]
+function Maid:destroy(): nil
+	for key: any, _ in pairs(self) do
+		self[key] = nil
+	end
+
+	return nil
 end
 
 return Maid

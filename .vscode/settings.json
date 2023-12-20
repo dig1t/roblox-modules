@@ -2,6 +2,16 @@
   "luau-lsp.require.mode": "relativeToFile",
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
 
+  "[lua]": {
+		"editor.defaultFormatter": "EditorConfig.EditorConfig",
+		"editor.formatOnSave": true
+	},
+
+	"[luau]": {
+		"editor.defaultFormatter": "EditorConfig.EditorConfig",
+		"editor.formatOnSave": true
+	},
+
   "files.exclude": {
     "build": true
   }

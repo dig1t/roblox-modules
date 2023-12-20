@@ -20,5 +20,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local import = require(ReplicatedStorage.dLib).import
 local Palette = import("dLib/Palette")
 
-print(Palette("blue", 500))
+print(Palette.get("blue", 500))
 ```
+
+[Click here](./dlib/api/dLib) to learn how to import your first dLib module.
