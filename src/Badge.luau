@@ -1,44 +1,123 @@
 --!strict
 
 local BadgeService = game:GetService("BadgeService")
+local Players = game:GetService("Players")
+
+local Cache = require(script.Parent.Cache)
 
 local badges = {}
 
-local Badge = {}
-local cache = {}
+--[=[
+	Badge management class for awarding badges to players.
 
-function Badge.add(name, badgeId)
+	Use the `Badge.add` method to add badges to the cache.
+
+	Example:
+	```lua
+	-- Setup
+	local Badge = import("dLib/Badge")
+
+	Badge.add("BadgeName", 999999999)
+
+	--
+
+	local hasBadge = Badge.has(player, "BadgeName")
+
+	print(`Player has badge: {hasBadge}!`)
+
+	if not hasBadge then
+		Badge.award(player, "BadgeName")
+	end
+
+	@class Badge
+]=]
+local Badge = {}
+local cache = Cache.new()
+
+--[=[
+	Adds a badge to the cache.
+
+	```lua
+	Badge.add("BadgeName", 999999999)
+	```
+
+	@param name string -- The name of the badge.
+	@param badgeId number -- The id of the badge.
+]=]
+function Badge.add(name: string, badgeId: number)
+	assert(name, "Badge.add - Missing badge name")
+	assert(badgeId, "Badge.add - Missing badge id")
+
 	badges[name] = badgeId
 end
 
-function Badge.has(userId, badgeName)
-	assert(userId, "Badge.award - Missing user id")
-	assert(badgeName, "Badge.award - Missing badge name")
-	
-	if not badges[badgeName] then
-		warn("\"" .. badgeName .. "\" badge does not exist")
-		return
+--[=[
+	Checks if a player has a badge.
+
+	```lua
+	local hasBadge = Badge.has(player, "BadgeName")
+	```
+
+	@param player Player | number -- The player or userId to check.
+	@param badgeName string -- The name of the badge.
+	@return boolean -- Whether the player has the badge or not.
+]=]
+function Badge.has(player: Player | number, badgeName: string): boolean?
+	assert(typeof(player) == "number" or player:IsA("Player"), "Badge.has - Invalid player")
+	assert(typeof(badgeName) == "string", "Badge.has - Invalid badge name")
+	assert(badges[badgeName], `Badge.has - {badgeName} badge does not exist`)
+
+	local _player: Player = typeof(player) == "number" and Players:GetPlayerByUserId(player) or player
+	local userId: number = _player.UserId
+
+	local cacheKey: string = `${userId}-${badgeName}`
+	local cachedResult: boolean? = cache:get(cacheKey)
+
+	if cachedResult == nil then
+		cachedResult = BadgeService:UserHasBadgeAsync(userId, badges[badgeName])
+		cache:set(cacheKey, cachedResult)
 	end
-	
-	local cached = cache[userId .. "-" .. badgeName]
-	
-	if cached == nil then
-		cached = BadgeService:UserHasBadgeAsync(userId, badges[badgeName])
-		cache[userId .. "-" .. badgeName] = cached
-		
-		return cached
-	end
+
+	return cachedResult
 end
 
-function Badge.award(userId, badgeName)
-	assert(userId, "Badge.award - Missing user id")
-	assert(badgeName, "Badge.award - Missing badge name")
-	
-	task.spawn(function()
-		if not Badge.has(userId, badgeName) then
-			BadgeService:AwardBadge(userId, badges[badgeName])
-		end
-	end)
+--[=[
+	Awards a badge to a player.
+
+	```lua
+	local awarded: boolean = Badge.award(player, "BadgeName")
+
+	if not awarded then
+		print("Failed to award badge!")
+	end
+
+	print("Badge awarded!")
+	```
+
+	@param player Player | number -- The player or userId to award the badge to.
+	@param badgeName string -- The name of the badge.
+	@return boolean -- Whether the badge was awarded or not. If the badge was already awarded, this will return true.
+]=]
+function Badge.award(player: Player | number, badgeName: string): boolean
+	assert(typeof(player) == "number" or player:IsA("Player"), "Badge.award - Invalid player")
+	assert(typeof(badgeName) == "string", "Badge.award - Invalid badge name")
+
+	local _player: Player = typeof(player) == "number" and Players:GetPlayerByUserId(player) or player
+	local userId: number = _player.UserId
+
+	if Badge.has(userId, badgeName) then
+		return true
+	end
+
+	local success = pcall(BadgeService.AwardBadge, BadgeService, userId, badges[badgeName])
+
+	if success then
+		cache:set(`${userId}-${badgeName}`, true)
+
+		return true
+	end
+
+	return false
 end
 
 return Badge

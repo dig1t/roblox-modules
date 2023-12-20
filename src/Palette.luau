@@ -1,32 +1,19 @@
---[[
--- @name Palette
--- @description Easy color picker using Google Material's color system to pick colors.
--- @author dig1t
-
-Functions
-	Palette(color, shade: 500) => Color3 Creates a Color3 object from the given color
-
-Examples
-local button = Instance.new("TextButton")
-local btnColor = Palette("blue", 500)
-local btnHover = Palette("blue", 300)
-
-button.BackgroundColor3 = btnColor
-
-button.MouseEnter:Connect(function()
-	btn.BackgroundColor3 = btnHover
-end)
-
-button.MouseLeave:Connect(function()
-	btn.BackgroundColor3 = btnColor
-end)
-]]
+--!strict
 
 local shadeIndex = {
-	[50] = 1, [100] = 2, [200] = 3, [300] = 4, [400] = 5, [500] = 6, [600] = 7, [700] = 8, [800] = 9, [900] = 10
+	[50] = 1,
+	[100] = 2,
+	[200] = 3,
+	[300] = 4,
+	[400] = 5,
+	[500] = 6,
+	[600] = 7,
+	[700] = 8,
+	[800] = 9,
+	[900] = 10
 }
 
-local palette = {
+local paletteColors = {
 	red = {
 		{255, 255, 255},
 		{252, 218, 216},
@@ -39,7 +26,7 @@ local palette = {
 		{187, 22, 13},
 		{151, 17, 11}
 	};
-	
+
 	orange = {
 		{253, 242, 230},
 		{251, 216, 181},
@@ -52,7 +39,7 @@ local palette = {
 		{155, 82, 9},
 		{119, 63, 7}
 	};
-	
+
 	yellow = {
 		{255, 255, 255},
 		{255, 251, 212},
@@ -65,7 +52,7 @@ local palette = {
 		{199, 179, 0},
 		{161, 145, 0}
 	};
-	
+
 	gold = {
 		{253, 246, 218},
 		{250, 235, 170},
@@ -78,7 +65,7 @@ local palette = {
 		{144, 118, 8},
 		{108, 88, 6}
 	};
-	
+
 	green = {
 		{198, 238, 205},
 		{159, 226, 170},
@@ -91,7 +78,7 @@ local palette = {
 		{27, 90, 37},
 		{18, 61, 25}
 	};
-	
+
 	blue = {
 		{250, 247, 254},
 		{192, 223, 251},
@@ -104,7 +91,7 @@ local palette = {
 		{10, 92, 165},
 		{8, 72, 129}
 	};
-	
+
 	purple = {
 		{247, 240, 250},
 		{226, 200, 239},
@@ -117,7 +104,7 @@ local palette = {
 		{100, 39, 132},
 		{78, 30, 103}
 	};
-	
+
 	["blue-grey"] = {
 		{237, 239, 242},
 		{209, 212, 219},
@@ -130,7 +117,7 @@ local palette = {
 		{70, 77, 91},
 		{53, 59, 69}
 	};
-	
+
 	grey = {
 		{224, 224, 224},
 		{199, 199, 199},
@@ -145,11 +132,45 @@ local palette = {
 	};
 }
 
-return function(color, shade)
-	shade = shade or 500 -- Default shade
-	
-	assert(palette[color], color .. " is not a valid color")
-	assert(palette[color][shadeIndex[shade]], color .. " " .. shade .. " is not a valid shade")
-	
-	return Color3.fromRGB(unpack(palette[color][shadeIndex[shade]]))
+--[=[
+	Easy color picker using Google Material's color system to pick colors.
+
+	@class Palette
+]=]
+local Palette = {}
+
+--[=[
+	Creates a Color3 object from the given color and shade.
+
+	#### Example:
+	```lua
+	local button: TextButton = Instance.new("TextButton")
+	local btnColor: Color3 = Palette("blue", 500)
+	local btnHover: Color3 = Palette("blue", 300)
+
+	button.BackgroundColor3 = btnColor
+
+	button.MouseEnter:Connect(function()
+		btn.BackgroundColor3 = btnHover
+	end)
+
+	button.MouseLeave:Connect(function()
+		btn.BackgroundColor3 = btnColor
+	end)
+	```
+
+	@param color string -- The color to use
+	@param shade number? -- The shade to use. Defaults to 500.
+	@return Color3
+]=]
+function Palette.get(color: string, shade: number?): Color3
+	assert(typeof(color) == "string", "color must be a string")
+	assert(typeof(shade) == "string" or shade == nil, "shade must be a string or nil")
+
+	local _shade = shade or 500 :: number -- Default shade
+
+	assert(paletteColors[color] ~= nil, `{color} is not a valid color`)
+	assert(paletteColors[color][shadeIndex[_shade]], `{_shade} is not a valid shade for color: {color}`)
+
+	return Color3.fromRGB(unpack(paletteColors[color][shadeIndex[_shade]]))
 end

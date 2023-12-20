@@ -1,194 +1,329 @@
---[[
--- @name Promise
--- @version 1.0.0
--- @author dig1t
+--!strict
 
-Variables
-	Promise.status Current status of the promise
-		pending The promise is waiting for a result
-		fulfilled The promise was fulfilled successfully
-		rejected The promise was rejected
-
-Functions
-	Promise.new(fn) => object Promise Constructs a new promise
-
-Methods
-	Promise:resolve(...) tuple Resolve a promise with tuple parameters
-	Promise:reject(error) Reject a promise with a message
-	Promise:destroy() Destroys the promise by clearing all private and public variables
-
-Events
-	Promise:thenDo(...) Called when the promise is fulfilled, if there are multiple fulfillment callbacks then
-		then the result of the last callback will waterfall into the next callback, if the promise rejects during the
-		callback waterfall, then it will stop waterfalling.
-		The first callback will begin with the arguments from the resolution callback.
-		The promise can be rejected until the last fulfillment callback is called.
-	Promise:catch(error) Called when promise is rejected
-	Promise:finally(fn) Similar to thenDo, finally will always be called at the end of the Promise
-		and can only be set once, if the primose is rejected then the callback run with return no parameters
-
-Examples
-local promise -- Blank variable to allow rejection during a waterfall
-
-promise = Promise.new(function(resolve, reject)
-	wait(1)
-	resolve(0)
-end):thenDo(function(num)
-	return num + 1
-end):thenDo(function(num)
-	promise:reject("error")
-end):catch(function(err)
-	warn(err)
-end):finally(function(num)
-	print("finally", promise.status)
-	if promise.status ~= "rejected" then
-		print(num)
-	end
-end)
-]]
-
-local Promise, methods = {}, {}
-methods.__index = methods
-
-Promise.status = {
-	pending = "pending";
-	fulfilled = "fulfilled";
-	rejected = "rejected";
+type PromiseClass = {
+	__index: PromiseClass,
+	statusType: {
+		pending: "pending";
+		fulfilled: "fulfilled";
+		rejected: "rejected";
+	},
+	new: (fn: (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil) -> Promise,
+	resolve: (self: Promise, ...any) -> nil,
+	reject: (self: Promise, any) -> nil,
+	destroy: (self: Promise) -> nil,
+	thenDo: (self: Promise, fn: (...any) -> nil) -> Promise,
+	catch: (self: Promise, fn: (any) -> nil) -> Promise,
+	finally: (self: Promise, fn: (...any) -> nil) -> Promise,
+	_run: (self: Promise) -> nil
 }
 
-function methods:resolve(...)
-	if self.status ~= Promise.status.pending then
+type PromiseInstance = {
+	_fulfillmentCallbacks: { (any) -> any },
+	_rejectionCallbacks: { (any) -> any },
+	_onFinalizedCallback: ((any) -> nil)?,
+	_resultArgs: { [any]: any },
+	_executor: PromiseExecutor,
+	status: string?,
+	[any]: any
+}
+
+--[=[
+	@within Promise
+	@interface PromiseExecutor
+	@field resolve (any) -> nil -- Resolves the promise
+	@field reject (any) -> nil -- Rejects the promise
+]=]
+export type PromiseExecutor = (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil
+
+export type Promise = typeof(setmetatable(
+	{} :: PromiseInstance,
+	{} :: PromiseClass
+))
+
+--[=[
+	Promise class for asynchronous operations.
+
+	```lua
+	local promise: Promise -- Blank variable to allow rejection during a waterfall
+
+	promise = Promise.new(function(resolve, reject)
+		task.wait(1)
+		resolve(0)
+	end):thenDo(function(num)
+		return num + 1
+	end):thenDo(function(num)
+		promise:reject("error")
+	end):catch(function(err)
+		warn(err)
+	end):finally(function(num)
+		print("finally", promise.status)
+
+		if promise.status ~= "rejected" then
+			print(num)
+		end
+	end) :: Promise.Promise
+	```
+
+	@class Promise
+]=]
+local Promise: PromiseClass = {} :: PromiseClass
+Promise.__index = Promise
+
+--[=[
+	Current status of the promise
+
+	@within Promise
+	@prop statusType table -- The status types of the promise
+]=]
+Promise.statusType = {
+	pending = "pending"; -- The promise is waiting for a result
+	fulfilled = "fulfilled"; -- The promise was fulfilled successfully
+	rejected = "rejected"; -- The promise was rejected
+}
+
+--[=[
+	Constructs a new Promise instance.
+
+	```lua
+	Promise.new(function(resolve, reject)
+		task.wait(1)
+		resolve(0)
+	end)
+	```
+
+	@param executor function -- The function to call when the promise is created.
+	@return Promise
+]=]
+function Promise.new(executor: PromiseExecutor): Promise
+	assert(typeof(executor) == "function", "Must give a function to make a promise")
+
+	local self = setmetatable({}, Promise)
+
+	self._fulfillmentCallbacks = {}
+	self._rejectionCallbacks = {}
+	self._resultArgs = {}
+
+	self._executor = executor
+	self.status = Promise.statusType.pending
+
+	self:_run()
+
+	return self
+end
+
+--[=[
+	Runs the Promise executor.
+
+	```lua
+	Promise:_run()
+	```
+
+	@ignore
+	@return nil
+]=]
+function Promise:_run(): nil
+	local _success, err = pcall(
+		self._executor,
+		function(...) -- resolve
+			self:resolve(...)
+		end,
+		function(...) -- reject
+			self:reject(...)
+		end
+	)
+
+	if err and self.status == Promise.statusType.pending then
+		self:reject(err)
+	end
+
+	return nil
+end
+
+--[=[
+	Resolves a promise with tuple parameters.
+
+	```lua
+	Promise:resolve(...)
+	```
+
+	@param ... any -- The tuple parameters to resolve the promise with.
+	@return nil
+]=]
+function Promise:resolve(...): nil
+	if self.status ~= Promise.statusType.pending then
 		warn(string.format(
 			"Cannot resolve a promise %s",
-			self.status == Promise.status.rejected and "after rejection" or "more than once"
+			self.status == Promise.statusType.rejected and "after rejection" or "more than once"
 		))
-		
+
 		return
 	end
-	
+
 	self._resultArgs = {...}
-	
-	local lastRes = self._resultArgs -- Start the callbacks with the initial resolution tuple
-	
-	for k, fn in ipairs(self._fulfillmentCallbacks) do
+
+	local lastRes = self._resultArgs or {} -- Start the callbacks with the initial resolution tuple
+
+	if not self._fulfillmentCallbacks or #self._fulfillmentCallbacks == 0 then
+		self.status = Promise.statusType.fulfilled
+
+		if self._onFinalizedCallback then
+			self._onFinalizedCallback(unpack(lastRes))
+		end
+
+		return nil
+	end
+
+	for _key, fn in ipairs(self._fulfillmentCallbacks) do
 		-- Set lastRes to the returned argument from the last callback.
 		lastRes = { fn(unpack(lastRes)) }
-		
-		if self.status ~= Promise.status.pending then
+
+		if self.status ~= Promise.statusType.pending then
 			break
 		end
 	end
-	
-	if self.status == Promise.status.pending then
-		self.status = Promise.status.fulfilled
+
+	if self.status == Promise.statusType.pending then
+		self.status = Promise.statusType.fulfilled
 	end
-	
+
 	-- If defined, last result will be passed to the finally event.
 	if self._onFinalizedCallback then
 		self._onFinalizedCallback(unpack(lastRes))
 	end
+
+	return nil
 end
 
-function methods:reject(...)
-	if self.status ~= Promise.status.pending then
+--[=[
+	Rejects a promise with tuple parameters.
+
+	```lua
+	Promise:reject(errorMessage)
+	```
+
+	@param ... any -- The tuple parameters to reject the promise with.
+	@return nil
+]=]
+function Promise:reject(...): nil
+	if self.status ~= Promise.statusType.pending then
 		warn(string.format(
 			"Cannot reject a promise %s",
-			self.status == Promise.status.fulfilled and "after fulfillment" or "more than once"
+			self.status == Promise.statusType.fulfilled and "after fulfillment" or "more than once"
 		))
-		
+
 		return
 	end
-	
-	self.status = Promise.status.rejected
+
+	self.status = Promise.statusType.rejected
 	self._resultArgs = {...}
-	
-	for k, fn in ipairs(self._rejectionCallbacks) do
-		fn(...)
+
+	if self._rejectionCallbacks then
+		for _key, fn in ipairs(self._rejectionCallbacks) do
+			fn(...)
+		end
 	end
-	
+
 	if self._onFinalizedCallback then
 		self._onFinalizedCallback(...)
 	end
+
+	return nil
 end
 
-function methods:thenDo(fn)
-	assert(typeof(fn) == "function", "Must give a function to resolve")
-	
-	if self.status == Promise.status.fulfilled then
-		fn(unpack(self._resultArgs))
-		
+--[=[
+	Resolves a promise with tuple parameters.
+
+	Called when the promise is fulfilled, if there are multiple fulfillment callbacks
+	then the result of the last callback will waterfall into the next callback, if the promise rejects during the
+	callback waterfall, then it will stop waterfalling.
+
+	The first callback will begin with the arguments from the resolution callback.
+
+	The promise can be rejected until the last fulfillment callback is called.
+
+	```lua
+	Promise:resolve(...)
+	```
+
+	@param executor function -- The function to call when the promise is fulfilled.
+	@return nil
+]=]
+function Promise:thenDo(executor: ((...any) -> nil)?): Promise
+	assert(typeof(executor) == "function", "Must give a function to resolve")
+
+	if self.status == Promise.statusType.fulfilled then
+		executor(unpack(self._resultArgs))
+
 		return self
 	end
-	
-	self._fulfillmentCallbacks[#self._fulfillmentCallbacks + 1] = fn
-	
+
+	self._fulfillmentCallbacks[#self._fulfillmentCallbacks + 1] = executor
+
 	return self
 end
 
-function methods:catch(fn)
-	assert(typeof(fn) == "function", "Must give a function to catching errors")
-	
-	if self.status == Promise.status.rejected then
-		fn(unpack(self._resultArgs))
-		
+--[=[
+	Called when the Promise is rejected.
+
+
+	@param callback function -- The function to call when the Promise is rejected.
+	@return nil
+]=]
+function Promise:catch(callback: (any) -> nil): Promise
+	assert(typeof(callback) == "function", "Must give a function to catching errors")
+
+	if self.status == Promise.statusType.rejected then
+		callback(unpack(self._resultArgs))
+
 		return self
 	end
-	
-	self._rejectionCallbacks[#self._rejectionCallbacks + 1] = fn
-	
+
+	self._rejectionCallbacks[#self._rejectionCallbacks + 1] = callback
+
 	return self
 end
 
-function methods:finally(fn)
+--[=[
+	Similar to thenDo, finally will always be called at the end of the Promise
+	and can only be set once, if the Promise is rejected then the callback run with return no parameters
+
+	```lua
+	Promise:resolve(...)
+	```
+
+	@param callback function -- The function to call when the promise is fulfilled.
+	@return nil
+]=]
+function Promise:finally(callback:(...any) -> nil): Promise
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")
-	assert(typeof(fn) == "function", "Must give a function for the finally callback")
-	
-	if self.status == Promise.status.fulfilled or self.status == Promise.status.rejected then
-		fn(unpack(self._resultArgs))
-		
+	assert(typeof(callback) == "function", "Must give a function for the finally callback")
+
+	if self.status == Promise.statusType.fulfilled or self.status == Promise.statusType.rejected then
+		callback(unpack(self._resultArgs))
+
 		return self
 	end
-	
-	self._onFinalizedCallback = fn
-	
+
+	self._onFinalizedCallback = callback
+
 	return self
 end
 
-function methods:destroy()
-	self._fulfillmentCallbacks = nil
-	self._rejectionCallbacks = nil
-	self._onFinalizedCallback = nil
-	self._resultArgs = nil
-	self.status = nil
-end
+--[=[
+	Destroys the Promise instance.
 
-function Promise.new(fn)
-	assert(typeof(fn) == "function", "Must give a function to make a promise")
-	
-	local self = setmetatable({}, methods)
-	
-	self._fulfillmentCallbacks = {}
-	self._rejectionCallbacks = {}
-	
-	self.status = Promise.status.pending
-	
-	task.spawn(function()
-		local success, err = pcall(
-			fn,
-			function(...)
-				self:resolve(...)
-			end,
-			function(...)
-				self:reject(...)
-			end
-		)
-		
-		if err and self.stauts == Promise.status.pending then
-			self:reject(err)
-		end
-	end)
-	
-	return self
+	```lua
+	Promise:destroy()
+	```
+
+	@return nil
+]=]
+function Promise:destroy(): nil
+	for key: any, _ in pairs(self) do
+		self[key] = nil
+	end
+
+	return nil
 end
 
 return Promise

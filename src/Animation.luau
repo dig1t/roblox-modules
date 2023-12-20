@@ -6,19 +6,64 @@ local RunService = game:GetService("RunService")
 local dLib = require(script.Parent)
 local Util = dLib.import("dLib/Util")
 
-local DEFAULT_ANIMATION_CONFIG = {
-	
-}
+--[=[
+	Animation library for animating instances.
 
+	@class Animation
+]=]
 local Animation = {}
 
+--[=[
+	The default animation configuration.
+
+	Example:
+	```lua
+	Animation.setDefaultConfig({
+		tweenInfo = TweenInfo.new(1),
+		start = {
+			Transparency = 1
+		},
+		stop = {
+			Transparency = 0
+		}
+	})
+
+	Animation.prepareAnimatedModel(model)
+
+	-- Animate the model
+	Animation.animate({
+		source = model.PrimaryPart,
+	})
+	```
+
+	@within Animation
+	@prop defaultConfig AnimationConfig
+]=]
+Animation.defaultConfig = {}
+
+export type AnimationConfig = {
+	source: Instance?,
+	start: { [string]: any }?,
+	stop: { [string]: any }?,
+	tweenInfo: TweenInfo?,
+	frameCallback: () -> nil?,
+	stopCallback: () -> nil?,
+	async: boolean?
+}
+
+--[=[
+	Prepares a model for animation by welding all descendant parts to the primary part.
+
+	@param model Model -- The model to prepare
+	@return nil
+]=]
 function Animation.prepareAnimatedModel(model)
 	if not model.PrimaryPart then
 		return
 	end
-	
+
 	model.PrimaryPart.Anchored = true
-	
+
 	for _, part in pairs(model:GetDescendants()) do
 		if part ~= model.PrimaryPart and part:IsA("BasePart") then
 			Util.weld(part, model.PrimaryPart)
@@ -27,61 +72,70 @@ function Animation.prepareAnimatedModel(model)
 	end
 end
 
-function Animation.setDefaultConfig(config)
+--[=[
+	Sets the default animation configuration.
+
+	@param config AnimationConfig -- The default animation configuration
+	@return nil
+]=]
+function Animation.setDefaultConfig(config: AnimationConfig): nil
 	assert(config and typeof(config) == "table", "Table must be passed to set the default animation config")
-	
-	DEFAULT_ANIMATION_CONFIG = config
+
+	Animation.defaultConfig = config
+
+	return nil
 end
 
-function Animation.animate(config)
+--[=[
+	Animates an instance.
+
+	@param config AnimationConfig -- The animation configuration
+	@return nil
+]=]
+function Animation.animate(config: AnimationConfig): nil
 	assert(config and typeof(config) == "table", "Missing animation configuration")
-	
-	-- Support UIKit Elements
-	config.instance = config.instance and (
-		typeof(config.instance) == "table" and config.instance.ui and config.instance.context
-	) or (
-		typeof(config.instance) == "Instance" and config.instance
-	)
-	
-	assert(config.instance, "Missing instance to animate")
-	assert(config.stop, "Missing animation goal")
+	assert(typeof(config.source) == "Instance" or typeof(config.source) == "table", "Missing instance to animate")
+	assert(typeof(config.start) == "table", "Missing start properties")
+	assert(typeof(config.stop) == "table", "Missing stop properties")
 	assert(config.tweenInfo, "Missing TweenInfo")
-	
+
 	-- Place default values
-	for k, v in pairs(DEFAULT_ANIMATION_CONFIG) do
+	for k, v in pairs(Animation.defaultConfig) do
 		if config[k] == nil then
 			config[k] = v
 		end
 	end
-	
+
 	if config.start then
 		for property, value in pairs(config.start) do
-			config.instance[property] = value
+			config.source[property] = value
 		end
 	end
-	
+
 	local TweenBuild = TweenService:Create(
-		config.instance,
+		config.source,
 		config.tweenInfo,
 		config.stop
 	)
-	
+
 	TweenBuild:Play()
-	
+
 	if config.frameCallback then
 		while TweenBuild.PlaybackState == Enum.PlaybackState.Playing do
 			config.frameCallback()
 			RunService.Stepped:Wait()
 		end
 	end
-	
+
 	if config.async then
 		TweenBuild.Completed:Wait()
 	end
-	
+
 	if config.stopCallback then
 		config.stopCallback()
 	end
+
+	return nil
 end
 
 return Animation

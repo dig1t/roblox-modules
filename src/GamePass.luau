@@ -1,87 +1,147 @@
---[[
--- @name GamePass Checker
--- @author dig1t
--- @desc Game pass library that caches results and watches for pass purchases.
-]]
+--!strict
 
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 
+local Cache = require(script.Parent.Cache)
+local Maid = require(script.Parent.Maid)
+
+--[=[
+	Game pass library that caches game pass ownership results and watches for pass purchases.
+
+	```lua
+	local hasPass = GamePass.has(player.UserId, 123456)
+	```
+
+	@class GamePass
+]=]
 local GamePass = {}
 
-local connections = {}
 local callbacks = {}
-local purchases = {
-	-- userId-passId = owned
-}
 
+local _maid = Maid.new()
+local cache = Cache.new()
+
+--[=[
+	Checks if a player has a game pass.
+
+	```lua
+	local hasPass = GamePass.has(player.UserId, 123456)
+	```
+
+	@param userId number -- The userId to check.
+	@param passId number -- The game pass id to check.
+	@return boolean
+]=]
 function GamePass.has(userId, passId)
 	assert(userId, "GamePass.has - Missing user id")
 	assert(passId, "GamePass.has - Missing game pass id")
-	
-	local key = userId .. "-" .. passId
-	
-	if purchases[key] == nil then
-		local success, res = pcall(function()
-			return MarketplaceService:UserOwnsGamePassAsync(userId, passId)
-		end)
-		
+
+	local key = `${userId}-${passId}`
+
+	local cached: boolean? = cache:get(key)
+
+	if cache:get(key) == nil then
+		local success, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, userId, passId)
+
 		if success then
-			purchases[key] = res
+			cache:set(key, res)
+
+			return res
 		else
 			-- error(res)
 			return false
 		end
 	end
-	
-	return purchases[key]
+
+	return cached
 end
 
-function GamePass.offer(player, passId)
-	assert(passId, "GamePass.offer - Missing game pass id")
-	
-	MarketplaceService:PromptGamePassPurchase(player, passId)
+--[=[
+	Prompts the player to purchase a game pass.
+
+	```lua
+	GamePass.prompt(player, 123456)
+	```
+
+	@param player Player -- The player to prompt.
+	@param gamePassId number -- The game pass id.
+	@return nil
+]=]
+function GamePass.prompt(player: Player, gamePassId: number): nil
+	assert(typeof(player) == "Player", "GamePass.prompt - Missing player")
+	assert(typeof(gamePassId) == "number", "GamePass.prompt - Missing game pass id")
+
+	MarketplaceService:PromptGamePassPurchase(player, gamePassId)
+
+	return nil
 end
 
 -- This function fixes the caching issue with UserOwnsGamePassAsync
 -- by saving purchases made in the server. This allows the user to
 -- continue playing without having to re-join.
-function GamePass.watch()
-	GamePass.unwatch() -- Prevent accidental multiple watchers
-	
-	connections[#connections + 1] = MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
-		if not purchased then
-			return
-		end
-		
-		purchases[player.UserId .. "-" .. passId] = true
-		
-		for _, callback in pairs(callbacks) do
-			callback(player, passId)
-		end
-	end)
-	
-	connections[#connections + 1] = Players.PlayerRemoving:Connect(function(player)
-		for id, own in pairs(purchases) do
-			if string.sub(id, 1, #tostring(player.UserId) + 1) == player.UserId .. "-" then
-				-- Remove cache record in case player purchased or deleted
-				-- the game pass while they were not in the server
-				purchases[id] = nil
+
+--[=[
+	Watches for game pass purchases.
+	This allows the player to continue playing without having to re-join.
+
+	@return nil
+]=]
+function GamePass.watch(): nil
+	GamePass.unwatch() -- Prevent duplicating watchers
+
+	_maid:task(MarketplaceService.PromptGamePassPurchaseFinished:Connect(
+		function(player, passId, purchased)
+			if not purchased then
+				return
+			end
+
+			cache:set(`${player.UserId}-${passId}`, true)
+
+			for _, callback in pairs(callbacks) do
+				callback(player, passId)
+			end
+		end)
+	)
+
+	_maid:task(Players.PlayerRemoving:Connect(function(player: Player)
+		for key: string, _owned: boolean in pairs(cache:keys()) do
+			if string.sub(key, 1, #tostring(player.UserId) + 1) == `{player.UserId}-` then
+				-- Remove cache record in case the ownership changed
+				-- while they were away and then re-join the game.
+				cache:delete(key)
 			end
 		end
-	end)
+	end))
+
+	return nil
 end
 
--- Callbacks that are triggered when users purchase a game pass.
-function GamePass.onPurchase(callback)
+--[=[
+	Triggers a callback when a player purchases a game pass.
+
+	```lua
+	GamePass.onPurchase(function(player: Player, passId: number)
+		print(player.Name .. " purchased game pass " .. passId)
+	end)
+	```
+
+	@param callback (player: Player, passId: number) -> nil -- The callback to trigger.
+	@return nil
+]=]
+function GamePass.onPurchase(callback: (player: Player, passId: number) -> nil)
 	callbacks[#callbacks + 1] = callback
 end
 
-function GamePass.unwatch()
-	for i, connection in pairs(connections) do
-		connection:Disconnect()
-		connections[i] = nil
-	end
+--[=[
+	Stops watching for game pass purchases.
+
+	@return nil
+]=]
+function GamePass.unwatch(): nil
+	_maid:clean()
+
+	return nil
 end
 
 return GamePass

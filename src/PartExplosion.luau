@@ -1,27 +1,51 @@
---[[
--- @name Part Exploder
--- @desc Breaks blocks and throws its fragments in it's forward face
--- @author dig1t
-]]
+--!strict
 
 local Workspace = game:GetService("Workspace")
 local PhysicsService = game:GetService("PhysicsService")
 
-local dLib = require(script.Parent)
-local Util = dLib.import("dLib/Util")
+local Util = require(script.Parent.Util)
 
 local PLAYER_COLLISION_GROUP_NAME = "Player"
 local PROPS_COLLISION_GROUP_NAME = "Props"
-local COLLIDABLE = false -- Players cannot interact with these objects
 
+--[=[
+	Explosion modifications
+
+	@interface PartExplosionConfig
+	@within PartExplosion
+	.clean boolean? -- Remove fragments after a set amount of time (cleanTime)
+	.cleanTime number? -- Time until fragments are removed
+	.throw boolean? -- Throws fragments forward
+	.parent Instance? -- Where fragments are placed in the World object
+]=]
+export type PartExplosionConfig = {
+	clean: boolean?,
+	cleanTime: number?,
+	throw: boolean?,
+	parent: Instance?
+}
+
+--[=[
+	Breaks blocks and throws its fragments in it's forward face
+
+	@class PartExplosion
+]=]
 local PartExplosion = {}
 PartExplosion.__index = PartExplosion
 
+--[=[
+	Whether or not the fragments are collidable
+
+	@within PartExplosion
+	@prop isCollidable boolean
+]=]
+PartExplosion.isCollidable = false -- Players cannot interact with these objects
+
 -- Insert collision groups if missing
-if not COLLIDABLE then
+if not PartExplosion.isCollidable then
 	local playerGroupExists
 	local propGroupExists
-	
+
 	for _, group in pairs(PhysicsService:GetCollisionGroups()) do
 		if group.name == PLAYER_COLLISION_GROUP_NAME then
 			playerGroupExists = true
@@ -29,15 +53,15 @@ if not COLLIDABLE then
 			propGroupExists = true
 		end
 	end
-	
+
 	if not playerGroupExists then
 		PhysicsService:CreateCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
 	end
-	
+
 	if not propGroupExists then
 		PhysicsService:CreateCollisionGroup(PROPS_COLLISION_GROUP_NAME)
 	end
-	
+
 	if not playerGroupExists or not propGroupExists then
 		-- Disable collisions with ragdoll characters
 		PhysicsService:CollisionGroupSetCollidable(
@@ -48,46 +72,50 @@ if not COLLIDABLE then
 	end
 end
 
---[[
--- @param part BasePart|table part or list of parts to destroy
--- @param config table Explosion modifications
-	{
-		clean = true; -- Remove fragments after a set amount of time (cleanTime)
-		cleanTime = 8; -- Time until fragments are removed
-		throw = true; -- Throws fragments forward
-		parent = Workspace -- Where fragments are placed in the World object
-	}
-]]
-function PartExplosion.new(part: BasePart, config: {
+--[=[
+	@param source Instance | table -- part or list of parts to destroy
+	@param config PartExplosionConfig -- Explosion modifications
+]=]
+function PartExplosion.new(source: { Instance } | Instance, config: {
 	clean: boolean?,
 	cleanTime: number?,
 	throw: boolean?,
 	parent: Instance?
 }?)
-	assert(typeof(part) == "Instance" and part:IsA("BasePart") or typeof(part) == "table", "Missing part(s) to break")
-	
+	assert(typeof(source) == "Instance" and source:IsA("BasePart") or typeof(source) == "table", "Missing part(s) to break")
+
 	local self = setmetatable({}, PartExplosion)
-	
+
+	local parts: { BasePart } = {}
+
+	if typeof(source) == "Instance" then
+		parts = { source }
+	elseif typeof(source) == "table" then
+		for _, _part in pairs(source) do
+			if typeof(_part) == "Instance" and _part:IsA("BasePart") then
+				parts[#parts + 1] = _part :: BasePart
+			end
+		end
+	end
+
 	self.config = typeof(config or nil) == "table" and config or {
 		clean = true;
 		cleanTime = 1;
 		throw = true;
 	}
 	self.fragments = {}
-	
+
 	task.spawn(function()
-		for _, obj in pairs(
-			typeof(part) == "Instance" and { part } or part
-		) do
-			if typeof(obj) == "Instance" and part:IsA("BasePart") then
+		for _, _part in pairs(parts) do
+			if typeof(_part) == "Instance" and _part:IsA("BasePart") then
 				task.spawn(function()
-					self:_breakPart(obj)
+					self:_breakPart(_part)
 				end)
 			end
 		end
-		
+
 		task.wait(.85)
-		
+
 		if self.config.throw then
 			for _, fragment in pairs(self.fragments) do
 				if fragment.Parent then
@@ -95,9 +123,9 @@ function PartExplosion.new(part: BasePart, config: {
 				end
 			end
 		end
-		
+
 		task.wait(self.config.cleanTime or 8)
-		
+
 		if self.config.clean and self.fragments then
 			self:destroy()
 		else
@@ -107,46 +135,46 @@ function PartExplosion.new(part: BasePart, config: {
 					if fragment.Velocity.Magnitude > .001 then
 						fragment:Destroy()
 					end
-					
+
 					fragment.Anchored = true
 				end
 			end
 		end
 	end)
-	
+
 	return self
 end
 
 function PartExplosion:_breakPart(part)
 	local partMagnitude = 0
-	
+
 	repeat
-		local fragment = part:Clone()
-		
-		if not COLLIDABLE then
+		local fragment: BasePart = part:Clone()
+
+		if not PartExplosion.isCollidable then
 			-- Disable player collision
-			PhysicsService:SetPartCollisionGroup(fragment, PROPS_COLLISION_GROUP_NAME)
+			fragment.CollisionGroup = PROPS_COLLISION_GROUP_NAME
 		end
-		
+
 		fragment:ClearAllChildren() -- Remove welds, effects, etc.
-		
+
 		fragment.Anchored = false
 		fragment.CanCollide = true
-		
+
 		local newPosition = part.CFrame:ToWorldSpace(CFrame.new(
-			math.random(-part.Size.X * 10, part.Size.X * 10) / 10 / 2,
-			math.random(-part.Size.Y * 10, part.Size.Y * 10) / 10 / 2,
-			math.random(-part.Size.Z * 10, part.Size.Z * 10) / 10 / 2
+			Util.random(-part.Size.X * 10, part.Size.X * 10) / 10 / 2,
+			Util.random(-part.Size.Y * 10, part.Size.Y * 10) / 10 / 2,
+			Util.random(-part.Size.Z * 10, part.Size.Z * 10) / 10 / 2
 		))
-		
+
 		fragment.CFrame = newPosition + (fragment.CFrame.LookVector * 1.2)
-		
+
 		fragment.Size = Vector3.new(
-			part.Size.X / (math.random(4, 8) / 1.2),
-			part.Size.Y / (math.random(4, 8) / 1.2),
-			part.Size.Z / (math.random(4, 8) / 1.2)
+			part.Size.X / (Util.random(4, 8) / 1.2),
+			part.Size.Y / (Util.random(4, 8) / 1.2),
+			part.Size.Z / (Util.random(4, 8) / 1.2)
 		)
-		
+
 		if self.config.throw then
 			local attachment = Instance.new("Attachment")
 			attachment.Name = "GlassAttachment"
@@ -154,7 +182,7 @@ function PartExplosion:_breakPart(part)
 				newPosition + (fragment.CFrame.LookVector * 4)
 			).Position
 			attachment.Parent = fragment
-			
+
 			local force = Instance.new("VectorForce")
 			force.Force = fragment.CFrame:ToObjectSpace(
 				newPosition + (fragment.CFrame.LookVector * 40)
@@ -162,27 +190,33 @@ function PartExplosion:_breakPart(part)
 			force.Attachment0 = attachment
 			force.Parent = fragment
 		end
-		
+
 		partMagnitude += fragment.Size.Magnitude
-		
+
 		self.fragments[#self.fragments + 1] = fragment
 		fragment.Parent = self.config.parent or Workspace
 	until partMagnitude > part.Size.Magnitude * 3
-	
+
 	part:Destroy()
-	
+
 	return nil
 end
 
-function PartExplosion:destroy()
+--[=[
+	Removes all fragments and cleans up the PartExplosion instance
+
+	@within PartExplosion
+	@return nil
+]=]
+function PartExplosion:destroy(): nil
 	for _, fragment in pairs(self.fragments) do
 		if fragment.Parent then
 			fragment:Destroy()
 		end
 	end
-	
+
 	self.fragments = nil
-	
+
 	return nil
 end
 

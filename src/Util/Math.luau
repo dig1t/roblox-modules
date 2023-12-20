@@ -8,7 +8,7 @@ local mathMethods = {}
 	#### Example:
 	```lua
 	lerp(0, 10, .5) -- 5
-	lern(0, 10, 1) -- 10
+	lerp(0, 10, 1) -- 10
 	```
 
 	@within Util

@@ -12,8 +12,6 @@ type CacheObject = {
 }
 
 --[=[
-	Cache class for storing data in a local cache.
-	Based off node-cache: https://npmjs.com/package/node-cache
 	@within Cache
 	@interface CacheOptions
 	.defaultTTL? number -- The default time-to-live for a cache entry. Defaults to 6000.
@@ -28,19 +26,19 @@ type CacheOptions = {
 
 type CachedClass = {
 	__index: CachedClass,
-	new: (options: CacheOptions) -> Cache,
-	Set: (self: Cache, key: string, value: any, ttl: number?) -> boolean?,
-	SetMultiple: (self: Cache, { CacheObject }) -> boolean?,
-	Get: (self: Cache, key: string) -> any?,
-	Take: (self: Cache, key: string) -> any?,
-	GetMultiple: (self: Cache, { string }) -> { [string]: any },
-	Delete: (self: Cache, key: string) -> number,
-	MultipleDelete: (self: Cache, { string }) -> number,
-	TTL: (self: Cache, key: string, ttl: number) -> boolean?,
-	GetTTL: (self: Cache, key: string) -> number?,
-	Keys: (self: Cache) -> { string },
-	Has: (self: Cache, key: string) -> boolean,
-	Destroy: (self: Cache) -> nil
+	new: (options: CacheOptions?) -> Cache,
+	set: (self: Cache, key: string, value: any, ttl: number?) -> boolean?,
+	setMultiple: (self: Cache, { CacheObject }) -> boolean?,
+	get: (self: Cache, key: string) -> any?,
+	take: (self: Cache, key: string) -> any?,
+	getMultiple: (self: Cache, { string }) -> { [string]: any },
+	delete: (self: Cache, key: string) -> number,
+	multipleDelete: (self: Cache, { string }) -> number,
+	ttl: (self: Cache, key: string, ttl: number) -> boolean?,
+	getTTL: (self: Cache, key: string) -> number?,
+	keys: (self: Cache) -> { string },
+	has: (self: Cache, key: string) -> boolean,
+	destroy: (self: Cache) -> nil
 }
 
 type CachedInstance = {
@@ -68,8 +66,10 @@ type CacheEntry = {
 }
 
 --[=[
-	Cache class for storing data in a local cache.
-	Based off node-cache: https://npmjs.com/package/node-cache
+	Cache class for storing data in a cache instance.
+
+	Based off [node-cache](https://npmjs.com/package/node-cache).
+
 	@class Cache
 ]=]
 local Cache: CachedClass = {} :: CachedClass
@@ -104,8 +104,8 @@ function Cache.new(options: CacheOptions?): Cache
 		local timestamp: number = Util.unix()
 
 		for key: string, cacheEntry: CacheEntry in pairs(self._cache) do
-			if cacheEntry.expires <= timestamp then
-				self:Delete(key)
+			if cacheEntry.expires ~= 0 and cacheEntry.expires <= timestamp then
+				self:delete(key)
 			end
 		end
 	end))
@@ -121,18 +121,18 @@ end
 	```lua
 	local obj = { my = "Special", variable = 42 }
 
-	local success = myCache:Set( "myKey", obj, 10000 )
+	local success = myCache:set( "myKey", obj, 10000 )
 	-- true
 	```
 	> Note: If the key expires based on it's `ttl` it will be deleted entirely from the internal data object.
 
 	@param key string -- The key to set.
 	@param value any -- The value to set.
-	@param ttl number? -- The time-to-live for the cache entry. Defaults to the defaultTTL option.
+	@param ttl number? -- The time-to-live for the cache entry. Defaults to the defaultTTL option. 0 for unlimited.
 	@return boolean -- Whether or not the value was set.
 ]=]
-function Cache:Set(key: string, value: any, ttl: number?): boolean
-	local numberKeys: number = #self:Keys()
+function Cache:set(key: string, value: any, ttl: number?): boolean
+	local numberKeys: number = #self:keys()
 	local maxKeys: number = self.options.maxKeys or 0
 
 	if maxKeys > 0 and numberKeys >= maxKeys then
@@ -157,7 +157,7 @@ end
 	local obj = { my = "Special", variable = 42 }
 	local obj2 = { my = "other special", variable = 1337 }
 
-	local success = myCache:SetMultiple({
+	local success = myCache:setMultiple({
 		{ key = "myKey", value = obj, ttl = 10000 },
 		{ key = "myKey2", value = obj2 }
 	})
@@ -167,9 +167,9 @@ end
 	@param cacheObjects { CacheObject } -- The key to set.
 	@return boolean -- Whether or not the value was set.
 ]=]
-function Cache:SetMultiple(cacheObjects: { CacheObject }): boolean
+function Cache:setMultiple(cacheObjects: { CacheObject }): boolean
 	for _, cacheObject: CacheObject in pairs(cacheObjects) do
-		local success: boolean? = self:Set(
+		local success: boolean? = self:set(
 			cacheObject.key,
 			cacheObject.value,
 			cacheObject.ttl
@@ -189,13 +189,13 @@ end
 	Gets a saved `value` from the cache. Returns `nil` if not found or expired. If the `value` was found it returns the `value`.
 
 	```lua
-	local value = myCache:Get("myKey")
+	local value = myCache:get("myKey")
 	```
 
 	@param key string -- The key to retrieve.
 	@return CacheEntry? -- The value of the key.
 ]=]
-function Cache:Get(key: string): CacheEntry?
+function Cache:get(key: string): CacheEntry?
 	assert(typeof(key) == "string", "key must be a string")
 
 	local cacheEntry = self._cache[key] :: CacheEntry?
@@ -211,20 +211,20 @@ end
 	### Take a key:
 
 	Get the cached `value` and remove the `key` from the cache.
-	Equivalent to calling `Get(key)` + `Delete(key)`.
+	Equivalent to calling `get(key)` + `delete(key)`.
 	Useful for implementing `single use` mechanism, where once a value is read it will become obsolete.
 
 	```lua
-	myCache:Set("myKey", "myValue", 10000)
-	myCache:Has("myKey") -- true
-	local value = myCache:Take("myKey") -- "myValue"
-	myCache:Has("myKey") -- false
+	myCache:set("myKey", "myValue", 10000)
+	myCache:has("myKey") -- true
+	local value = myCache:take("myKey") -- "myValue"
+	myCache:has("myKey") -- false
 	```
 
 	@param key string -- The key to retrieve.
 	@return CacheEntry? -- The value of the key.
 ]=]
-function Cache:Take(key: string): CacheEntry?
+function Cache:take(key: string): CacheEntry?
 	assert(typeof(key) == "string", "key must be a string")
 
 	local cacheEntry = self._cache[key] :: CacheEntry?
@@ -246,17 +246,17 @@ end
 	If the values were found it returns a table with the `key` `value` pair(s).
 
 	```lua
-	local values = myCache:GetMultiple({ "myKey", "myKey2" })
+	local values = myCache:getMultiple({ "myKey", "myKey2" })
 	```
 
 	@param keys { string } -- The keys to retrieve.
 	@return { [string]: any } -- The values of the keys.
 ]=]
-function Cache:GetMultiple(keys: { string }): { [string]: any }
+function Cache:getMultiple(keys: { string }): { [string]: any }
 	local values = {} :: { [string]: any }
 
 	for _, key: string in pairs(keys) do
-		values[key] = self:Get(key)
+		values[key] = self:get(key)
 	end
 
 	return values
@@ -266,13 +266,13 @@ end
 	Deletes a key. Returns the number of deleted entries. A delete will not fail if the key is not existing.
 
 	```lua
-	local deleted: number = myCache:Delete("myKey")
+	local deleted: number = myCache:delete("myKey")
 	```
 
 	@param key string -- The key to delete.
 	@return number -- The number of deleted entries.
 ]=]
-function Cache:Delete(key: string): number
+function Cache:delete(key: string): number
 	assert(typeof(key) == "string", "key must be a string")
 
 	if self._cache[key] == nil then
@@ -288,17 +288,17 @@ end
 	Deletes multiple keys. Returns the number of deleted entries. This will not fail if a key is not existing.
 
 	```lua
-	local deleted: number = myCache:MultipleDelete({ "myKey", "myKey2" })
+	local deleted: number = myCache:multipleDelete({ "myKey", "myKey2" })
 	```
 
 	@param keys { string } -- The keys to delete.
 	@return number -- The number of deleted entries.
 ]=]
-function Cache:MultipleDelete(keys: { string }): number
+function Cache:multipleDelete(keys: { string }): number
 	local deleted: number = 0
 
 	for _, key: string in pairs(keys) do
-		deleted += self:Delete(key)
+		deleted += self:delete(key)
 	end
 
 	return deleted
@@ -308,14 +308,14 @@ end
 	Updates the `ttl` of a key. Returns `true` on success.
 
 	```lua
-	local success = myCache:TTL("myKey", 10000)
+	local success = myCache:ttl("myKey", 10000)
 	```
 
 	@param key string -- The key to update.
 	@param ttl number -- The time-to-live for the cache entry.
 	@return boolean -- Whether or not the ttl was updated.
 ]=]
-function Cache:TTL(key: string, ttl: number): boolean
+function Cache:ttl(key: string, ttl: number): boolean
 	assert(typeof(key) == "string", "key must be a string")
 	assert(typeof(ttl) == "number", "ttl must be a number")
 
@@ -334,13 +334,13 @@ end
 	Returns the `ttl` of a key. Returns `nil` if not found or expired.
 
 	```lua
-	local ttl = myCache:GetTTL("myKey")
+	local ttl = myCache:getTTL("myKey")
 	```
 
 	@param key string -- The key to retrieve.
 	@return number? -- The time-to-live for the cache entry.
 ]=]
-function Cache:GetTTL(key: string): number?
+function Cache:getTTL(key: string): number?
 	assert(typeof(key) == "string", "key must be a string")
 
 	local cacheEntry = self._cache[key] :: CacheEntry?
@@ -356,12 +356,12 @@ end
 	Returns all keys in the cache.
 
 	```lua
-	local keys = myCache:Keys()
+	local keys = myCache:keys()
 	```
 
 	@return { string } -- The keys in the cache.
 ]=]
-function Cache:Keys(): { string }
+function Cache:keys(): { string }
 	local keys = {} :: { string }
 
 	for key: string, _ in pairs(self._cache) do
@@ -375,13 +375,13 @@ end
 	Returns a boolean indicating whether an element with the specified key exists or not.
 
 	```lua
-	myCache:Has("myKey") -- true
+	myCache:has("myKey") -- true
 	```
 
 	@param key string -- The key to check.
 	@return boolean -- Whether or not the key exists.
 ]=]
-function Cache:Has(key: string): boolean
+function Cache:has(key: string): boolean
 	assert(typeof(key) == "string", "key must be a string")
 
 	return self._cache[key] ~= nil
@@ -393,10 +393,10 @@ end
 	Used for cleanup.
 
 	```lua
-	myCache:Destroy()
+	myCache:destroy()
 	```
 ]=]
-function Cache:Destroy(): nil
+function Cache:destroy(): nil
 	self._cache = {}
 
 	self._maid:clean()
