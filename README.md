@@ -23,4 +23,4 @@ local Palette = import("dLib/Palette")
 print(Palette.get("blue", 500))
 ```
 
-[Click here](./dlib/api/dLib) to learn how to import your first dLib module.
+[Click here](https://dig1t.github.io/dlib/api/dLib) to learn how to import your first dLib module.
