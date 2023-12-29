@@ -1,13 +1,18 @@
 {
-  "name": "dlib-library",
+  "name": "dlib",
   "version": "1.1.10",
-  "description": "A library for Roblox development",
+  "description": "Modules and Libraries for development in Roblox",
   "main": "src/init.luau",
   "scripts": {
-    "build:rojo": "rojo build -o dLib.rbxl dev.project.json",
+    "build:dependencies": "wally install",
+    "build:rojo": "rojo build -o dev-build.rbxl dev.project.json",
     "build:docs": "moonwave build",
-    "build": "npm run build:rojo",
-    "dev": "npm run build && dLib.rbxl && npm start",
+    "build": "npm run build:dependencies && npm run build:rojo",
+
+    "test:run": "run-in-roblox --place dev-build.rbxl --script runners/test.lua",
+    "test": "npm run build && npm run test:run",
+
+    "dev": "npm run build && dev-build.rbxl && npm start",
     "start": "rojo serve dev.project.json"
   },
   "repository": {
