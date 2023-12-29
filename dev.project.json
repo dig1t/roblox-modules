@@ -1,5 +1,5 @@
 {
-  "name": "dlib dev",
+  "name": "dLib Dev",
   "tree": {
     "$className": "DataModel",
 
@@ -12,6 +12,10 @@
         "dLib": {
           "$path": "src"
         }
+      },
+
+      "TestEZ": {
+        "$path": "modules/testez"
       }
 	  },
 
