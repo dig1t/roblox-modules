@@ -188,10 +188,10 @@ end
 function methods:setProjectileReference(object)
 	assert(object, "WeaponServer:setProjectileReference - Missing reference object")
 	if typeof(object) == "Instance" then
-		--[[assert(
+		assert(
 			object:IsDescendantOf(ReplicatedStorage),
 			"WeaponServer:setProjectileReference - Object must be a descendant of ReplicatedStorage"
-		)]]
+		)
 	end
 
 	if typeof(object) == "function" then

@@ -85,7 +85,7 @@ end
 	maid:task(Instance.new("Part"))
 
 	-- Packages with "Destroy", "destroy", or "destructor" methods
-	local instance = Package.new({
+	local instance = Class.new({
 		PackageVariable = "Hello world!",
 		Destroy = function()
 			-- destroy this package instance

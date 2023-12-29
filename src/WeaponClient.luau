@@ -266,6 +266,7 @@ function methods:shoot()
 			localTracer = true
 		})
 	else
+		print("render projectile locally")
 		-- render local projectile
 	end
 end
@@ -458,11 +459,10 @@ function WeaponClient.new(config)
 		end
 	end
 
-	while (
-		not Players.LocalPlayer.Character or
+	while not Players.LocalPlayer.Character or
 		not Players.LocalPlayer.Character.Parent or
 		not config.tool:FindFirstChild("Ready")
-	) do
+	do
 		RunService.RenderStepped:Wait()
 	end
 
@@ -500,8 +500,8 @@ function WeaponClient.new(config)
 			end)
 		end]]
 
-		for inputName, data in pairs(self._inputData) do
-			for eventName, condition in pairs(data.listeners) do
+		for _inputName, data in pairs(self._inputData) do
+			for eventName, _condition in pairs(data.listeners) do
 				-- Start listing to eventName (InputBegan, InputEnded, etc.)
 				if not self._connections[eventName] then
 					self._connections[eventName] = UserInputService[eventName]:Connect(function(...)
