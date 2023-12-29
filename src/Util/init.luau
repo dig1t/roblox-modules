@@ -293,7 +293,7 @@ end
 Util.rotateModel = function(model: Model, angle: number): nil
 	local rotate: CFrame = CFrame.fromEulerAnglesXYZ(0, angle, 0)
 
-	for i, object: BasePart in pairs(model:GetChildren()) do
+	for _, object: BasePart in pairs(model:GetChildren()) do
 		if object:IsA("BasePart") then
 			object.CFrame = rotate * object.CFrame
 		end
@@ -312,7 +312,7 @@ Util.moveModel = function(model: Model, to: CFrame): nil
 			end
 
 			local newPositionInWorld: Vector3 = part.Position - origin + to.Position
-			local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
+			local _x, _y, _z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
 
 			part.CFrame = CFrame.new(newPositionInWorld.X, newPositionInWorld.Y, newPositionInWorld.Z, R00, R01, R02, R10, R11, R12, R20, R21, R22)
 		end
