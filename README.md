@@ -1,5 +1,5 @@
-[![CI](https://github.com/dig1t/dlib/actions/workflows/ci.yml/badge.svg)](https://github.com/dig1t/dlib/actions/workflows/ci.yml)
-[![Docs](https://github.com/dig1t/dlib/actions/workflows/docs.yml/badge.svg)](https://github.com/dig1t/dlib/actions/workflows/docs.yml)
+[![CI](https://github.com/dig1t/dlib/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dig1t/dlib/actions/workflows/ci.yml)
+[![Docs](https://github.com/dig1t/dlib/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/dig1t/dlib/actions/workflows/docs.yml)
 [![Coverage Status](https://coveralls.io/repos/github/dig1t/dlib/badge.svg?branch=main)](https://coveralls.io/github/dig1t/dlib?branch=main)
 
 # dLib
