@@ -19,4 +19,5 @@ build
 *.rbxl
 
 # lock files
-wally.lock
+*.lock
+package-lock.json
