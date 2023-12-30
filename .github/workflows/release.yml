@@ -88,6 +88,15 @@ jobs:
       - name: Install dependencies
         run: npm run build:dependencies
 
+      - name: Amend the last commit
+        run: |
+          git config user.name "$(git log -n 1 --pretty=format:%an)"
+          git config user.email "$(git log -n 1 --pretty=format:%ae)"
+          git add --all
+          git commit -m "Update to ${{ steps.update-files.outputs.TAG_NAME }}"
+          git push -u origin main --force-with-lease
+          echo "Commit amended"
+
       - name: Build package
         run: rojo build -o ${{ steps.update-files.outputs.REPO_NAME }}.rbxl build.project.json
 
