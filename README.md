@@ -8,10 +8,12 @@ Modules and Libraries for development in Roblox.
 ## Installing with wally
 Add the below line to your wally.toml file
 ```toml
-  dlib = "dig1t/dlib@1.1.29"
+dlib = "dig1t/dlib@1.1.29"
 ```
 ## Installing with Roblox Studio
-Download the rbxm file from the [releases](https://github.com/dig1t/dlib/releases) tab and insert it into ReplicatedStorage or your location of choice.
+Download the rbxl file from the [releases](https://github.com/dig1t/dlib/releases) tab.
+
+Once the place file is open, you can find the package inside `ReplicatedStorage.Packages`.
 
 ### Usage
 ```lua
