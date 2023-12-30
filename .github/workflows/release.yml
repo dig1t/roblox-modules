@@ -97,6 +97,9 @@ jobs:
           git push -u origin main --force-with-lease
           echo "Commit amended"
 
+      - name: Authenticate with wally
+        run: wally login --token ${{ secrets.WALLY_TOKEN }}
+
       - name: Publish to wally
         run: wally publish --token ${{ secrets.WALLY_TOKEN }}
 
