@@ -98,7 +98,7 @@ jobs:
           echo "Commit amended"
 
       - name: Publish to wally
-        run: wally publish
+        run: wally publish --token ${{ secrets.WALLY_TOKEN }}
 
       - name: Build package place file
         run: rojo build -o ${{ steps.update-files.outputs.REPO_NAME }}.rbxl build.project.json
