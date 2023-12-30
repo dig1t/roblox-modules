@@ -32,7 +32,7 @@ jobs:
 
           forward_repo_pattern="${REPO_OWNER}/"
           empty_str=""
-          repo=${github.repository}
+          repo=${{github.repository}}
           echo "REPO_NAME=${repo/${forward_repo_pattern}/${empty_str}}" >> $GITHUB_ENV
 
           # Use the GitHub API to fetch the repository description
