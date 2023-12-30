@@ -116,9 +116,7 @@ jobs:
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
           git commit -m "Update to ${needs.get_published_release.outputs.tag_name}"
-          git fetch origin main
-          git merge FETCH_HEAD
-          git push origin main 2> error.log
+          git push origin HEAD:main --force
           echo "Commit amended"
 
       - name: Build package
