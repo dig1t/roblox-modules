@@ -89,7 +89,7 @@ jobs:
         run: npm run build:dependencies
 
       - name: Build package
-        run: rojo build -o ${steps.update-files.outputs.REPO_NAME}.rbxl build.project.json
+        run: rojo build -o ${{ steps.update-files.outputs.REPO_NAME }}.rbxl build.project.json
 
       - name: Upload Roblox level file to release
         uses: actions/upload-release-asset@v1
