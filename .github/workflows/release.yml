@@ -71,8 +71,8 @@ jobs:
 
           # read README.md file
           readme_contents=$(<README.md)
-          target_readme_version_line=$(echo "$readme_contents" | grep -F "${REPO_NAME} = \"${REPO_OWNER}/${REPO_NAME}@")
-          goal_readme_version_line="  ${REPO_NAME} = \"${REPO_OWNER}/${REPO_NAME}@${goal_version_str#v}\""
+          target_readme_version_line=$(echo "$readme_contents" | grep -F "${REPO_NAME} = \"")
+          goal_readme_version_line="${REPO_NAME} = \"${REPO_OWNER}/${REPO_NAME}@${goal_version_str#v}\""
           readme_contents="${readme_contents/${target_readme_version_line}/${goal_readme_version_line}}"
 
           # update README.md file
