@@ -118,7 +118,7 @@ jobs:
           git commit -m "Update to ${needs.get_published_release.outputs.tag_name}"
           git fetch origin main
           git merge FETCH_HEAD
-          git push origin main
+          git push origin main 2> error.log
           echo "Commit amended"
 
       - name: Build package
