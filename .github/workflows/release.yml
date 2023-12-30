@@ -37,12 +37,19 @@ jobs:
 
           # Use the GitHub API to fetch the repository description
           description_prefix="\"description\":"
+          echo "Commit 1"
           curl -L "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}" > desc.text
+          echo "Commit 2"
           desc=$(<desc.text)
-          desc=$(echo "$desc" | grep -F "$description_prefix")
+          echo "Commit 3"
+          desc=$(echo "$desc" | grep -F "${description_prefix}")
+          echo "Commit 4"
           desc="${desc/${description_prefix}/${empty_str}}"
-          repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
-          echo "REPO_DESC=$repo_desc" >> $GITHUB_ENV
+          echo "Commit 5"
+          repo_desc=$(echo "${desc}" | grep -o '"[^"]*"')
+          echo "Commit 6"
+          echo "REPO_DESC=${repo_desc}" >> $GITHUB_ENV
+          echo "Commit 7"
 
       - name: Update files with new version
         shell: bash
