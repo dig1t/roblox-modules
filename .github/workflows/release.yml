@@ -100,8 +100,8 @@ jobs:
       - name: Prepare for wally authentication
         shell: pwsh
         run: |
-          mkdir -p $env:USERPROFILE/.wally
-          echo '${{ secrets.WALLY_TOKEN }}' > $env:USERPROFILE/.wally/auth.toml
+          mkdir -p $HOME/.wally
+          echo '${{ secrets.WALLY_TOKEN }}' > $HOME/.wally/auth.toml
 
       - name: Publish to wally
         run: wally publish
