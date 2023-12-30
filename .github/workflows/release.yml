@@ -16,33 +16,33 @@ jobs:
       tag_name: ${{ steps.release_info.outputs.tag_name }}
       repo_desc: ${{ steps.release_info.outputs.repo_desc }}
       repo_name: ${{ steps.release_info.outputs.repo_name }}
-      repo_owner_name: ${{ steps.release_info.outputs.repo_owner_name }}
+      repo_owner: ${{ steps.release_info.outputs.repo_owner }}
 
     steps:
       - name: Set Release Info
         id: release_info
         run: |
-          echo "::set-output name=tag_name::${{ github.event.release.tag_name }}"
-          echo "::set-output name=release_id::${{ github.event.release.id }}"
-          echo "::set-output name=upload_url::${{ github.event.release.upload_url }}"
-
-          repo_owner_name=${{ github.repository_owner }}
-          echo "::set-output name=repo_owner_name::$repo_owner_name"
-
           repo_name=${{ github.repository }}
-          forward_repo_pattern="${repo_owner_name}/"
+          repo_owner_name=${{ github.repository_owner }}
+
+          echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          echo "release_id=${{ github.event.release.id }}" >> $GITHUB_OUTPUT
+          echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
+          echo "repo_owner=$repo_owner" >> $GITHUB_OUTPUT
+
+          forward_repo_pattern="${repo_owner}/"
           empty_str=""
           repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
-          echo "::set-output name=repo_name::$repo_name"
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
           # Use the GitHub API to fetch the repository description
           description_prefix="\"description\":"
-          curl -L "https://api.github.com/repos/${repo_owner_name}/${repo_name}" > desc.text
+          curl -L "https://api.github.com/repos/${repo_owner}/${repo_name}" > desc.text
           desc=$(<desc.text)
           desc=$(echo "$desc" | grep -F "$description_prefix")
           desc="${desc/${description_prefix}/${empty_str}}"
           repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
-          echo "::set-output name=repo_desc::$repo_desc"
+          echo "repo_desc=$repo_desc" >> $GITHUB_OUTPUT
 
   publish:
     needs: get_published_release
@@ -54,6 +54,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          submodules: recursive
 
       - name: Setup node
         uses: actions/setup-node@v4
@@ -63,7 +64,7 @@ jobs:
       - name: Update files with new version
         shell: bash
         run: |
-          repo_owner="${{needs.get_published_release.outputs.repo_owner_name}}"
+          repo_owner="${{needs.get_published_release.outputs.repo_owner}}"
           repo_name="${{needs.get_published_release.outputs.repo_name}}"
           repo_desc=${{needs.get_published_release.outputs.repo_desc}}
           goal_version_str="${{needs.get_published_release.outputs.tag_name}}"
