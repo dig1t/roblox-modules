@@ -97,8 +97,19 @@ jobs:
           git push -u origin main --force-with-lease
           echo "Commit amended"
 
-      - name: Authenticate with wally
-        run: wally login --token ${{ secrets.WALLY_TOKEN }}
+      - name: Touch file if missing
+        run: |
+          mkdir -p ~/.wally
+          touch ~/.wally/auth.toml
+
+      - name: Add wally auth.toml file
+        run: |
+          mkdir -p ~/.wally
+          touch ~/.wally/auth.toml
+          cat > ~/.wally/auth.toml <<- EOM
+          [tokens]
+          "https://api.wally.run/" = "${{ secrets.WALLY_TOKEN }}"
+          EOM
 
       - name: Publish to wally
         run: wally publish
