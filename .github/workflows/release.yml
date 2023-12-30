@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     outputs:
       TAG_NAME: ${{ steps.update-files.outputs.handle }}
@@ -97,17 +97,15 @@ jobs:
           git push -u origin main --force-with-lease
           echo "Commit amended"
 
-      - name: Add wally auth.toml file
+      - name: Prepare for wally authentication
+        shell: pwsh
         run: |
-          mkdir -p ~/.wally
-          touch ~/.wally/auth.toml
-          cat > ~/.wally/auth.toml <<- EOM
-          [tokens]
-          "https://api.wally.run/" = "${{ secrets.WALLY_TOKEN }}"
-          EOM
+          mkdir -p $env:USERPROFILE/.wally
+          echo '${{ secrets.WALLY_TOKEN }}' > $env:USERPROFILE/.wally/auth.toml
 
       - name: Publish to wally
         run: wally publish
+        timeout-minutes: 5
 
       - name: Build package place file
         run: rojo build -o ${{ steps.update-files.outputs.REPO_NAME }}.rbxl build.project.json
