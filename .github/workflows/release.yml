@@ -100,12 +100,12 @@ jobs:
       - name: Prepare for wally authentication
         shell: pwsh
         run: |
-        mkdir -p $env:USERPROFILE/.wally
-        echo '${{ secrets.WALLY_AUTH }}' > $env:USERPROFILE/.wally/auth.toml
+          mkdir -p $env:USERPROFILE/.wally
+          echo '${{ secrets.WALLY_AUTH }}' > $env:USERPROFILE/.wally/auth.toml
 
-        dir=$(find $env:USERPROFILE/AppData/Local/wally/index -type d -name "github-*" -print -quit)
+          dir=$(find $env:USERPROFILE/AppData/Local/wally/index -type d -name "github-*" -print -quit)
 
-        echo '${{ secrets.GH_AUTH }}' > $dir/config.json.toml
+          echo '${{ secrets.GH_AUTH }}' > $dir/config.json.toml
 
       - name: Publish to wally
         run: wally publish
