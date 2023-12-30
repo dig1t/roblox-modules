@@ -10,6 +10,11 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
+    outputs:
+      TAG_NAME: ${{ steps.update-files.outputs.handle }}
+      REPO_NAME: ${{ steps.update-files.outputs.handle }}
+      UPLOAD_URL: ${{ steps.update-files.outputs.handle }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,6 +29,7 @@ jobs:
           node-version: 20
 
       - name: Update files with new version
+        id: update-files
         shell: bash
         run: |
           TAG_NAME=${{ github.event.release.tag_name }}
@@ -72,9 +78,9 @@ jobs:
           # update README.md file
           echo "$readme_contents" > README.md
 
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-          echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_ENV
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
       - name: Install aftman dependencies
         uses: ok-nick/setup-aftman@v0.4.2
@@ -90,7 +96,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: $UPLOAD_URL
-          asset_path: $REPO_NAME.rbxl
-          asset_name: $REPO_NAME.rbxl
+          upload_url: ${{ steps.update-files.outputs.UPLOAD_URL }}
+          asset_path: ${{ steps.update-files.outputs.REPO_NAME }}.rbxl
+          asset_name: ${{ steps.update-files.outputs.REPO_NAME }}.rbxl
           asset_content_type: application/octet-stream
