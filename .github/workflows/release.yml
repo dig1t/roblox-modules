@@ -25,22 +25,19 @@ jobs:
 
       - name: Set Release Info
         run: |
-          repo_name=${{ github.repository }}
-          repo_owner_name=${{ github.repository_owner }}
-
           echo "TAG_NAME=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
           echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
           echo "UPLOAD_URL=${{ github.event.release.upload_url }}" >> $GITHUB_ENV
-          echo "REPO_OWNER=$repo_owner" >> $GITHUB_ENV
+          echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
 
-          forward_repo_pattern="${repo_owner}/"
+          forward_repo_pattern="${REPO_OWNER}/"
           empty_str=""
-          repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
-          echo "REPO_NAME=$repo_name" >> $GITHUB_ENV
+          repo=${github.repository}
+          echo "REPO_NAME=${repo/${forward_repo_pattern}/${empty_str}}" >> $GITHUB_ENV
 
           # Use the GitHub API to fetch the repository description
           description_prefix="\"description\":"
-          curl -L "https://api.github.com/repos/${repo_owner}/${repo_name}" > desc.text
+          curl -L "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}" > desc.text
           desc=$(<desc.text)
           desc=$(echo "$desc" | grep -F "$description_prefix")
           desc="${desc/${description_prefix}/${empty_str}}"
@@ -50,6 +47,7 @@ jobs:
       - name: Update files with new version
         shell: bash
         run: |
+
           goal_version_str=${TAG_NAME#v}
 
           # read wally.toml file
