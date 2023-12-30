@@ -103,9 +103,16 @@ jobs:
           mkdir -p $env:USERPROFILE/.wally
           echo '${{ secrets.WALLY_AUTH }}' > $env:USERPROFILE/.wally/auth.toml
 
-          dir=$(find $env:USERPROFILE/AppData/Local/wally/index -type d -name "github-*" -print -quit)
+          # Find the first directory that matches the pattern
+          $directory = Get-ChildItem -Path "$env:USERPROFILE\AppData\Local\wally\index" -Directory -Filter "github-*" | Select-Object -First 1
 
-          echo '${{ secrets.GH_AUTH }}' > $dir/config.json.toml
+          # Check if directory is found
+          if ($directory) {
+              # Write to config.json in the found directory
+              '${{ secrets.GH_AUTH }}' | Set-Content -Path "$directory\config.json"
+          } else {
+              Write-Output "Directory not found or doesn't match the pattern."
+          }
 
       - name: Publish to wally
         run: wally publish
