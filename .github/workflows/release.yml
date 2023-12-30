@@ -115,12 +115,12 @@ jobs:
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
-          git commit -m "Update to ${{needs.get_published_release.outputs.tag_name}}"
-          git push origin HEAD:main --force-with-lease
+          git commit -m "Update to ${needs.get_published_release.outputs.tag_name}"
+          git push origin main
           echo "Commit amended"
 
       - name: Build package
-        run: rojo build -o ${needs.get_published_release.outputs.repo_name}.rbxl build.project.json
+        run: rojo build -o ${{ needs.get_published_release.outputs.repo_name }}.rbxl build.project.json
 
       - name: Upload Roblox level file to release
         uses: actions/upload-release-asset@v1
@@ -128,6 +128,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.get_published_release.outputs.upload_url }}
-          asset_path: ${needs.get_published_release.outputs.repo_name}.rbxl
-          asset_name: ${needs.get_published_release.outputs.repo_name}.rbxl
+          asset_path: ${{ needs.get_published_release.outputs.repo_name }}.rbxl
+          asset_name: ${{ needs.get_published_release.outputs.repo_name }}.rbxl
           asset_content_type: application/octet-stream
