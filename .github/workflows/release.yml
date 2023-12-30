@@ -23,21 +23,18 @@ jobs:
         with:
           node-version: 20
 
-      - name: Set Release Info
+      - name: Update files with new version
+        shell: bash
         run: |
-          echo "TAG_NAME=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
-          echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
-          echo "UPLOAD_URL=${{ github.event.release.upload_url }}" >> $GITHUB_ENV
-          echo "REPO_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
+          TAG_NAME=${{ github.event.release.tag_name }}
+          RELEASE_ID=${{ github.event.release.id }}
+          UPLOAD_URL=${{ github.event.release.upload_url }}
+          REPO_OWNER=${{ github.repository_owner }}
 
           forward_repo_pattern="${REPO_OWNER}/"
           empty_str=""
           repo=${{github.repository}}
-          echo "REPO_NAME=${repo/${forward_repo_pattern}/${empty_str}}" >> $GITHUB_ENV
-
-      - name: Update files with new version
-        shell: bash
-        run: |
+          REPO_NAME=${repo/${forward_repo_pattern}/${empty_str}}
 
           goal_version_str=${TAG_NAME#v}
 
@@ -75,20 +72,15 @@ jobs:
           # update README.md file
           echo "$readme_contents" > README.md
 
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_ENV
+
       - name: Install aftman dependencies
         uses: ok-nick/setup-aftman@v0.4.2
 
       - name: Install dependencies
         run: npm run build:dependencies
-
-      - name: Amend the last commit
-        run: |
-          git config user.name "$(git log -n 1 --pretty=format:%an)"
-          git config user.email "$(git log -n 1 --pretty=format:%ae)"
-          git add --all
-          git commit -m "Update to $TAG_NAME"
-          git push -u origin main --force-with-lease
-          echo "Commit amended"
 
       - name: Build package
         run: rojo build -o $REPO_NAME.rbxl build.project.json
