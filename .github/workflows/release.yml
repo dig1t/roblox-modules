@@ -104,15 +104,9 @@ jobs:
           echo '${{ secrets.WALLY_AUTH }}' > $env:USERPROFILE/.wally/auth.toml
 
           # Find the first directory that matches the pattern
-          $directory = Get-ChildItem -Path "$env:USERPROFILE\AppData\Local\wally\index" -Directory -Filter "github-*" | Select-Object -First 1
+          $dir=Get-ChildItem -Path "$env:USERPROFILE\AppData\Local\wally\index\github.com-*/config.json" -File | Select-Object -First 1
 
-          # Check if directory is found
-          if ($directory) {
-              # Write to config.json in the found directory
-              '${{ secrets.GH_AUTH }}' | Set-Content -Path "$directory\config.json"
-          } else {
-              Write-Output "Directory not found or doesn't match the pattern."
-          }
+          echo '${{ secrets.GH_AUTH }}' > $dir.FullName
 
       - name: Publish to wally
         run: wally publish
