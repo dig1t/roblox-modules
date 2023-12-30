@@ -117,7 +117,6 @@ jobs:
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
-          git pull --prune
           git push -u origin main --force-with-lease
           echo "Commit amended"
 
