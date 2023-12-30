@@ -106,7 +106,7 @@ jobs:
           # Find the first directory that matches the pattern
           $dir=Get-ChildItem -Path "$env:USERPROFILE\AppData\Local\wally\index\github.com-*/config.json" -File | Select-Object -First 1
 
-          echo '${{ secrets.GH_AUTH }}' > $dir.FullName
+          Set-Content -Path $dir.FullName -Value '${{ secrets.GH_AUTH }}'
 
       - name: Publish to wally
         run: wally publish
