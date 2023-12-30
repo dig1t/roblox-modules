@@ -7,33 +7,25 @@ on:
     types: [published]
 
 jobs:
-  get_published_release:
+  get-published-release:
     runs-on: ubuntu-latest
-
-    outputs:
-      release_id: ${{ steps.release_info.outputs.release_id }}
-      upload_url: ${{ steps.release_info.outputs.upload_url }}
-      tag_name: ${{ steps.release_info.outputs.tag_name }}
-      repo_desc: ${{ steps.release_info.outputs.repo_desc }}
-      repo_name: ${{ steps.release_info.outputs.repo_name }}
-      repo_owner: ${{ steps.release_info.outputs.repo_owner }}
 
     steps:
       - name: Set Release Info
-        id: release_info
+        id: release-info
         run: |
           repo_name=${{ github.repository }}
           repo_owner_name=${{ github.repository_owner }}
 
-          echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          echo "release_id=${{ github.event.release.id }}" >> $GITHUB_OUTPUT
-          echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
-          echo "repo_owner=$repo_owner" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          echo "RELEASE_ID=${{ github.event.release.id }}" >> $GITHUB_ENV
+          echo "UPLOAD_URL=${{ github.event.release.upload_url }}" >> $GITHUB_ENV
+          echo "REPO_OWNER=$repo_owner" >> $GITHUB_ENV
 
           forward_repo_pattern="${repo_owner}/"
           empty_str=""
           repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
-          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=$repo_name" >> $GITHUB_ENV
 
           # Use the GitHub API to fetch the repository description
           description_prefix="\"description\":"
@@ -42,10 +34,10 @@ jobs:
           desc=$(echo "$desc" | grep -F "$description_prefix")
           desc="${desc/${description_prefix}/${empty_str}}"
           repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
-          echo "repo_desc=$repo_desc" >> $GITHUB_OUTPUT
+          echo "REPO_DESC=$repo_desc" >> $GITHUB_ENV
 
   publish:
-    needs: get_published_release
+    needs: get-published-release
     runs-on: ubuntu-latest
 
     steps:
@@ -64,10 +56,10 @@ jobs:
       - name: Update files with new version
         shell: bash
         run: |
-          repo_owner="${{needs.get_published_release.outputs.repo_owner}}"
-          repo_name="${{needs.get_published_release.outputs.repo_name}}"
-          repo_desc=${{needs.get_published_release.outputs.repo_desc}}
-          goal_version_str="${{needs.get_published_release.outputs.tag_name}}"
+          repo_owner="${{env.REPO_OWNER}}"
+          repo_name="${{env.REPO_NAME}}"
+          repo_desc=${{env.REPO_DESC}}
+          goal_version_str="${{env.TAG_NAME}}"
 
           # read wally.toml file
           wally_toml_contents=$(<wally.toml)
@@ -119,19 +111,19 @@ jobs:
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
-          git commit -m "Update to ${{ needs.get_published_release.outputs.tag_name }}"
+          git commit -m "Update to ${{ env.TAG_NAME }}"
           git push -u origin main --force-with-lease
           echo "Commit amended"
 
       - name: Build package
-        run: rojo build -o ${{ needs.get_published_release.outputs.repo_name }}.rbxl build.project.json
+        run: rojo build -o ${{ env.REPO_NAME }}.rbxl build.project.json
 
       - name: Upload Roblox level file to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
-          asset_path: ${{ needs.get_published_release.outputs.repo_name }}.rbxl
-          asset_name: ${{ needs.get_published_release.outputs.repo_name }}.rbxl
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: ${{ env.REPO_NAME }}.rbxl
+          asset_name: ${{ env.REPO_NAME }}.rbxl
           asset_content_type: application/octet-stream
