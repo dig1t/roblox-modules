@@ -104,7 +104,7 @@ jobs:
           echo '${{ secrets.WALLY_TOKEN }}' > $HOME/.wally/auth.toml
 
       - name: Publish to wally
-        run: wally publish
+        run: wally publish --token ${{ secrets.WALLY_TOKEN }}
         timeout-minutes: 5
 
       - name: Build package place file
