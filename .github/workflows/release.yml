@@ -115,8 +115,8 @@ jobs:
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
-          git commit -m "Update to ${needs.get_published_release.outputs.tag_name}"
-          git push origin HEAD:main --force
+          git pull --rebase origin main
+          git push -u origin main
           echo "Commit amended"
 
       - name: Build package
