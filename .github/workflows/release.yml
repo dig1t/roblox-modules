@@ -78,9 +78,9 @@ jobs:
           # update README.md file
           echo "$readme_contents" > README.md
 
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
-          echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_OUTPUT
+          echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_OUTPUT
 
       - name: Install aftman dependencies
         uses: ok-nick/setup-aftman@v0.4.2
