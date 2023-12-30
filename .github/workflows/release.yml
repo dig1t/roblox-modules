@@ -42,7 +42,7 @@ jobs:
           echo "Commit 2"
           desc=$(<desc.text)
           echo "Commit 3"
-          desc=$(echo "${desc}" | grep -F "${description_prefix}")
+          desc=$(echo "$desc" | grep -F "$description_prefix")
           echo "Commit 4"
           desc="${desc/${description_prefix}/${empty_str}}"
           echo "Commit 5"
