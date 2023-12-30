@@ -97,11 +97,6 @@ jobs:
           git push -u origin main --force-with-lease
           echo "Commit amended"
 
-      - name: Touch file if missing
-        run: |
-          mkdir -p ~/.wally
-          touch ~/.wally/auth.toml
-
       - name: Add wally auth.toml file
         run: |
           mkdir -p ~/.wally
