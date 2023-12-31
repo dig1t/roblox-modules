@@ -119,3 +119,12 @@ jobs:
           asset_path: ${{ steps.update-files.outputs.REPO_NAME }}.rbxl
           asset_name: ${{ steps.update-files.outputs.REPO_NAME }}.rbxl
           asset_content_type: application/octet-stream
+
+      - name: Upload to Roblox
+        shell: bash
+        run: |
+          find ./src -name "*.spec.lua" -type f -delete
+          rojo upload default.project.json --asset_id $ASSET_ID --cookie "$ROBLOSECURITY"
+        env:
+          ROBLOSECURITY: ${{ secrets.ROBLOSECURITY }}
+          ASSET_ID: ${{ vars.RBLX_ASSET_ID }}
