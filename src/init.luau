@@ -159,7 +159,7 @@ end
 
 if RunService:IsServer() then
 	local ServerPackages: any = ServerScriptService:FindFirstChild("ServerPackages")
-	local Server: any = ServerScriptService:FindFirstChild("Server")
+	local Server: any = ServerScriptService
 
 	if Server then
 		dLib.setRootPath("Server", Server)
@@ -171,7 +171,7 @@ if RunService:IsServer() then
 end
 
 if RunService:IsClient() then
-	dLib.setRootPath("Client", Players.LocalPlayer.PlayerScripts.Client)
+	dLib.setRootPath("Client", Players.LocalPlayer.PlayerScripts)
 end
 
 return dLib
