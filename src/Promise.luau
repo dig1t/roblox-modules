@@ -11,7 +11,7 @@ type PromiseClass = {
 	resolve: (self: Promise, ...any) -> nil,
 	reject: (self: Promise, any) -> nil,
 	destroy: (self: Promise) -> nil,
-	thenDo: (self: Promise, fn: (...any) -> nil) -> Promise,
+	andThen: (self: Promise, fn: (...any) -> nil) -> Promise,
 	catch: (self: Promise, fn: (any) -> nil) -> Promise,
 	finally: (self: Promise, fn: (...any) -> nil) -> Promise,
 	_run: (self: Promise) -> nil
@@ -49,9 +49,9 @@ export type Promise = typeof(setmetatable(
 	promise = Promise.new(function(resolve, reject)
 		task.wait(1)
 		resolve(0)
-	end):thenDo(function(num)
+	end):andThen(function(num)
 		return num + 1
-	end):thenDo(function(num)
+	end):andThen(function(num)
 		promise:reject("error")
 	end):catch(function(err)
 		warn(err)
@@ -248,7 +248,7 @@ end
 	@param executor function -- The function to call when the promise is fulfilled.
 	@return nil
 ]=]
-function Promise:thenDo(executor: ((...any) -> nil)?): Promise
+function Promise:andThen(executor: ((...any) -> nil)?): Promise
 	assert(typeof(executor) == "function", "Must give a function to resolve")
 
 	if self.status == Promise.statusType.fulfilled then
@@ -284,7 +284,7 @@ function Promise:catch(callback: (any) -> nil): Promise
 end
 
 --[=[
-	Similar to thenDo, finally will always be called at the end of the Promise
+	Similar to andThen, finally will always be called at the end of the Promise
 	and can only be set once, if the Promise is rejected then the callback run with return no parameters
 
 	```lua
