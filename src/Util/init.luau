@@ -1,8 +1,3 @@
---[[
--- @name dLib Utilites
--- @author dig1t
-]]
-
 --!strict
 
 local HttpService = game:GetService("HttpService")
