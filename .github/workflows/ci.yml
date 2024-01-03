@@ -44,11 +44,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Install node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-
     - name: Install aftman dependencies
       uses: ok-nick/setup-aftman@v0.4.2
 
