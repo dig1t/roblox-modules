@@ -18,7 +18,7 @@ jobs:
         uses: ok-nick/setup-aftman@v0.4.2
 
       - name: Download type files
-        run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.lua" > globalTypes.d.lua
+        run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.luau" > globalTypes.d.luau
 
       - name: Generate sourcemaps
         run: rojo sourcemap --include-non-scripts --output sourcemap.json
