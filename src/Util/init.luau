@@ -43,7 +43,6 @@ Util.use("Players")
 Util.use("Search")
 Util.use("System")
 Util.use("Tables")
-Util.use("UI")
 
 Util.asset = "rbxassetid://" :: string
 Util.defaultWalkSpeed = 16 :: number
