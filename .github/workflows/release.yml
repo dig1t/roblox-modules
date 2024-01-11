@@ -82,14 +82,24 @@ jobs:
           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
           echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_OUTPUT
 
-      - name: Commit files with new version
+      - name: Commit files with new version and update tag
         run: |
+          # Commit version update
           git config user.name "$(git log -n 1 --pretty=format:%an)"
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
           git commit -m "Update to ${{ steps.update-files.outputs.TAG_NAME }}"
-          git push -u origin main --force-with-lease
-          echo "Committed changes"
+          git push -u origin main --force-with-lease --tags || true
+
+          # Delete old tag
+          git tag -d ${{ steps.update-files.outputs.TAG_NAME }} || true
+          git push origin --delete ${{ steps.update-files.outputs.TAG_NAME }} || true
+
+          # Create new tag
+          git tag -a ${{ steps.update-files.outputs.TAG_NAME }} -m "Release ${{ steps.update-files.outputs.TAG_NAME }}" || true
+          git push -u origin main --tags || true
+
+          echo "Committed changes and updated tag to ${{ steps.update-files.outputs.TAG_NAME }}"
 
       - name: Install aftman dependencies
         uses: ok-nick/setup-aftman@v0.4.2
