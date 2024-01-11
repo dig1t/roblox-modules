@@ -75,7 +75,7 @@ jobs:
           # update README.md file
           echo "$readme_contents" > README.md
 
-      - name: Commit files with new version and update tag
+      - name: Commit files with new version
         id: commit-files
         run: |
           # Commit version update
@@ -83,7 +83,7 @@ jobs:
           git config user.email "$(git log -n 1 --pretty=format:%ae)"
           git add --all
           git commit -m "Update to v${{ steps.version.outputs.version }}"
-          git push -u origin main --force-with-lease --tags || true
+          git push -u origin main --force-with-lease || true
 
           COMMIT_SHA=$(git rev-parse HEAD)
 
