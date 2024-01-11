@@ -76,6 +76,7 @@ jobs:
           echo "$readme_contents" > README.md
 
       - name: Commit files with new version and update tag
+        id: commit-files
         run: |
           # Commit version update
           git config user.name "$(git log -n 1 --pretty=format:%an)"
@@ -83,7 +84,11 @@ jobs:
           git add --all
           git commit -m "Update to v${{ steps.version.outputs.version }}"
           git push -u origin main --force-with-lease --tags || true
+
+          COMMIT_SHA=$(git rev-parse HEAD)
+
           echo "Committed changes"
+          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
       # Create GitHub release
       - name: Create ${{ steps.version.outputs.version }} Runner Release
@@ -94,6 +99,7 @@ jobs:
         with:
           tag_name: "v${{ steps.version.outputs.version }}"
           release_name: "v${{ steps.version.outputs.version }}"
+          commitish: ${{ steps.commit-files.outputs.commit_sha }}
 
       - name: Install aftman dependencies
         uses: ok-nick/setup-aftman@v0.4.2
