@@ -6,8 +6,8 @@ local Debris = game:GetService("Debris")
 
 local Util = require(script.Parent.Util)
 
-local PLAYER_COLLISION_GROUP_NAME = "Player"
-local RAGDOLL_COLLISION_GROUP_NAME = "Ragdoll"
+local PLAYER_COLLISION_GROUP_NAME: string = "Player"
+local RAGDOLL_COLLISION_GROUP_NAME: string = "Ragdoll"
 
 --[=[
 	@class Ragdoll
@@ -44,7 +44,7 @@ function Ragdoll.setup(character: Model): nil -- Sets up the player's collision 
 		local playerGroupExists
 		local ragdollGroupExists
 
-		for _, group in pairs(PhysicsService:GetCollisionGroups()) do
+		for _, group in pairs(PhysicsService:GetRegisteredCollisionGroups()) do
 			if group.name == PLAYER_COLLISION_GROUP_NAME then
 				playerGroupExists = true
 			elseif group.name == RAGDOLL_COLLISION_GROUP_NAME then
@@ -53,11 +53,11 @@ function Ragdoll.setup(character: Model): nil -- Sets up the player's collision 
 		end
 
 		if not playerGroupExists then
-			PhysicsService:CreateCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
+			PhysicsService:RegisterCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
 		end
 
 		if not ragdollGroupExists then
-			PhysicsService:CreateCollisionGroup(RAGDOLL_COLLISION_GROUP_NAME)
+			PhysicsService:RegisterCollisionGroup(RAGDOLL_COLLISION_GROUP_NAME)
 		end
 
 		if not playerGroupExists or not ragdollGroupExists then
@@ -77,9 +77,9 @@ function Ragdoll.setup(character: Model): nil -- Sets up the player's collision 
 	humanoid.BreakJointsOnDeath = false
 
 	if not Ragdoll.isCollidable then
-		for _, obj in pairs(character:GetDescendants()) do
+		for _, obj: BasePart | Instance in pairs(character:GetDescendants()) do
 			if obj:IsA("BasePart") then
-				PhysicsService:SetPartCollisionGroup(obj, PLAYER_COLLISION_GROUP_NAME)
+				obj.CollisionGroup = PLAYER_COLLISION_GROUP_NAME
 			end
 		end
 	end
@@ -95,7 +95,7 @@ local function createRagdoll(character: Model): nil
 		return
 	end
 
-	local partAttachment = Instance.new("Attachment")
+	local partAttachment: Attachment = Instance.new("Attachment")
 	partAttachment.Parent = character:FindFirstChild("Head") or character.PrimaryPart or Util.getFirstPart(character)
 
 	-- Push player backwards
@@ -106,16 +106,16 @@ local function createRagdoll(character: Model): nil
 		force.Parent = partAttachment
 	end
 
-	for _, obj in pairs(character:GetDescendants()) do
+	for _, obj: Motor6D | BasePart | Script | Instance in pairs(character:GetDescendants()) do
 		if obj:IsA("Motor6D") then
-			local root = Instance.new("Attachment")
-			local attachment = Instance.new("Attachment")
+			local root: Attachment = Instance.new("Attachment")
+			local attachment: Attachment = Instance.new("Attachment")
 			root.CFrame = obj.C0
 			root.Parent = obj.Part0
 			attachment.CFrame = obj.C1
 			attachment.Parent = obj.Part1
 
-			local ballSocket = Instance.new("BallSocketConstraint")
+			local ballSocket: BallSocketConstraint = Instance.new("BallSocketConstraint")
 			ballSocket.LimitsEnabled = true
 			ballSocket.TwistLimitsEnabled = true -- Disable joints from freely rotating
 			ballSocket.Attachment0 = root
@@ -130,7 +130,7 @@ local function createRagdoll(character: Model): nil
 			obj.CanCollide = true
 
 			if not Ragdoll.isCollidable then
-				PhysicsService:SetPartCollisionGroup(obj, RAGDOLL_COLLISION_GROUP_NAME)
+				obj.CollisionGroup = RAGDOLL_COLLISION_GROUP_NAME
 			end
 		elseif obj:IsA("Script") then
 			obj:Destroy()
@@ -199,7 +199,7 @@ function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: numb
 	elseif not keepRagdollInWorld then
 		parent:Destroy()
 	else
-		for _, obj in pairs(parent:GetDescendants()) do
+		for _, obj: BasePart | Instance in pairs(parent:GetDescendants()) do
 			if obj:IsA("BasePart") then
 				obj.Anchored = true
 			end

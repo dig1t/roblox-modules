@@ -24,7 +24,7 @@ function sys.timeout(yieldTime, fn)
 		local start = os.clock()
 		local connection: RBXScriptConnection
 
-		connection = RunService.RenderStepped:Connect(function()
+		connection = RunService.Stepped:Connect(function()
 			if os.clock() - start >= yieldTime then
 				connection:Disconnect()
 				fn()
@@ -55,7 +55,7 @@ function sys.interval(interval: number, callback: (any) -> (boolean?)): any
 
 	local connection: RBXScriptConnection
 
-	connection = RunService.RenderStepped:Connect(function(deltaTime: number)
+	connection = RunService.Stepped:Connect(function(deltaTime: number)
 		elapsed += deltaTime
 
 		if os.clock() - lastEventAt >= interval then

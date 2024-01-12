@@ -46,7 +46,7 @@ if not PartExplosion.isCollidable then
 	local playerGroupExists
 	local propGroupExists
 
-	for _, group in pairs(PhysicsService:GetCollisionGroups()) do
+	for _, group in pairs(PhysicsService:GetRegisteredCollisionGroups()) do
 		if group.name == PLAYER_COLLISION_GROUP_NAME then
 			playerGroupExists = true
 		elseif group.name == PROPS_COLLISION_GROUP_NAME then
@@ -55,11 +55,11 @@ if not PartExplosion.isCollidable then
 	end
 
 	if not playerGroupExists then
-		PhysicsService:CreateCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
+		PhysicsService:RegisterCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
 	end
 
 	if not propGroupExists then
-		PhysicsService:CreateCollisionGroup(PROPS_COLLISION_GROUP_NAME)
+		PhysicsService:RegisterCollisionGroup(PROPS_COLLISION_GROUP_NAME)
 	end
 
 	if not playerGroupExists or not propGroupExists then

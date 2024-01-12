@@ -165,7 +165,7 @@ local Palette = {}
 ]=]
 function Palette.get(color: string, shade: number?): Color3
 	assert(typeof(color) == "string", "color must be a string")
-	assert(typeof(shade) == "string" or shade == nil, "shade must be a string or nil")
+	assert(typeof(shade) == "number" or shade == nil, "shade must be a number or nil")
 
 	local _shade = shade or 500 :: number -- Default shade
 
@@ -174,3 +174,5 @@ function Palette.get(color: string, shade: number?): Color3
 
 	return Color3.fromRGB(unpack(paletteColors[color][shadeIndex[_shade]]))
 end
+
+return Palette
