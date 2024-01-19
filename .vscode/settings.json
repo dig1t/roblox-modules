@@ -15,6 +15,7 @@
 
   "files.exclude": {
     //"Packages": true,
+    "build": true,
     "node_modules": true,
     "dev-build.rbxl": true,
     "modules/*/*": true // only show that the submodules folder exists
@@ -24,11 +25,13 @@
   "terminal.integrated.scrollback": 10000,
   "git.autoRepositoryDetection": "openEditors",
 
-  // Configure todo-tree to exclude node_modules, dist, and compiled.
+  "todo-tree.regex.regex": "--\\[\\[[\\s|\\n|\\r]*($TAGS)[\\s|\\n|\\r]*\\]\\]|--\\s*($TAGS)",
+
   "todo-tree.filtering.excludeGlobs": [
-    "Packages",
-    "node_modules",
-    "modules"
+    "**/Packages/**",
+    "placeAssets",
+    "**/node_modules/**",
+    "**/modules/**"
   ],
 
   "todo-tree.highlights.defaultHighlight": {

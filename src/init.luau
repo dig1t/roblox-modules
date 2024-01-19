@@ -7,7 +7,21 @@ local Players = game:GetService("Players")
 
 local Shared: any = ReplicatedStorage:FindFirstChild("Shared")
 local Packages: any = ReplicatedStorage:FindFirstChild("Packages")
+
+-- Load all modules
 local Util: any = require(script.Util)
+local Animation: any = require(script.Animation)
+local Badge: any = require(script.Badge)
+local Cache: any = require(script.Cache)
+local ChatCommand: any = require(script.ChatCommand)
+local GamePass: any = require(script.GamePass)
+local Maid: any = require(script.Maid)
+local Palette: any = require(script.Palette)
+local PartExplosion: any = require(script.PartExplosion)
+local Promise: any = require(script.Promise)
+local Ragdoll: any = require(script.Ragdoll)
+-- local WeaponClient: any = require(script.WeaponClient)
+-- local WeaponServer: any = require(script.WeaponServer)
 
 --[=[
 	Bootstrapping library to allow for importing modules.
@@ -37,10 +51,37 @@ local Util: any = require(script.Util)
 local dLib = {}
 
 dLib._loadedModules = {
-	Util = Util -- We already required the Util module above
+	Util = Util,
+	Animation = Animation,
+	Badge = Badge,
+	Cache = Cache,
+	ChatCommand = ChatCommand,
+	GamePass = GamePass,
+	Maid = Maid,
+	Palette = Palette,
+	PartExplosion = PartExplosion,
+	Promise = Promise,
+	Ragdoll = Ragdoll,
+	-- WeaponClient = WeaponClient,
+	-- WeaponServer = WeaponServer
 }
 dLib._rootPaths = {}
 dLib._pathDivider = "/"
+
+-- Expose built-in modules
+dLib.Util = Util
+dLib.Animation = Animation
+dLib.Badge = Badge
+dLib.Cache = Cache
+dLib.ChatCommand = ChatCommand
+dLib.GamePass = GamePass
+dLib.Maid = Maid
+dLib.Palette = Palette
+dLib.PartExplosion = PartExplosion
+dLib.Promise = Promise
+dLib.Ragdoll = Ragdoll
+-- dLib.WeaponClient = WeaponClient
+-- dLib.WeaponServer = WeaponServer
 
 --[=[
 	Sets the divider used to separate paths.
