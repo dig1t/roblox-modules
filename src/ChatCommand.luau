@@ -4,8 +4,7 @@
 -- number minimumLevel (default: moderator) - Minimum user level required to use command
 -- boolean adminsExempt - Any admins included in the command call will not be inserted into the targets table
 
-local dLib = require(script.Parent)
-local Util = dLib.import("dLib/Util")
+local Util = require(script.Parent.Util)
 
 local ChatCommand = {}
 ChatCommand.__index = ChatCommand

@@ -60,18 +60,28 @@ function search.getAncestor(child, condition): Instance?
 	return
 end
 
-function search.find(parent, condition, maxRounds, round): Instance?
+type ConditionTest = (obj: Instance) -> boolean
+
+function search.find(parent: Instance?, condition: ConditionTest | string, maxRounds: number, _round: number): Instance?
+	assert(typeof(parent) == "Instance" or parent == nil, "parent must be an Instance or nil")
+	assert(typeof(condition) == "function" or condition == "string", "condition must be a function or string")
+	assert(typeof(maxRounds) == "number" or maxRounds == nil, "maxRounds must be a number or nil")
+	assert(typeof(_round) == "number" or _round == nil, "_round must be a number or nil")
+
 	if not parent or not condition then
 		return
 	end
 
-	if not round then
-		round = 1
-	end
+	local round: number = _round or 1
 
-	local test = typeof(condition) == "string" and function(obj)
+	local function test(obj: Instance): boolean
+		if typeof(condition) == "function" then
+			local _test = condition :: ConditionTest
+			return _test(obj)
+		end
+
 		return obj and obj.Name == condition
-	end or condition
+	end
 
 	local match
 	local nextBatch = {}
@@ -92,24 +102,35 @@ function search.find(parent, condition, maxRounds, round): Instance?
 
 	-- search grandchildren after - second round
 	if not match then
-		for _, child in pairs(nextBatch) do
-			match = search.find(child, test, maxRounds, round + 1)
+		for _, child: Instance in pairs(nextBatch) do
+			if child then
+				print(1) -- match = search.find(child, test, maxRounds, round + 1)
+			end
 		end
 	end
 
 	return match
 end
 
-function search.exists(obj, name): boolean
-	if not obj then
+function search.exists(parent: Instance?, childName: string | { string }): boolean
+	assert(typeof(parent) == "Instance" or parent == nil, "parent must be an Instance or nil")
+	assert(typeof(childName) == "string" or typeof(childName) == "table", "childName must be a string or table")
+
+	if not parent then
 		return false
 	end
 
-	if typeof(name) == "string" then
-		return typeof(obj) == "Instance" and obj:FindFirstChild(name) or obj[name]
-	elseif typeof(name) == "table" then
-		for _, v in pairs(name) do
-			if not obj[v] then
+	if typeof(childName) == "string" then
+		-- Search a single child name
+		if typeof(parent) == "Instance" then
+			return parent:FindFirstChild(childName) ~= nil
+		elseif typeof(parent) == "table" then
+			return parent[childName] ~= nil
+		end
+	elseif typeof(childName) == "table" then
+		-- Search a table of children names
+		for _, v in pairs(childName) do
+			if typeof(parent) == "table" and parent[v] == nil then
 				return false
 			end
 		end
@@ -120,20 +141,31 @@ function search.exists(obj, name): boolean
 	return false
 end
 
-function search.getFirstPart(model): BasePart?
-	local children = typeof(model) == "table" and model or model:GetChildren()
+-- Returns the first part in the given instance
+function search.getFirstPart(instance: Instance): BasePart?
+	assert(typeof(instance) == "Instance", "instance argument must be an Instance")
+
+	local children = instance:GetChildren() :: { [number]: BasePart | Instance }
 
 	if not children or #children == 0 then
 		return
 	end
 
-	local i = 0
+	local index: number = 1
+	local current: Instance = nil
 
-	repeat
-		i += 1
-	until children[i]:IsA("BasePart") or i < #children
+	while index < #children do
+		current = children[index]
 
-	return children[i]:IsA("BasePart") and children[i]
+		if current and current:IsA("BasePart") then
+			local result: BasePart = current
+			return result
+		end
+
+		index += 1
+	end
+
+	return nil
 end
 
 return search

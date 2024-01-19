@@ -2,7 +2,7 @@
 -- @name Weapon System Client
 -- @description A weapon library for quickly building weapons.
 -- @author dig1t
--- @version 1.1.0
+-- @version 1.1.2
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12,10 +12,13 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris")
 
-local dLib = require(script.Parent)
-local Util = dLib.import("dLib/Util")
-local Animation = dLib.import("dLib/Animation")
-local CollectionService = dLib.import("dLib/CollectionService")
+local Util = require(script.Parent.Util)
+local Animation = require(script.Parent.Animation)
+-- local CollectionService = require(script.Parent.CollectionService)
+local CollectionService = {
+	watch = function(_) end,
+	getAll = function() return {} end
+} -- TODO: replace when CollectionService util is fixed
 
 local DEFAULT_CONFIG = {
 	hitscan = true; -- No projectiles will be rendered

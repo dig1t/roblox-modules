@@ -3,8 +3,7 @@
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
-local dLib = require(script.Parent)
-local Util = dLib.import("dLib/Util")
+local Util = require(script.Parent.Util)
 
 --[=[
 	Animation library for animating instances.
@@ -42,7 +41,7 @@ local Animation = {}
 Animation.defaultConfig = {}
 
 export type AnimationConfig = {
-	source: Instance?,
+	source: Instance | { [any]: any }?,
 	start: { [string]: any }?,
 	stop: { [string]: any }?,
 	tweenInfo: TweenInfo?,
@@ -107,8 +106,10 @@ function Animation.animate(config: AnimationConfig): nil
 	end
 
 	if config.start then
+		local source = config.source :: { [any]: any }
+
 		for property, value in pairs(config.start) do
-			config.source[property] = value
+			source[property] = value
 		end
 	end
 

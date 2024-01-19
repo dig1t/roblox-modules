@@ -102,8 +102,9 @@ function PartExplosion.new(source: { Instance } | Instance, config: {
 		clean = true;
 		cleanTime = 1;
 		throw = true;
+		parent = Workspace;
 	}
-	self.fragments = {}
+	self.fragments = {} :: { BasePart }?
 
 	task.spawn(function()
 		for _, _part in pairs(parts) do
@@ -116,7 +117,7 @@ function PartExplosion.new(source: { Instance } | Instance, config: {
 
 		task.wait(.85)
 
-		if self.config.throw then
+		if self.config.throw and self.fragments then
 			for _, fragment in pairs(self.fragments) do
 				if fragment.Parent then
 					fragment:ClearAllChildren()
@@ -128,11 +129,11 @@ function PartExplosion.new(source: { Instance } | Instance, config: {
 
 		if self.config.clean and self.fragments then
 			self:destroy()
-		else
+		elseif self.fragments then
 			for _, fragment in pairs(self.fragments) do
 				if fragment.Parent then
 					-- Remove remaining moving parts
-					if fragment.Velocity.Magnitude > .001 then
+					if fragment.AssemblyLinearVelocity.Magnitude > .001 then
 						fragment:Destroy()
 					end
 
@@ -193,7 +194,10 @@ function PartExplosion:_breakPart(part)
 
 		partMagnitude += fragment.Size.Magnitude
 
-		self.fragments[#self.fragments + 1] = fragment
+		if self.fragments then
+			self.fragments[#self.fragments + 1] = fragment
+		end
+
 		fragment.Parent = self.config.parent or Workspace
 	until partMagnitude > part.Size.Magnitude * 3
 
@@ -209,9 +213,11 @@ end
 	@return nil
 ]=]
 function PartExplosion:destroy(): nil
-	for _, fragment in pairs(self.fragments) do
-		if fragment.Parent then
-			fragment:Destroy()
+	if self.fragments then
+		for _, fragment in pairs(self.fragments) do
+			if fragment.Parent then
+				fragment:Destroy()
+			end
 		end
 	end
 
