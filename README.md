@@ -28,4 +28,65 @@ local Palette = import("dlib/Palette")
 print(Palette.get("blue", 500))
 ```
 
+## Using built-in module types
+dLib has a few built-in types that you can use to type your variables.
+
+### Promises
+
+Method 1:
+```lua
+local Promise = dLib.Promise
+
+local myPromise: typeof(Promise.PromiseType) = Promise.new(function(resolve, reject)
+	resolve("Hello World!")
+end)
+```
+
+Method 2:
+```lua
+local Promise = dLib.Promise
+
+type PromiseType = typeof(Promise.PromiseType)
+
+local myPromise: PromiseType = Promise.new(function(resolve, reject)
+	resolve("Hello World!")
+end)
+```
+
+### Maids
+
+Method 1:
+```lua
+local Maid = dLib.Maid
+
+local myMaid: typeof(Maid.MaidType) = Maid.new()
+```
+
+Method 2:
+```lua
+local Maid = dLib.Maid
+
+type MaidType = typeof(Maid.MaidType)
+
+local myMaid: MaidType = Maid.new()
+```
+
+### Cache
+
+Method 1:
+```lua
+local Cache = dLib.Cache
+
+local myCache: typeof(Cache.CacheType) = Cache.new()
+```
+
+Method 2:
+```lua
+local Cache = dLib.Cache
+
+type CacheType = typeof(Cache.CacheType)
+
+local myCache: CacheType = Cache.new()
+```
+
 [Click here](https://dig1t.github.io/dlib/api/dLib) to learn how to import your first dLib module.

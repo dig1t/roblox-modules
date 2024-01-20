@@ -4,11 +4,13 @@ local Util = require(script.Parent.Util)
 
 type MaidClass = {
 	__index: MaidClass,
-	new: () -> Maid,
-	task: (self: Maid, task: any, cleaner: () -> any) -> string,
-	removeTask: (self: Maid, taskToRemove: MaidTask) -> nil,
-	clean: (self: Maid) -> nil,
-	destroy: (any) -> nil
+	new: () -> MaidType,
+	task: (self: MaidType, task: any, cleaner: () -> any) -> string,
+	removeTask: (self: MaidType, taskToRemove: MaidTask) -> nil,
+	clean: (self: MaidType) -> nil,
+	destroy: (any) -> nil,
+
+	MaidType: MaidType
 }
 
 type MaidInstance = {
@@ -16,7 +18,7 @@ type MaidInstance = {
 	[any]: any
 }
 
-export type Maid = typeof(setmetatable(
+export type MaidType = typeof(setmetatable(
 	{} :: MaidInstance,
 	{} :: MaidClass
 ))
@@ -47,7 +49,7 @@ Maid.__index = Maid
 
 	@return Maid
 ]=]
-function Maid.new()
+function Maid.new(): MaidType
 	local self = setmetatable({}, Maid)
 
 	self._tasks = {}
@@ -144,7 +146,7 @@ end
 	Cleans up all tasks in the Maid instance.
 
 	```lua
-	local maid = Maid.new()
+	local maid: typeof(Maid.MaidType) = Maid.new()
 
 	maid:task(function()
 		print("Hello world!")

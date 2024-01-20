@@ -3,7 +3,7 @@
 local Util = require(script.Parent.Util)
 local Maid = require(script.Parent.Maid)
 
-type CacheSet = (self: Cache, key: string, value: any, ttl: number?) -> boolean?
+type CacheSet = (self: CacheType, key: string, value: any, ttl: number?) -> boolean?
 
 type CacheObject = {
 	key: string,
@@ -26,19 +26,21 @@ type CacheOptions = {
 
 type CachedClass = {
 	__index: CachedClass,
-	new: (options: CacheOptions?) -> Cache,
-	set: (self: Cache, key: string, value: any, ttl: number?) -> boolean?,
-	setMultiple: (self: Cache, { CacheObject }) -> boolean?,
-	get: (self: Cache, key: string) -> any?,
-	take: (self: Cache, key: string) -> any?,
-	getMultiple: (self: Cache, { string }) -> { [string]: any },
-	delete: (self: Cache, key: string) -> number,
-	multipleDelete: (self: Cache, { string }) -> number,
-	ttl: (self: Cache, key: string, ttl: number) -> boolean?,
-	getTTL: (self: Cache, key: string) -> number?,
-	keys: (self: Cache) -> { string },
-	has: (self: Cache, key: string) -> boolean,
-	destroy: (self: Cache) -> nil
+	new: (options: CacheOptions?) -> CacheType,
+	set: (self: CacheType, key: string, value: any, ttl: number?) -> boolean?,
+	setMultiple: (self: CacheType, { CacheObject }) -> boolean?,
+	get: (self: CacheType, key: string) -> any?,
+	take: (self: CacheType, key: string) -> any?,
+	getMultiple: (self: CacheType, { string }) -> { [string]: any },
+	delete: (self: CacheType, key: string) -> number,
+	multipleDelete: (self: CacheType, { string }) -> number,
+	ttl: (self: CacheType, key: string, ttl: number) -> boolean?,
+	getTTL: (self: CacheType, key: string) -> number?,
+	keys: (self: CacheType) -> { string },
+	has: (self: CacheType, key: string) -> boolean,
+	destroy: (self: CacheType) -> nil,
+
+	CacheType: CacheType
 }
 
 type CachedInstance = {
@@ -47,7 +49,7 @@ type CachedInstance = {
 	[any]: any
 }
 
-export type Cache = typeof(setmetatable(
+export type CacheType = typeof(setmetatable(
 	{} :: CachedInstance,
 	{} :: CachedClass
 ))
@@ -86,7 +88,7 @@ local defaultOptions = {
 
 	@param options? { defaultTTL: number? }
 ]=]
-function Cache.new(options: CacheOptions?): Cache
+function Cache.new(options: CacheOptions?): CacheType
 	assert(typeof(options) == "table" or options == nil, "options must be a table or nil")
 
 	if options then

@@ -7,14 +7,16 @@ type PromiseClass = {
 		fulfilled: "fulfilled";
 		rejected: "rejected";
 	},
-	new: (fn: (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil) -> Promise,
-	resolve: (self: Promise, ...any) -> nil,
-	reject: (self: Promise, any) -> nil,
-	destroy: (self: Promise) -> nil,
-	andThen: (self: Promise, fn: (...any) -> nil) -> Promise,
-	catch: (self: Promise, fn: (any) -> nil) -> Promise,
-	finally: (self: Promise, fn: (...any) -> nil) -> Promise,
-	_run: (self: Promise) -> nil
+	new: (fn: (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil) -> PromiseType,
+	resolve: (self: PromiseType, ...any) -> nil,
+	reject: (self: PromiseType, any) -> nil,
+	destroy: (self: PromiseType) -> nil,
+	andThen: (self: PromiseType, fn: (...any) -> nil) -> PromiseType,
+	catch: (self: PromiseType, fn: (any) -> nil) -> PromiseType,
+	finally: (self: PromiseType, fn: (...any) -> nil) -> PromiseType,
+	_run: (self: PromiseType) -> nil,
+
+	PromiseType: PromiseType
 }
 
 type PromiseInstance = {
@@ -26,6 +28,10 @@ type PromiseInstance = {
 	status: string?,
 	[any]: any
 }
+export type PromiseType = typeof(setmetatable(
+	{} :: PromiseInstance,
+	{} :: PromiseClass
+))
 
 --[=[
 	@within Promise
@@ -35,16 +41,11 @@ type PromiseInstance = {
 ]=]
 export type PromiseExecutor = (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil
 
-export type Promise = typeof(setmetatable(
-	{} :: PromiseInstance,
-	{} :: PromiseClass
-))
-
 --[=[
 	Promise class for asynchronous operations.
 
 	```lua
-	local promise: Promise -- Blank variable to allow rejection during a waterfall
+	local promise: typeof(Promise.PromiseType)? -- Blank variable to allow rejection during a waterfall
 
 	promise = Promise.new(function(resolve, reject)
 		task.wait(1)
@@ -61,7 +62,7 @@ export type Promise = typeof(setmetatable(
 		if promise.status ~= "rejected" then
 			print(num)
 		end
-	end) :: Promise.Promise
+	end) :: typeof(Promise.PromiseType)
 	```
 
 	@class Promise
@@ -94,7 +95,7 @@ Promise.statusType = {
 	@param executor function -- The function to call when the promise is created.
 	@return Promise
 ]=]
-function Promise.new(executor: PromiseExecutor): Promise
+function Promise.new(executor: PromiseExecutor): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to make a promise")
 
 	local self = setmetatable({}, Promise)
@@ -248,7 +249,7 @@ end
 	@param executor function -- The function to call when the promise is fulfilled.
 	@return nil
 ]=]
-function Promise:andThen(executor: ((...any) -> nil)?): Promise
+function Promise:andThen(executor: ((...any) -> nil)?): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to resolve")
 
 	if self.status == Promise.statusType.fulfilled then
@@ -269,7 +270,7 @@ end
 	@param callback function -- The function to call when the Promise is rejected.
 	@return nil
 ]=]
-function Promise:catch(callback: (any) -> nil): Promise
+function Promise:catch(callback: (any) -> nil): PromiseType
 	assert(typeof(callback) == "function", "Must give a function to catching errors")
 
 	if self.status == Promise.statusType.rejected then
@@ -294,7 +295,7 @@ end
 	@param callback function -- The function to call when the promise is fulfilled.
 	@return nil
 ]=]
-function Promise:finally(callback:(...any) -> nil): Promise
+function Promise:finally(callback:(...any) -> nil): PromiseType
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")
 	assert(typeof(callback) == "function", "Must give a function for the finally callback")
 
