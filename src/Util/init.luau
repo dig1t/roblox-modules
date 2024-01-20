@@ -12,7 +12,7 @@ setmetatable({}, {
 	end
 })
 
-Util.use = function(moduleName: string | ModuleScript)
+function Util.use(moduleName: string | ModuleScript)
 	local module: { [any]: any }
 
 	if typeof(moduleName) == "string" then
@@ -47,7 +47,7 @@ Util.use("Tables")
 Util.asset = "rbxassetid://" :: string
 Util.defaultWalkSpeed = 16 :: number
 
-Util.instance = function(className: string, ...): (any) -> Instance
+function Util.instance(className: string, ...): (any) -> Instance
 	local props: { [any]: any } = {}
 	local extraProps: { [any]: any } = {...}
 
@@ -117,7 +117,7 @@ local valueObjectClassNames: { [string]: string } = {
 
 export type ValueObject = (ObjectValue | StringValue | IntValue | NumberValue | BoolValue | CFrameValue | Vector3Value | Color3Value | BrickColorValue)
 
-Util.get = function(path, parent) -- expiremental
+function Util.get(path, parent) -- expiremental
 	local res = parent
 
 	local chunks = Util.split(path, ".")
@@ -138,9 +138,9 @@ Util.get = function(path, parent) -- expiremental
 end
 
 -- Tool to set value instances
-Util.set = function(
+function Util.set(
 	parent: Instance, name: string, value: any, customValueType: string?
-) : ValueObject?
+): ValueObject?
 	return Util.try(function()
 		local valueObject: ValueObject | Instance? = nil
 
@@ -167,16 +167,17 @@ Util.set = function(
 		return
 	end, function(err)
 		warn("Util.set - " .. err)
+		return nil
 	end)
 end
 
-Util.printTable = function(tbl: { [any]: any }): nil
+function Util.printTable(tbl: { [any]: any }): nil
 	print(tbl and HttpService:JSONEncode(tbl))
 
 	return nil
 end
 
-Util.numberSequence = function(data: { { number } })
+function Util.numberSequence(data: { { number } })
 	assert(data and typeof(data) == "table", "Util.numberSequence - Missing data table")
 	assert(#data > 1, "Util.numberSequence - Must have at least 2 keypoints")
 
@@ -195,7 +196,7 @@ end
 
 -- Calls the given function until it successfully runs
 -- Used for retrieving from a data store or GET/POST requests
-Util.attempt = function(fn: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
+function Util.attempt(fn: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
 	local res: any
 	local successful: boolean = false
 	local tries: number = 0
@@ -218,7 +219,7 @@ Util.attempt = function(fn: () -> any, maxTries: number?, yield: number?): (bool
 	return successful, res, tries
 end
 
-Util.try = function(fn: () -> any, catch: (any) -> any): any
+function Util.try(fn: () -> any, catch: (any) -> any): any
 	local success: boolean, res: any = pcall(fn)
 
 	if not success then
@@ -233,7 +234,7 @@ end
 --[[
 	- @desc welds 2 parts
 ]]--
-Util.weld = function(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldConstraint?
+function Util.weld(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldConstraint?
 	if not part or not part.Parent or not attachTo or not attachTo.Parent then
 		return
 	end
@@ -249,7 +250,7 @@ Util.weld = function(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldC
 	} :: WeldConstraint
 end
 
-Util.weldModel = function(model: Model): Model?
+function Util.weldModel(model: Model): Model?
 	if not model or not model:IsA("Model") or not model.PrimaryPart then
 		return
 	end
@@ -263,7 +264,7 @@ Util.weldModel = function(model: Model): Model?
 	return model
 end
 
-Util.clearWelds = function(instance: Instance): nil
+function Util.clearWelds(instance: Instance): nil
 	assert(typeof(instance) == "Instance", "Util.clearWelds - First argument must be an instance")
 
 	for _, obj: WeldConstraint | Weld | Instance in pairs(instance:GetDescendants()) do
@@ -277,7 +278,7 @@ end
 
 -- Models
 
-Util.getModelBounds = function(model: Model): (CFrame?, Vector3?)
+function Util.getModelBounds(model: Model): (CFrame?, Vector3?)
 	if typeof(model) ~= "Instance" or not model:IsA("Model") then
 		return
 	end
@@ -285,7 +286,7 @@ Util.getModelBounds = function(model: Model): (CFrame?, Vector3?)
 	return model:GetBoundingBox()
 end
 
-Util.getMass = function(model: Model): number?
+function Util.getMass(model: Model): number?
 	if typeof(model) ~= "Instance" or not model:IsA("Model") then
 		return
 	end
@@ -299,7 +300,7 @@ Util.getMass = function(model: Model): number?
 	return mass
 end
 
-Util.rotateModel = function(model: Model, angle: number): nil
+function Util.rotateModel(model: Model, angle: number): nil
 	local rotate: CFrame = CFrame.fromEulerAnglesXYZ(0, angle, 0)
 
 	for _, object: BasePart | Instance in pairs(model:GetChildren()) do
@@ -311,7 +312,7 @@ Util.rotateModel = function(model: Model, angle: number): nil
 	return nil
 end
 
-Util.moveModel = function(model: Model, to: CFrame): nil
+function Util.moveModel(model: Model, to: CFrame): nil
 	local firstPart: BasePart = Util.getFirstPart(model)
 
 	if firstPart then
@@ -337,7 +338,7 @@ end
 
 -- Events
 
-Util.waitForChild = function(parent: Instance, name: string): Instance?
+function Util.waitForChild(parent: Instance, name: string): Instance?
 	assert(parent and typeof(parent) == "Instance", "Util.waitForChild - Parent must be an instance")
 	assert(name, "Util.waitForChild - Missing child name")
 
@@ -357,7 +358,7 @@ Util.waitForChild = function(parent: Instance, name: string): Instance?
 	end
 end
 
-Util.addEventListener = function(obj: Instance, targetEvent: string, fn: () -> any): RBXScriptConnection
+function Util.addEventListener(obj: Instance, targetEvent: string, fn: () -> any): RBXScriptConnection
 	return obj.Changed:Connect(function(event: string)
 		if event == targetEvent then
 			fn()
@@ -370,7 +371,7 @@ local ON_TOUCH_OFFSET: number = 4
 -- onTouch will increase the likelyhood that
 -- players get detected when walking on a part
 -- by placing a clone of the part above the part
-Util.onTouch = function(part: BasePart, fn: (any) -> any): RBXScriptConnection
+function Util.onTouch(part: BasePart, fn: (any) -> any): RBXScriptConnection
 	local detector: BasePart = part:Clone()
 	detector.Name = "Detector"
 	detector.Transparency = 1
@@ -388,7 +389,7 @@ Util.onTouch = function(part: BasePart, fn: (any) -> any): RBXScriptConnection
 	return detector.Touched:Connect(fn)
 end
 
-Util.onPlayerTouch = function(
+function Util.onPlayerTouch(
 	obj: BasePart,
 	fn: (Player, BasePart) -> any,
 	ignoreIfDead: boolean?,
@@ -409,6 +410,18 @@ Util.onPlayerTouch = function(
 	end
 
 	return offsetPart and Util.onTouch(obj, callback) or obj.Touched:Connect(callback)
+end
+
+function Util.breakJoints(target: Instance): nil
+	assert(typeof(target) == "Instance", "Util.breakJoints - Target must be an instance")
+
+	for _, child: Instance in pairs(target:GetDescendants()) do
+		if child:IsA("WeldConstraint") or child:IsA("Weld") or child:IsA("Motor6D") then
+			child:Destroy()
+		end
+	end
+
+	return nil
 end
 
 return Util

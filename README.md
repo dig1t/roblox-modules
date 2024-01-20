@@ -22,8 +22,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 -- Require dLib from your installation location
 -- For this example we'll use ReplicatedStorage as dLib's parent location
 -- and we'll import dLib's built in Palette module
-local import = require(ReplicatedStorage.dlib).import
-local Palette = import("dlib/Palette")
+local dLib = require(ReplicatedStorage.dlib)
+local Palette = dLib.Palette
 
 print(Palette.get("blue", 500))
 ```

@@ -28,7 +28,7 @@ local Ragdoll = require(script.Ragdoll)
 
 	```lua
 	local dLib = require(ReplicatedStorage.Packages.dLib)
-	local Util = dLib.import("dLib/Util")
+	local Util = dLib.Util
 	```
 
 	You can also import modules from other roots:

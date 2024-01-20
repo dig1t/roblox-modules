@@ -15,7 +15,7 @@ local badges = {}
 	Example:
 	```lua
 	-- Setup
-	local Badge = import("dLib/Badge")
+	local Badge = dLib.Badge
 
 	Badge.add("BadgeName", 999999999)
 
