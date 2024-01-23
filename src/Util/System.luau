@@ -5,29 +5,36 @@ local RunService = game:GetService("RunService")
 local sys = {}
 
 --[=[
-	Runs a function after `yieldTime` seconds.
+	Runs a function after `delay` seconds.
+	Returns the time elapsed in seconds.
 
 	#### Example:
 	```lua
-	Util.timeout(1, function()
+	Util.timeout(1, function(elapsedTime: number)
 		print("Hello, world!")
 	end)
 	```
 
 	@within Util
-	@param yieldTime number
-	@param fn function
+	@param delay number
+	@param callback function
 	@return nil
 ]=]
-function sys.timeout(yieldTime, fn)
+function sys.timeout(delay: number, callback: (number) -> boolean?)
+	assert(typeof(delay) == "number", "Util.timeout - delay must be a number")
+	assert(typeof(callback) == "function", "Util.timeout - callback must be a function")
+
 	task.spawn(function()
 		local start = os.clock()
 		local connection: RBXScriptConnection
+		local elapsedTime: number = 0
 
-		connection = RunService.Stepped:Connect(function()
-			if os.clock() - start >= yieldTime then
+		connection = RunService.Stepped:Connect(function(deltaTime: number)
+			elapsedTime += deltaTime
+
+			if os.clock() - start >= delay then
 				connection:Disconnect()
-				fn()
+				callback(elapsedTime)
 			end
 		end)
 	end)
@@ -35,12 +42,12 @@ end
 
 --[=[
 	Runs a function every `interval` in seconds.
-	Return `false` within the callback to stop the interval or call `:disconnect()` on the returned object.
+	Return `false` within the callback to stop the interval or call `:Disconnect()` on the returned `RBXScriptConnection`.
 
 	#### Example:
 	```lua
-	Util.interval(1, function(elapsed)
-		print(elapsed)
+	Util.interval(1, function(elapsedTime: number, deltaTime: number)
+		print(elapsedTime)
 	end)
 	```
 
@@ -49,20 +56,23 @@ end
 	@param callback function
 	@return table
 ]=]
-function sys.interval(interval: number, callback: (any) -> (boolean?)): any
-	local elapsed: number = 0
+function sys.interval(interval: number, callback: (number, number) -> boolean?): any
+	assert(typeof(interval) == "number", "Util.interval - interval must be a number")
+	assert(typeof(callback) == "function", "Util.interval - callback must be a function")
+
+	local elapsedTime: number = 0
 	local lastEventAt: number = os.clock()
 
 	local connection: RBXScriptConnection
 
 	connection = RunService.Stepped:Connect(function(deltaTime: number)
-		elapsed += deltaTime
+		elapsedTime += deltaTime
 
 		if os.clock() - lastEventAt >= interval then
 			lastEventAt = os.clock()
 
 			task.spawn(function()
-				local success = callback(elapsed)
+				local success = callback(elapsedTime, deltaTime)
 
 				if success == false then
 					connection:Disconnect()
@@ -90,7 +100,7 @@ end
 	@return boolean
 ]=]
 function sys.inTable(searchTable: { [any]: any }, target: any): boolean
-	assert(typeof(searchTable) == "table", "searchTable must be a table")
+	assert(typeof(searchTable) == "table", "Util.inTable - searchTable must be a table")
 
 	for _, value: any in pairs(searchTable) do
 		if value == target then

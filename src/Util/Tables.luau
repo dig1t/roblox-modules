@@ -13,36 +13,34 @@ local valueClasses = {
 	Vector3Value = true;
 }
 
---[=[
-	Used to type check a value instance.
-
-	#### Example:
-	```lua
-	local value: ValueBaseType = Instance.new("BoolValue")
-	```
-
-	@type ValueBaseType ValueBase & { Value: any }
-	@within Util
-]=]
-export type ValueBaseType = ValueBase & { Value: any }
-
 local tableUtil = {}
 
 --[=[
 	Flips the table's keys with its values.
+	If `mergeDuplicates` is `true`, All values will be stored in a table at the key's index, instead of overwriting them.
 
 	#### Example:
 	```lua
 	Util.flip({ a = 1, b = 2 }) -- { [1] = "a", [2] = "b" }
 	Util.flip({ a = 1, b = 2 }, true) -- { [1] = { "a" }, [2] = { "b" } }
+
+	-- Use case: finding all keys with the same value
+	local newTable = Util.flip({ a = 1, b = 2, c = 2 }, true) -- { [1] = { "a" }, [2] = { "b", "c" } }
+	print(#newTable[2]) -- 2
 	```
 
 	@within Util
 	@param source { [any]: any } -- The table you want to flip
-	@param mergeDuplicates boolean? -- Merge key duplicates into a table instead of overwriting them
+	@param mergeDuplicates boolean? -- Merge key duplicates into a table instead of overwriting them.
 	@return { [any]: any }
 ]=]
 function tableUtil.flip(source: { [any]: any }, mergeDuplicates: boolean?): { [any]: any }
+	assert(typeof(source) == "table", `Util.flip - Cannot index {typeof(source)}`)
+	assert(
+		mergeDuplicates == nil or typeof(mergeDuplicates) == "boolean",
+		"Util.flip - mergeDuplicates must be a boolean or nil"
+	)
+
 	local res: { [any]: any } = {}
 	local duplicates: { [any]: {any} } = {}
 
@@ -626,7 +624,7 @@ function tableUtil.makeConfigFromValues(folder: Folder | Configuration): { [stri
 		if child:IsA("Folder") or child:IsA("Configuration") then -- Nest
 			config[child.Name] = tableUtil.makeConfigFromValues(child)
 		elseif valueClasses[child.ClassName] then
-			config[child.Name] = (child :: ValueBaseType).Value
+			config[child.Name] = (child :: any).Value
 		else --elseif configClasses[el.ClassName] then
 			config[child.Name] = child
 		end

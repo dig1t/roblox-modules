@@ -1,6 +1,9 @@
 --!strict
 
 local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local _cache: { [string]: any } = {}
 
 --- @class Util
 local Util = {}
@@ -115,7 +118,20 @@ local valueObjectClassNames: { [string]: string } = {
 	["BrickColor"] = "BrickColorValue";
 }
 
-export type ValueObject = (ObjectValue | StringValue | IntValue | NumberValue | BoolValue | CFrameValue | Vector3Value | Color3Value | BrickColorValue)
+--[=[
+	This is a custom type to represent and typecheck value instances.
+
+	Roblox has a built-in [ValueBase](https://create.roblox.com/docs/reference/engine/classes/ValueBase) type, but it does not have a `Value` property.
+
+	#### Example:
+	```lua
+	local value: ValueBaseType = Instance.new("BoolValue")
+	```
+
+	@type ValueBaseType ValueBase & { Value: any }
+	@within Util
+]=]
+export type ValueBaseType = ValueBase & { Value: any }
 
 function Util.get(path, parent) -- expiremental
 	local res = parent
@@ -140,23 +156,23 @@ end
 -- Tool to set value instances
 function Util.set(
 	parent: Instance, name: string, value: any, customValueType: string?
-): ValueObject?
+): ValueBaseType?
 	return Util.try(function()
-		local valueObject: ValueObject | Instance? = nil
+		local valueObject: ValueBaseType | Instance? = nil
 
 		if not parent:FindFirstChild(name) then
 			local valueType: string = customValueType or valueObjectClassNames[typeof(value)]
 
 			assert(table.find(valueObjects, valueType), "Util.set - Invalid value type: " .. valueType)
 
-			local newObject = Instance.new(valueType) :: Instance
+			local newObject = Instance.new(valueType) :: ValueBaseType
 			valueObject = newObject
 
 			newObject.Name = name
 			newObject.Parent = parent
 		else
 			local _parent: any = parent -- Type hack
-			valueObject = _parent[name] :: ValueObject
+			valueObject = _parent[name] :: ValueBaseType
 		end
 
 		if valueObject then
@@ -171,13 +187,48 @@ function Util.set(
 	end)
 end
 
-function Util.printTable(tbl: { [any]: any }): nil
-	print(tbl and HttpService:JSONEncode(tbl))
+--[=[
+	Prints a JSON string to the console using HttpService.
+
+	Example:
+	```lua
+	Util.printTable({
+		foo = "bar";
+		bar = "foo";
+	}) -- {"foo":"bar","bar":"foo"}
+	```
+
+	@within Util
+	@param source { [any]: any }
+	@return nil
+]=]
+function Util.printTable(source: { [any]: any }): nil
+	assert(source and typeof(source) == "table", "Util.printTable - Missing source table")
+
+	print(source and HttpService:JSONEncode(source))
 
 	return nil
 end
 
-function Util.numberSequence(data: { { number } })
+--[=[
+	Create a new NumberSequence from a table of keypoints.
+
+	Example:
+	```lua
+	local gradient: ColorSequence = Util.colorSequence({
+		{ 0, Color3.fromRGB(255, 0, 0) };
+		{ 1, Color3.fromRGB(0, 255, 0) };
+	})
+
+	local particle: ParticleEmitter = Instance.new("ParticleEmitter")
+	particle.Color = gradient
+	```
+
+	@within Util
+	@param data { any }
+	@return nil
+]=]
+function Util.numberSequence(data: { { number } }): NumberSequence
 	assert(data and typeof(data) == "table", "Util.numberSequence - Missing data table")
 	assert(#data > 1, "Util.numberSequence - Must have at least 2 keypoints")
 
@@ -194,15 +245,71 @@ function Util.numberSequence(data: { { number } })
 	return NumberSequence.new(keypoints)
 end
 
--- Calls the given function until it successfully runs
--- Used for retrieving from a data store or GET/POST requests
-function Util.attempt(fn: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
+--[=[
+	Retrieves product info with the Roblox marketplace API.
+
+	@within Util
+	@param productId number
+	@param infoType Enum.InfoType?
+	@return { [any]: any }?
+]=]
+function Util.getProductInfo(productId: number, infoType: Enum.InfoType?): { [any]: any }?
+	if infoType == nil then
+		infoType = Enum.InfoType.Asset -- Roblox default
+	end
+
+	assert(typeof(productId) == "number", "Util.getProductInfo - Missing productId argument")
+	assert(typeof(infoType) == "EnumItem", "Util.getProductInfo - Invalid infoType argument")
+
+	local cacheIndex: string = `{infoType.Name}-{productId}`
+
+	if _cache[cacheIndex] then
+		return _cache[cacheIndex]
+	end
+
+	local success: boolean, result: any = Util.attempt(function()
+		local productInfo: { [any]: any } = MarketplaceService:GetProductInfo(productId, infoType)
+		_cache[cacheIndex] = productInfo
+
+		return productInfo
+	end)
+
+	return success and result or nil
+end
+
+--[=[
+	Calls the given function until it successfully runs.
+	Useful for retrieving from a data store or GET/POST requests.
+
+	It will return a tuple of (success: boolean, result: any, tries: number).
+
+	Example:
+	```lua
+	local success: boolean, result: any, tries: number = Util.attempt(function()
+		return game:GetService("HttpService"):GetAsync("https://example.com")
+	end)
+
+	print(success, result)
+	print(`It took {tries} tries to retrieve the data`)
+	```
+
+	@within Util
+	@param runner () -> any
+	@param maxTries number? -- Defaults to 3
+	@param yield number?
+	@return (boolean, any, number)
+]=]
+function Util.attempt(runner: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
+	assert(typeof(runner) == "function", "Util.attempt - runner must be a function")
+	assert(maxTries == nil or typeof(maxTries) == "number", "Util.attempt - maxTries must be a number or nil")
+	assert(yield == nil or typeof(yield) == "number", "Util.attempt - yield must be a number or nil")
+
 	local res: any
 	local successful: boolean = false
 	local tries: number = 0
 
 	repeat
-		local success: boolean, _res: any = pcall(fn)
+		local success: boolean, _res: any = pcall(runner)
 
 		if success then
 			res = _res
@@ -219,8 +326,41 @@ function Util.attempt(fn: () -> any, maxTries: number?, yield: number?): (boolea
 	return successful, res, tries
 end
 
-function Util.try(fn: () -> any, catch: (any) -> any): any
-	local success: boolean, res: any = pcall(fn)
+--[=[
+	Simple try catch function.
+
+	Example:
+	```lua
+	local result: any = Util.try(function()
+		return "Hello world!"
+	end, function(err)
+		warn("Error: " .. err)
+	end)
+
+	print(result) -- "Hello world!"
+	```
+
+	Example:
+	```lua
+	local result: any = Util.try(function()
+		error("Something went wrong")
+	end, function(err)
+		warn("Error: " .. err)
+	end)
+
+	print(result) -- nil
+	```
+
+	@within Util
+	@param runner () -> any
+	@param catch (any) -> any
+	@return any
+]=]
+function Util.try(runner: () -> any, catch: (any) -> any): any
+	assert(typeof(runner) == "function", "Util.try - runner argument must be a function")
+	assert(typeof(catch) == "function", "Util.try - catch argument must be a function")
+
+	local success: boolean, res: any = pcall(runner)
 
 	if not success then
 		catch(res)
@@ -231,13 +371,27 @@ end
 
 -- Parts
 
---[[
-	- @desc welds 2 parts
-]]--
-function Util.weld(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldConstraint?
-	if not part or not part.Parent or not attachTo or not attachTo.Parent then
-		return
-	end
+--[=[
+	Welds 2 parts together.
+
+	Example:
+	```lua
+	local weld: WeldConstraint = Util.weld(game.Workspace.Car.Wheel, game.Workspace.Car)
+	```
+
+	@within Util
+	@param part BasePart
+	@param attachTo BasePart
+	@param offset CFrame?
+	@return WeldConstraint
+]=]
+function Util.weld(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldConstraint
+	assert(typeof(part) == "Instance", "Util.weld - First argument must be an instance")
+	assert(typeof(attachTo) == "Instance", "Util.weld - Second argument must be an instance")
+	assert(part:IsA("BasePart"), "Util.weld - First argument must be a base part")
+	assert(attachTo:IsA("BasePart"), "Util.weld - Second argument must be a base part")
+	assert(part ~= attachTo, "Util.weld - Cannot weld part to itself")
+	assert(offset == nil or typeof(offset) == "CFrame", "Util.weld - Third argument must be a CFrame or nil")
 
 	if offset then
 		part.CFrame = attachTo.CFrame * offset
@@ -250,8 +404,22 @@ function Util.weld(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldCon
 	} :: WeldConstraint
 end
 
+--[=[
+	Welds all parts in a model to the PrimaryPart if it is set.
+
+	Example:
+	```lua
+	Util.weldModel(game.Workspace.Car)
+	```
+
+	@within Util
+	@param model Model
+	@return nil
+]=]
 function Util.weldModel(model: Model): Model?
-	if not model or not model:IsA("Model") or not model.PrimaryPart then
+	assert(typeof(model) == "Instance", "Util.weldModel - First argument must be an instance")
+
+	if not model.PrimaryPart then
 		return
 	end
 
@@ -264,6 +432,18 @@ function Util.weldModel(model: Model): Model?
 	return model
 end
 
+--[=[
+	Clears all welds from an instance.
+
+	Example:
+	```lua
+	Util.clearWelds(game.Workspace.House)
+	```
+
+	@within Util
+	@param instance Instance
+	@return nil
+]=]
 function Util.clearWelds(instance: Instance): nil
 	assert(typeof(instance) == "Instance", "Util.clearWelds - First argument must be an instance")
 
@@ -276,20 +456,42 @@ function Util.clearWelds(instance: Instance): nil
 	return nil
 end
 
--- Models
+--[=[
+	Clears all joints from an instance.
 
-function Util.getModelBounds(model: Model): (CFrame?, Vector3?)
-	if typeof(model) ~= "Instance" or not model:IsA("Model") then
-		return
+	Example:
+	```lua
+	Util.breakJoints(game.Workspace.House)
+	```
+
+	@within Util
+	@param instance Instance
+	@return nil
+]=]
+function Util.breakJoints(instance: Instance): nil
+	assert(typeof(instance) == "Instance", "Util.breakJoints - instance argument must be an instance")
+
+	for _, child: Instance in pairs(instance:GetDescendants()) do
+		if child:IsA("WeldConstraint") or child:IsA("Weld") or child:IsA("Motor6D") then
+			child:Destroy()
+		end
 	end
 
-	return model:GetBoundingBox()
+	return nil
 end
 
+-- Models
+
+--[=[
+	Gets the mass of a model.
+
+	@within Util
+	@param model Model
+	@return number
+]=]
 function Util.getMass(model: Model): number?
-	if typeof(model) ~= "Instance" or not model:IsA("Model") then
-		return
-	end
+	assert(typeof(model) == "Instance", "Util.getMass - First argument must be an instance")
+	assert(model:IsA("Model"), "Util.getMass - First argument must be a model")
 
 	local mass: number = 0
 
@@ -358,12 +560,119 @@ function Util.waitForChild(parent: Instance, name: string): Instance?
 	end
 end
 
-function Util.addEventListener(obj: Instance, targetEvent: string, fn: () -> any): RBXScriptConnection
-	return obj.Changed:Connect(function(event: string)
-		if event == targetEvent then
-			fn()
+--[=[
+	Expiremental
+
+	Listens to a property or attribute on an instance and runs a callback when it changes.
+	It will return a connection that can be disconnected.
+
+	Using addListener() is an addition to Roblox's built-in GetPropertyChangedSignal() and GetAttributeChangedSignal().
+
+	The callback will be called with the previous value and the new value.
+
+	Example:
+	```lua
+	local connection = Util.addListener(
+		game.Workspace.NPC,
+		"Health",
+		"Attribute",
+		function(oldValue, newValue)
+			print("Health changed from " .. oldValue .. " to " .. newValue)
 		end
+	)
+	```
+
+	@within Util
+	@param instance Instance
+	@param listenerType string -- "Property" | "Attribute"
+	@param listenTo string -- The property or attribute to listen to
+	@param callback (any, any) -> any -- The callback to run when the property or attribute changes
+	@return RBXScriptConnection
+]=]
+function Util.addListener(
+	instance: Instance,
+	listenerType: string,
+	listenTo: string,
+	callback: (oldValue: any, newValue: any) -> any
+): RBXScriptConnection
+	assert(instance and typeof(instance) == "Instance", "Util.addListener - First argument must be an instance")
+	assert(
+		listenerType == "Property" or listenerType == "Attribute",
+		"Util.addListener - Invalid listener type, must be 'Property' or 'Attribute'"
+	)
+	assert(listenTo, "Util.addListener - Missing listenTo argument")
+	assert(callback and typeof(callback) == "function", "Util.addListener - Missing callback")
+
+	local obj: any = instance -- Type hack
+	local oldValue: any = obj[listenTo]
+
+	local signalGetter: string = listenerType == "Property" and "GetPropertyChangedSignal" or "GetAttributeChangedSignal"
+
+	return obj[signalGetter](obj, listenTo):Connect(function()
+		local newValue: any = obj[listenTo]
+		local _oldValue: any = oldValue
+
+		oldValue = newValue
+		callback(_oldValue, newValue)
 	end)
+end
+
+--[=[
+	Shortcut for Util.addListener
+
+	Example:
+	```lua
+	local connection = Util.addPropertyListener(game.Workspace.NPC, "Name", function(oldValue, newValue)
+			print("Name changed from " .. oldValue .. " to " .. newValue)
+		end
+	)
+	```
+
+	@within Util
+	@param instance Instance
+	@param listenTo string
+	@param callback (any, any) -> any
+	@return RBXScriptConnection
+]=]
+function Util.addPropertyListener(
+	instance: Instance,
+	listenTo: string,
+	callback: (oldValue: any, newValue: any) -> any
+): RBXScriptConnection
+	assert(instance and typeof(instance) == "Instance", "Util.addPropertyListener - First argument must be an instance")
+	assert(listenTo, "Util.addPropertyListener - Missing listenTo argument")
+	assert(callback and typeof(callback) == "function", "Util.addPropertyListener - Missing callback")
+
+	return Util.addListener(instance, "Property", listenTo, callback)
+end
+
+--[=[
+	Shortcut for Util.addListener
+
+	Example:
+	```lua
+	local connection = Util.addAttributeListener(game.Workspace.NPC, "Health", function(oldValue, newValue)
+			print("Health changed from " .. oldValue .. " to " .. newValue)
+		end
+	)
+	```
+
+	@within Util
+	@param instance Instance
+	@param listenTo string
+	@param callback (any, any) -> any
+	@return RBXScriptConnection
+]=]
+function Util.addAttributeListener(
+	instance: Instance,
+	listenTo: string,
+	callback: (oldValue: any, newValue: any) -> any
+): RBXScriptConnection
+	assert(instance and typeof(instance) == "Instance", "Util.addAttributeListener - First argument must be an instance")
+	assert(listenTo, "Util.addAttributeListener - Missing listenTo argument")
+	assert(callback and typeof(callback) == "function", "Util.addAttributeListener - Missing callback")
+
+	return Util.addListener(instance, "Attribute", listenTo, callback)
 end
 
 local ON_TOUCH_OFFSET: number = 4
@@ -410,18 +719,6 @@ function Util.onPlayerTouch(
 	end
 
 	return offsetPart and Util.onTouch(obj, callback) or obj.Touched:Connect(callback)
-end
-
-function Util.breakJoints(target: Instance): nil
-	assert(typeof(target) == "Instance", "Util.breakJoints - Target must be an instance")
-
-	for _, child: Instance in pairs(target:GetDescendants()) do
-		if child:IsA("WeldConstraint") or child:IsA("Weld") or child:IsA("Motor6D") then
-			child:Destroy()
-		end
-	end
-
-	return nil
 end
 
 return Util
