@@ -12,7 +12,7 @@ local groupRankCacheExpiration = 60 -- 1 minutes
 
 	#### Example:
 	```lua
-	players.getGroupRank(game.Players.LocalPlayer, 1) -- 255
+	Util.getGroupRank(game.Players.LocalPlayer, 1) -- 255
 	```
 
 	@within Util
@@ -52,7 +52,7 @@ end
 
 	#### Example:
 	```lua
-	players.isCreator(game.Players.LocalPlayer) -- true
+	Util.isCreator(game.Players.LocalPlayer) -- true
 	```
 
 	@within Util
@@ -85,10 +85,10 @@ players.userLevel = {
 
 	#### Example:
 	```lua
-	getUserLevel(game.Players.LocalPlayer) -- 0
-	getUserLevel(game.Players.GameDeveloper) -- 4
-	getUserLevel(game.Players.PremiumPlayer) -- 4
-	getUserLevel(game.Players.Creator) -- 5
+	Util.getUserLevel(game.Players.LocalPlayer) -- 0
+	Util.getUserLevel(game.Players.GameDeveloper) -- 4
+	Util.getUserLevel(game.Players.PremiumPlayer) -- 4
+	Util.getUserLevel(game.Players.Creator) -- 5
 	```
 
 	@within Util
@@ -125,7 +125,7 @@ end
 
 	#### Example:
 	```lua
-	players.getHumanoid(game.Players.LocalPlayer) -- Humanoid
+	Util.getHumanoid(game.Players.LocalPlayer) -- Humanoid
 	```
 
 	@within Util
@@ -152,9 +152,9 @@ end
 
 	#### Example:
 	```lua
-	players.isAlive(game.Players.LocalPlayer) -- true
-	players.isAlive(game.Workspace.Zombie) -- false
-	players.isAlive(game.Workspace.Part) -- nil, but will throw a warning
+	Util.isAlive(game.Players.LocalPlayer) -- true
+	Util.isAlive(game.Workspace.Zombie) -- false
+	Util.isAlive(game.Workspace.Part) -- nil, but will throw a warning
 	```
 
 	@within Util
@@ -172,8 +172,8 @@ end
 
 	#### Example:
 	```lua
-	players.hasHumanoid(game.Players.LocalPlayer) -- true
-	players.hasHumanoid(game.Workspace.Zombie) -- true
+	Util.hasHumanoid(game.Players.LocalPlayer) -- true
+	Util.hasHumanoid(game.Workspace.Zombie) -- true
 	```
 
 	@within Util
@@ -189,7 +189,7 @@ end
 
 	#### Example:
 	```lua
-	players.getPlayerFromPart(game.Workspace.Part) -- Player
+	Util.getPlayerFromPart(game.Workspace.Part) -- Player
 	```
 
 	@within Util

@@ -7,8 +7,8 @@ local mathMethods = {}
 
 	#### Example:
 	```lua
-	lerp(0, 10, .5) -- 5
-	lerp(0, 10, 1) -- 10
+	Util.lerp(0, 10, .5) -- 5
+	Util.lerp(0, 10, 1) -- 10
 	```
 
 	@within Util
@@ -26,8 +26,8 @@ end
 
 	#### Example:
 	```lua
-	round(1.5) -- 2
-	round(1.4) -- 1
+	Util.round(1.5) -- 2
+	Util.round(1.4) -- 1
 	```
 
 	@within Util
@@ -47,8 +47,8 @@ end
 
 	#### Example:
 	```lua
-	formatInt(1000) -- 1,000
-	formatInt(1000.01) -- 1,000.01
+	Util.formatInt(1000) -- 1,000
+	Util.formatInt(1000.01) -- 1,000.01
 	```
 
 	@within Util
@@ -75,10 +75,10 @@ end
 
 	#### Example:
 	```lua
-	random(1, 10) -- 5
-	random(1, 10, true) -- 5.5
-	random(10) -- 5 (min defaults to 1)
-	random(10, true) -- 5.5 (min defaults to 1)
+	Util.random(1, 10) -- 5
+	Util.random(1, 10, true) -- 5.5
+	Util.random(10) -- 5 (min defaults to 1)
+	Util.random(10, true) -- 5.5 (min defaults to 1)
 	```
 
 	@within Util
@@ -107,8 +107,8 @@ local charsetLength: number = #charset
 
 	#### Example:
 	```lua
-	randomString() -- "aBcDeFgHiJkLmNoPqRsTuVwXyZ"
-	randomString(10) -- "aBcDeFgHiJ"
+	Util.randomString() -- "aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+	Util.randomString(10) -- "aBcDeFgHiJ"
 	```
 
 	@within Util
@@ -131,8 +131,8 @@ end
 
 	#### Example:
 	```lua
-	randomObj({ "a", "b", "c" }) -- "b"
-	randomObj(Workspace.Player) -- Head
+	Util.randomObj({ "a", "b", "c" }) -- "b"
+	Util.randomObj(Workspace.Player) -- Head
 	```
 
 	@within Util
@@ -161,17 +161,17 @@ local si = { "K", "M" , "B", "T", "Q" }
 
 	#### Example:
 	```lua
-	shortenNumber(1000) -- 1K
-	shortenNumber(1000000) -- 1M
-	shortenNumber(1000000000) -- 1B
-	shortenNumber(1000000000000) -- 1T
-	shortenNumber(1000000000000000) -- 1Q
+	Util.shortenNumber(1000) -- 1K
+	Util.shortenNumber(1000000) -- 1M
+	Util.shortenNumber(1000000000) -- 1B
+	Util.shortenNumber(1000000000000) -- 1T
+	Util.shortenNumber(1000000000000000) -- 1Q
 	```
 
 	minimumTiers is useful for when you want to shorten a number but only if it's above a certain tier.
 	For example, if you want to shorten a number but only if it's above 1,000,000, you would do:
 	```lua
-	shortenNumber(1000000, 2) -- 1,000,000
+	Util.shortenNumber(1000000, 2) -- 1,000,000
 	```
 
 	A tier is the amount of commas in a number. For example, 1,000,000 has 2 tiers and 1,000 has 1 tier.

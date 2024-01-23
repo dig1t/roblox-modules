@@ -93,8 +93,8 @@ end
 	```lua
 	local secondsLeft: number = 80
 
-	formatUnix(secondsLeft, "mm:ss") -- 01:20
-	formatUnix(secondsLeft, "HH:mm:ss") -- 00:01:20
+	Util.formatUnix(secondsLeft, "mm:ss") -- 01:20
+	Util.formatUnix(secondsLeft, "HH:mm:ss") -- 00:01:20
 	```
 
 	@within Util
@@ -120,8 +120,8 @@ end
 	```lua
 	local secondsLeft: number = 80
 
-	unixToClockFormat(secondsLeft) -- 01:20
-	unixToClockFormat(secondsLeft, "HH:mm:ss") -- 00:01:20
+	Util.unixToClockFormat(secondsLeft) -- 01:20
+	Util.unixToClockFormat(secondsLeft, "HH:mm:ss") -- 00:01:20
 	```
 
 	@within Util
@@ -141,13 +141,13 @@ end
 	```lua
 	local secondsLeft: number = 80
 
-	timeAgo(secondsLeft) -- 1 minute ago
+	Util.timeAgo(secondsLeft) -- 1 minute ago
 	```
 
 	```lua
 	local secondsLeft: number = 80
 
-	timeAgo(secondsLeft, 80 + 60) -- just now
+	Util.timeAgo(secondsLeft, 80 + 60) -- just now
 	```
 
 	@within Util

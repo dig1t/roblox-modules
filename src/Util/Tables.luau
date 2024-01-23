@@ -33,8 +33,8 @@ local tableUtil = {}
 
 	#### Example:
 	```lua
-	flip({ a = 1, b = 2 }) -- { [1] = "a", [2] = "b" }
-	flip({ a = 1, b = 2 }, true) -- { [1] = { "a" }, [2] = { "b" } }
+	Util.flip({ a = 1, b = 2 }) -- { [1] = "a", [2] = "b" }
+	Util.flip({ a = 1, b = 2 }, true) -- { [1] = { "a" }, [2] = { "b" } }
 	```
 
 	@within Util
@@ -71,11 +71,11 @@ end
 
 	#### Example:
 	```lua
-	map({ 1, 2, 3 }, function(v)
+	Util.map({ 1, 2, 3 }, function(v)
 		return v * 2
 	end) -- { 2, 4, 6 }
 
-	map({ 1, 2, 3 }, function(v, i)
+	Util.map({ 1, 2, 3 }, function(v, i)
 		return i * 2
 	end) -- { 2, 4, 6 }
 	```
@@ -127,13 +127,13 @@ end
 
 	#### Example:
 	```lua
-	mapIndex({ 1, 2, 3 }) -- { [1] = 1, [2] = 2, [3] = 3 }
+	Util.mapIndex({ 1, 2, 3 }) -- { [1] = 1, [2] = 2, [3] = 3 }
 
-	mapIndex({ 1, 2, 3 }, function(v)
+	Util.mapIndex({ 1, 2, 3 }, function(v)
 		return v * 2
 	end) -- { [1] = 2, [2] = 4, [3] = 6 }
 
-	mapIndex({ 1, 2, 3 }, function(v, i)
+	Util.mapIndex({ 1, 2, 3 }, function(v, i)
 		return i * 2
 	end) -- { [2] = 2, [4] = 4, [6] = 6 }
 	```
@@ -175,7 +175,7 @@ end
 
 	#### Example:
 	```lua
-	trimWhitespace("  Hello, world!  ") -- "Hello, world!"
+	Util.trimWhitespace("  Hello, world!  ") -- "Hello, world!"
 	```
 
 	@within Util
@@ -193,7 +193,7 @@ end
 
 	#### Example:
 	```lua
-	trimLeadingWhitespace("  Hello, world!") -- "Hello, world!"
+	Util.trimLeadingWhitespace("  Hello, world!") -- "Hello, world!"
 	```
 
 	@within Util
@@ -211,7 +211,7 @@ end
 
 	#### Example:
 	```lua
-	trimTrailingWhitespace("Hello, world!  ") -- "Hello, world!"
+	Util.trimTrailingWhitespace("Hello, world!  ") -- "Hello, world!"
 	```
 
 	@within Util
@@ -234,13 +234,13 @@ end
 
 	#### Example:
 	```lua
-	split("Hello, world!") -- { "Hello,", "world!" }
-	split("Hello, world!", ", ") -- { "Hello", "world!" }
-	split("Hello, world!", ",", nil, false) -- { "Hello", " world!" } -- no whitespace is trimmed
-	split("Hello, world!,", ",", false) -- { "Hello", "world!", "" } -- trailing delimiter is included
+	Util.split("Hello, world!") -- { "Hello,", "world!" }
+	Util.split("Hello, world!", ", ") -- { "Hello", "world!" }
+	Util.split("Hello, world!", ",", nil, false) -- { "Hello", " world!" } -- no whitespace is trimmed
+	Util.split("Hello, world!,", ",", false) -- { "Hello", "world!", "" } -- trailing delimiter is included
 
-	split("path/to/file", "/") -- { "path", "to", "file" }
-	split("path/to/file/", "/") -- { "path", "to", "file" } -- trailing delimiter is trimmed
+	Util.split("path/to/file", "/") -- { "path", "to", "file" }
+	Util.split("path/to/file/", "/") -- { "path", "to", "file" } -- trailing delimiter is trimmed
 	```
 
 	@within Util
@@ -254,7 +254,7 @@ function tableUtil.split(text: string | number?, delimiter: string?, trimTrailin
 	if typeof(text) == "number" then
 		text = tostring(text) :: string
 	end
-	
+
 	if not text then
 		return {}
 	end
@@ -318,8 +318,8 @@ end]]
 
 	#### Example:
 	```lua
-	join({"Hello", "world!"}) -- "Hello,world!"
-	join({"Hello", "world!"}, ", ") -- "Hello, world!"
+	Util.join({"Hello", "world!"}) -- "Hello,world!"
+	Util.join({"Hello", "world!"}, ", ") -- "Hello, world!"
 	```
 
 	@within Util
@@ -358,9 +358,9 @@ end
 
 	#### Example:
 	```lua
-	extend({ a = 1 }, { b = 2 }, { c = 3 }) -- { a = 1, b = 2, c = 3 }
-	extend({ a = 1 }, { a = 2 }, { a = 3 }) -- { a = 3 }
-	extend({ a = 1 }, { a = 2 }, { a = 3 }, true) -- Error: 4th argument must be a table
+	Util.extend({ a = 1 }, { b = 2 }, { c = 3 }) -- { a = 1, b = 2, c = 3 }
+	Util.extend({ a = 1 }, { a = 2 }, { a = 3 }) -- { a = 3 }
+	Util.extend({ a = 1 }, { a = 2 }, { a = 3 }, true) -- Error: 4th argument must be a table
 	```
 
 	#### Config override example:
@@ -377,7 +377,7 @@ end
 	}
 
 	-- { health = 150, speed = 1.5 }
-	local playerConfig = extend(getDefaultConfig(), buffConfig)
+	local playerConfig = Util.extend(getDefaultConfig(), buffConfig)
 	```
 
 	@within Util
@@ -406,10 +406,10 @@ end
 
 	#### Example:
 	```lua
-	treePath({ a = { b = { c = 1 } } }, "a.b.c") -- 1
-	treePath({ a = { b = { c = 1 } } }, "a.b") -- { c = 1 }
-	treePath(game.Workspace, "House.Door") -- Door instance
-	treePath(script, "NonexistantChild") -- nil
+	Util.treePath({ a = { b = { c = 1 } } }, "a.b.c") -- 1
+	Util.treePath({ a = { b = { c = 1 } } }, "a.b") -- { c = 1 }
+	Util.treePath(game.Workspace, "House.Door") -- Door instance
+	Util.treePath(script, "NonexistantChild") -- nil
 	```
 
 	@within Util
@@ -429,7 +429,7 @@ function tableUtil.treePath(tree: { [any]: any } | Instance, path: string, delim
 	if #steps == 0 then
 		return node -- Return the root node
 	end
-	
+
 	while node ~= nil and stepIndex <= #steps do
 		local childNode = steps[stepIndex]
 
@@ -455,9 +455,9 @@ end
 
 	#### Example:
 	```lua
-	insertIf({ 1, 2, 3 }, 4, true) -- { 1, 2, 3, 4 }
-	insertIf({ 1, 2, 3 }, 4, false) -- { 1, 2, 3 }
-	insertIf({ 1, 2, 3 }, 4, function()
+	Util.insertIf({ 1, 2, 3 }, 4, true) -- { 1, 2, 3, 4 }
+	Util.insertIf({ 1, 2, 3 }, 4, false) -- { 1, 2, 3 }
+	Util.insertIf({ 1, 2, 3 }, 4, function()
 		return true
 	end) -- { 1, 2, 3, 4 }
 	```
@@ -490,8 +490,8 @@ end
 
 	#### Example:
 	```lua
-	instanceChildrenToTable(game.Workspace) -- { Part = Instance, Part2 = Instance }
-	instanceChildrenToTable(game.ReplicatedStorage.Config) -- { Config1 = CFrameValue, Config2 = StringValue }
+	Util.instanceChildrenToTable(game.Workspace) -- { Part = Instance, Part2 = Instance }
+	Util.instanceChildrenToTable(game.ReplicatedStorage.Config) -- { Config1 = CFrameValue, Config2 = StringValue }
 	```
 
 	@within Util
@@ -515,8 +515,8 @@ end
 
 	#### Example:
 	```lua
-	tableLength({ 1, 2, 3 }) -- 3
-	tableLength({ a = 1, b = 2, c = 3 }) -- 3
+	Util.tableLength({ 1, 2, 3 }) -- 3
+	Util.tableLength({ a = 1, b = 2, c = 3 }) -- 3
 	```
 
 	@within Util
@@ -540,8 +540,8 @@ end
 
 	#### Example:
 	```lua
-	tableRandomIndex({ 1, 2, 3 }) -- 2
-	tableRandomIndex({ a = 1, b = 2, c = 3 }) -- "b"
+	Util.tableRandomIndex({ 1, 2, 3 }) -- 2
+	Util.tableRandomIndex({ a = 1, b = 2, c = 3 }) -- "b"
 	```
 
 	@within Util
@@ -598,7 +598,7 @@ end
 	  - WelcomeMessage (StringValue), Value = "Hello, world!"
 
 	```lua
-	makeConfigFromValues(game.ReplicatedStorage.Config)
+	Util.makeConfigFromValues(game.ReplicatedStorage.Config)
 	```
 
 	Result:
@@ -640,9 +640,9 @@ end
 
 	#### Example:
 	```lua
-	tableRemove({ 1, 2, 3 }, 2) -- { 1, 3 }
-	tableRemove({ 1, 2, 3 }, { 2, 3 }) -- { 1 }
-	tableRemove({ 1, 2, 3 }, function(value, newIndex, i)
+	Util.tableRemove({ 1, 2, 3 }, 2) -- { 1, 3 }
+	Util.tableRemove({ 1, 2, 3 }, { 2, 3 }) -- { 1 }
+	Util.tableRemove({ 1, 2, 3 }, function(value, newIndex, i)
 		return value == 2
 	end) -- { 1, 3 }
 	```

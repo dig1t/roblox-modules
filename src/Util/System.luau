@@ -9,7 +9,7 @@ local sys = {}
 
 	#### Example:
 	```lua
-	sys.timeout(1, function()
+	Util.timeout(1, function()
 		print("Hello, world!")
 	end)
 	```
@@ -39,7 +39,7 @@ end
 
 	#### Example:
 	```lua
-	sys.interval(1, function(elapsed)
+	Util.interval(1, function(elapsed)
 		print(elapsed)
 	end)
 	```
@@ -79,9 +79,9 @@ end
 
 	#### Example:
 	```lua
-	inTable({ 1, 2, 3 }, 2) -- true
-	inTable({ 1, 2, 3 }, 4) -- false
-	inTable({ Part, 2, 3, Part2 = true }, Part) -- true
+	Util.inTable({ 1, 2, 3 }, 2) -- true
+	Util.inTable({ 1, 2, 3 }, 4) -- false
+	Util.inTable({ Part, 2, 3, Part2 = true }, Part) -- true
 	```
 
 	@within Util
