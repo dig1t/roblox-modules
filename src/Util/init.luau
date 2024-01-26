@@ -299,13 +299,14 @@ end
 
 	@within Util
 	@param assetId number | string
-	@return string?
+	@return string
 ]=]
-function Util.getAssetURI(assetId: number | string): string?
+function Util.getAssetURI(assetId: number | string): string
 	assert(typeof(assetId) == "number" or typeof(assetId) == "string", "Util.getAssetId - assetId must be a number or string")
 
 	return (typeof(assetId) == "number" and `rbxassetid://{assetId}`)
-		or (typeof(assetId) == "string" and assetId) or nil
+		or (typeof(assetId) == "string" and assetId)
+		or ""
 end
 
 --[=[
