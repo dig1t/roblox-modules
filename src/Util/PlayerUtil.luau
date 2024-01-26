@@ -2,10 +2,10 @@
 
 local Players = game:GetService("Players")
 
-local players = {}
-
 local groupRankCache = {}
 local groupRankCacheExpiration = 60 -- 1 minutes
+
+local PlayerUtil = {}
 
 --[=[
 	Gets the group rank of a player.
@@ -20,7 +20,7 @@ local groupRankCacheExpiration = 60 -- 1 minutes
 	@param groupId number
 	@return number
 ]=]
-function players.getGroupRank(player: Player, groupId: number): number
+function PlayerUtil.getGroupRank(player: Player, groupId: number): number
 	local uniqueId: string = `${player.UserId}-${groupId}`
 
 	if not player or not groupId then
@@ -41,7 +41,7 @@ function players.getGroupRank(player: Player, groupId: number): number
 	end
 
 	if os.clock() - groupRankCache[uniqueId].fetchedAt > groupRankCacheExpiration then
-		return players.getGroupRank(player, groupId) -- refetch if expired
+		return PlayerUtil.getGroupRank(player, groupId) -- refetch if expired
 	end
 
 	return groupRankCache[uniqueId].rank
@@ -59,9 +59,9 @@ end
 	@param player Player
 	@return boolean
 ]=]
-function players.isCreator(player: Player): boolean
+function PlayerUtil.isCreator(player: Player): boolean
 	return (
-		game.CreatorType == Enum.CreatorType.Group and players.getGroupRank(player, game.CreatorId) >= 255
+		game.CreatorType == Enum.CreatorType.Group and PlayerUtil.getGroupRank(player, game.CreatorId) >= 255
 	) or (
 		game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId
 	)
@@ -71,7 +71,7 @@ end
 	@within Util
 	@prop userLevel table<number, number>
 ]=]
-players.userLevel = {
+PlayerUtil.userLevel = {
 	normal = 0; -- (default)
 	premium = 1; -- (requires premium)
 	VIP = 2; -- (if game is owned by group, requires rank 10)
@@ -95,27 +95,27 @@ players.userLevel = {
 	@param player Player
 	@return number
 ]=]
-function players.getUserLevel(player: Player): number
+function PlayerUtil.getUserLevel(player: Player): number
 	local isGameOwnedByGroup: boolean = game.CreatorType == Enum.CreatorType.Group
 
-	if players.isCreator(player) then
-		return players.userLevel.creator
+	if PlayerUtil.isCreator(player) then
+		return PlayerUtil.userLevel.creator
 	elseif isGameOwnedByGroup then
-		local playerRank: number = players.getGroupRank(player, game.CreatorId)
+		local playerRank: number = PlayerUtil.getGroupRank(player, game.CreatorId)
 
 		if playerRank >= 253 then
-			return players.userLevel.superuser
+			return PlayerUtil.userLevel.superuser
 		elseif playerRank == 99 then
-			return players.userLevel.moderator
+			return PlayerUtil.userLevel.moderator
 		elseif playerRank < 10 then
-			return players.userLevel.VIP
+			return PlayerUtil.userLevel.VIP
 		end
 	end
 
 	return (
-		player.MembershipType == Enum.MembershipType.Premium and players.userLevel.premium
+		player.MembershipType == Enum.MembershipType.Premium and PlayerUtil.userLevel.premium
 	) or (
-		players.userLevel.normal
+		PlayerUtil.userLevel.normal
 	)
 end
 
@@ -132,9 +132,9 @@ end
 	@param object Instance
 	@return Humanoid?
 ]=]
-function players.getHumanoid(object: Instance): Humanoid?
+function PlayerUtil.getHumanoid(object: Instance): Humanoid?
 	if typeof(object) ~= "Instance" then
-		warn("players.getHumanoid - object argument is not an Instance")
+		warn("Util.getHumanoid - object argument is not an Instance")
 		return nil
 	elseif object:IsA("Humanoid") then
 		return object
@@ -161,8 +161,8 @@ end
 	@param obj Instance
 	@return boolean
 ]=]
-function players.isAlive(obj: Instance): boolean
-	local humanoid: Humanoid? = players.getHumanoid(obj)
+function PlayerUtil.isAlive(obj: Instance): boolean
+	local humanoid: Humanoid? = PlayerUtil.getHumanoid(obj)
 
 	return humanoid and humanoid.Health > 0 or false
 end
@@ -180,8 +180,8 @@ end
 	@param obj Instance
 	@return boolean
 ]=]
-function players.hasHumanoid(obj): boolean
-	return players.getHumanoid(obj) ~= nil
+function PlayerUtil.hasHumanoid(obj: Instance): boolean
+	return PlayerUtil.getHumanoid(obj) ~= nil
 end
 
 --[=[
@@ -196,8 +196,11 @@ end
 	@param part BasePart
 	@return Player?
 ]=]
-function players.getPlayerFromPart(part: BasePart): Player?
-	assert(typeof(part) == "Instance", "players.getPlayerFromPart - Part is not an Instance")
+function PlayerUtil.getPlayerFromPart(part: BasePart): Player?
+	assert(
+		typeof(part) == "Instance" and part:IsA("BasePart"),
+		"Util.getPlayerFromPart - part argument is not a BasePart"
+	)
 
 	local node: Instance = part
 	local humanoid: Humanoid?
@@ -210,4 +213,4 @@ function players.getPlayerFromPart(part: BasePart): Player?
 	return humanoid and Players:GetPlayerFromCharacter(humanoid.Parent) or nil
 end
 
-return players
+return PlayerUtil

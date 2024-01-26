@@ -3,6 +3,14 @@
 local HttpService = game:GetService("HttpService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
+-- Import util modules
+local DateUtil = require(script.DateUtil)
+local MathUtil = require(script.MathUtil)
+local PlayerUtil = require(script.PlayerUtil)
+local SearchUtil = require(script.SearchUtil)
+local SystemUtil = require(script.SystemUtil)
+local TableUtil = require(script.TableUtil)
+
 local _cache: { [string]: any } = {}
 
 --- @class Util
@@ -14,6 +22,17 @@ setmetatable({}, {
 		return class.instance(...)
 	end
 })
+
+-- Add util modules
+TableUtil.extend(
+	Util,
+	DateUtil,
+	MathUtil,
+	PlayerUtil,
+	SearchUtil,
+	SystemUtil,
+	TableUtil
+)
 
 function Util.use(moduleName: string | ModuleScript)
 	local module: { [any]: any }
@@ -38,14 +57,6 @@ function Util.use(moduleName: string | ModuleScript)
 		end
 	end
 end
-
--- Import util modules
-Util.use("Date")
-Util.use("Math")
-Util.use("Players")
-Util.use("Search")
-Util.use("System")
-Util.use("Tables")
 
 Util.asset = "rbxassetid://" :: string
 Util.defaultWalkSpeed = 16 :: number
@@ -275,6 +286,26 @@ function Util.getProductInfo(productId: number, infoType: Enum.InfoType?): { [an
 	end)
 
 	return success and result or nil
+end
+
+--[=[
+	Returns an asset URI.
+
+	Example:
+	```lua
+	Util.getAssetId("rbxassetid://1234567890") -- rbxassetid://1234567890
+	Util.getAssetId(1234567890) -- rbxassetid://1234567890
+	```
+
+	@within Util
+	@param assetId number | string
+	@return string?
+]=]
+function Util.getAssetURI(assetId: number | string): string?
+	assert(typeof(assetId) == "number" or typeof(assetId) == "string", "Util.getAssetId - assetId must be a number or string")
+
+	return (typeof(assetId) == "number" and `rbxassetid://{assetId}`)
+		or (typeof(assetId) == "string" and assetId) or nil
 end
 
 --[=[

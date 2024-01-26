@@ -1,6 +1,6 @@
 --!strict
 
-local search = {}
+local SearchUtil = {}
 
 --[=[
 	Gets the number of parts in the given instance
@@ -14,7 +14,7 @@ local search = {}
 	@param instance Instance
 	@return number
 ]=]
-function search.getPartCount(instance: Instance): number
+function SearchUtil.getPartCount(instance: Instance): number
 	assert(typeof(instance) == "Instance", "Util.getPartCount() - argument must be an Instance")
 
 	local count: number = 0
@@ -40,7 +40,7 @@ end
 	@param instance Instance
 	@return { BasePart }
 ]=]
-function search.getDescendantParts(instance: Instance): { BasePart }
+function SearchUtil.getDescendantParts(instance: Instance): { BasePart }
 	assert(typeof(instance) == "Instance", "Util.getDescendantParts() - argument must be an Instance")
 
 	local parts: { BasePart } = {}
@@ -89,7 +89,7 @@ end
 	@param condition string | (obj: Instance) -> boolean
 	@return any
 ]=]
-function search.getAncestor(child: Instance, condition: string | (obj: Instance) -> boolean): any
+function SearchUtil.getAncestor(child: Instance, condition: string | (obj: Instance) -> boolean): any
 	assert(typeof(child) == "Instance", "Util.getAncestor() - child argument must be an Instance")
 	assert(
 		typeof(condition) == "string" or typeof(condition) == "function",
@@ -160,7 +160,7 @@ end
 		{ Name = "NPC1", Health = 0 },
 	}
 
-	local firstAliveNPC = search.find(NPCs, function(NPC)
+	local firstAliveNPC = Util.find(NPCs, function(NPC)
 		return NPC.Health > 0
 	end)
 	```
@@ -172,7 +172,7 @@ end
 	@param _depth number -- Internal use, used to track the current depth
 	@return any
 ]=]
-function search.find(
+function SearchUtil.find(
 	node: Instance | { [any]: any },
 	condition: any | (obj: Instance) -> boolean,
 	maxDepth: number?,
@@ -234,7 +234,7 @@ function search.find(
 			continue
 		end
 
-		local match: any = search.find(child, condition, maxDepth, currentDepth + 1)
+		local match: any = SearchUtil.find(child, condition, maxDepth, currentDepth + 1)
 
 		if match ~= nil then
 			return match
@@ -282,7 +282,7 @@ end
 	@param children string | { string }
 	@return boolean
 ]=]
-function search.exists(node: Instance | { [string]: any }, children: string | { string }): boolean
+function SearchUtil.exists(node: Instance | { [string]: any }, children: string | { string }): boolean
 	assert(
 		typeof(node) == "Instance" or typeof(node) == "table",
 		"Util.exists() - node argument must be an Instance or table"
@@ -334,7 +334,7 @@ end
 	@param instance Instance
 	@return BasePart?
 ]=]
-function search.getFirstPart(instance: Instance): BasePart?
+function SearchUtil.getFirstPart(instance: Instance): BasePart?
 	assert(typeof(instance) == "Instance", "instance argument must be an Instance")
 
 	local children: { BasePart | Instance } = instance:GetChildren()
@@ -359,4 +359,4 @@ function search.getFirstPart(instance: Instance): BasePart?
 	return nil
 end
 
-return search
+return SearchUtil

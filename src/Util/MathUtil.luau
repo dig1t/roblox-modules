@@ -1,6 +1,6 @@
 --!strict
 
-local mathMethods = {}
+local MathUtil = {}
 
 --[=[
 	Interpolates between two numbers.
@@ -17,7 +17,7 @@ local mathMethods = {}
 	@param alpha number
 	@return number
 ]=]
-function mathMethods.lerp(start: number, stop: number, alpha: number): number
+function MathUtil.lerp(start: number, stop: number, alpha: number): number
 	return start * (1 - alpha) + stop * alpha
 end
 
@@ -31,15 +31,15 @@ end
 	```
 
 	@within Util
-	@param number number
-	@param kenetec boolean? -- Whether to use kenetec rounding or not. Defaults to false.
+	@param _number number
 	@return number
 ]=]
-function mathMethods.round(number: number, kenetec: boolean?): number
-	assert(typeof(number) == "number", "number must be a number")
-	assert(typeof(kenetec) == "boolean" or kenetec == nil, "kenetec must be a boolean or nil")
+function MathUtil.round(_number: number): number
+	assert(typeof(_number) == "number", "Number argument must be a number")
 
-	return not kenetec and math.floor(number + .5) or number + .5 - (number + .5) % 1
+	local decimal: number = _number % 1
+
+	return math[decimal >= 0.5 and "ceil" or "floor"](_number)
 end
 
 --[=[
@@ -55,11 +55,16 @@ end
 	@param number number
 	@return string
 ]=]
-function mathMethods.formatInt(number: number): string -- 1000.01 to 1,000.01
+function MathUtil.formatInt(number: number): string -- 1000.01 to 1,000.01
 	assert(typeof(number) == "number", "Number argument must be a number")
 
 	local numberString: string = tostring(number)
-	local minus, int, fraction = numberString:match("([-]?)(%d+)([.]?%d*)")
+
+	if not numberString then
+		error("Could not convert number to string")
+	end
+
+	local minus: string?, int: string?, fraction: string? = numberString:match("([-]?)(%d+)([.]?%d*)")
 
 	if not minus or not int or not fraction then
 		return ""
@@ -82,17 +87,17 @@ end
 	```
 
 	@within Util
-	@param number1 number
-	@param number2 number?
+	@param minValue number
+	@param maxValue number?
 	@param float boolean? -- Whether to return as a float or not. Defaults to false.
 ]=]
-function mathMethods.random(number1: number, number2: number?, float: boolean?): number
-	assert(typeof(number1) == "number", "Number1 argument must be a number")
-	assert(typeof(number2) == "number" or number2 == nil, "Number2 argument must be a number or nil")
+function MathUtil.random(minValue: number, maxValue: number?, float: boolean?): number
+	assert(typeof(minValue) == "number", "Number1 argument must be a number")
+	assert(typeof(maxValue) == "number" or maxValue == nil, "Number2 argument must be a number or nil")
 	assert(typeof(float) == "boolean" or float == nil, "Float argument must be a boolean or nil")
 
-	local min: number = not number2 and 1 or number1 -- If number2 is not defined, use 1 as min
-	local max: number = number2 or number1
+	local min: number = not maxValue and 1 or minValue -- If maxValue is not defined, use 1 as min
+	local max: number = maxValue or minValue
 
 	return float == true and
 		Random.new():NextNumber(min, max) or -- Return float
@@ -115,11 +120,13 @@ local charsetLength: number = #charset
 	@param length number? -- The length of the string. Defaults to 18.
 	@return string
 ]=]
-function mathMethods.randomString(length: number?): string
+function MathUtil.randomString(length: number?): string
+	assert(typeof(length) == "number" or length == nil, "Length argument must be a number or nil")
+
 	local res: string = ""
 
 	for _ = 1, (length or 18) do
-		local random: number = mathMethods.random(charsetLength)
+		local random: number = MathUtil.random(charsetLength)
 		res = res .. charset:sub(random, random)
 	end
 
@@ -139,20 +146,22 @@ end
 	@param obj table | Instance
 	@return any
 ]=]
-function mathMethods.randomObj(obj: { [any]: any } | Instance): any
+function MathUtil.randomObj(obj: { [any]: any } | Instance): any
+	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Object argument must be a table or Instance")
+
 	if typeof(obj) == "Instance" then
-		-- convert to a table
+		-- Convert to a table
 		obj = obj:GetChildren()
 	end
 
 	if typeof(obj) == "table" then
-		return obj[mathMethods.random(1, #obj)]
+		return obj[MathUtil.random(1, #obj)]
 	end
 
 	return
 end
 
-local si = { "K", "M" , "B", "T", "Q" }
+local shortNumberSuffixes: { string } = { "K", "M" , "B", "T", "Q" }
 
 --[=[
 	Shortens a large number to a readable format.
@@ -188,8 +197,9 @@ local si = { "K", "M" , "B", "T", "Q" }
 	@param minimumTiers number? -- The minimum number of tiers to shorten. Defaults to 1.
 	@return string
 ]=]
-function mathMethods.shortenNumber(number: number | string, minimumTiers: number?): string
-	assert(number, "Missing number argument")
+function MathUtil.shortenNumber(number: number | string, minimumTiers: number?): string
+	assert(typeof(number) == "number" or typeof(number) == "string", "Number argument must be a number or string")
+	assert(typeof(minimumTiers) == "number" or minimumTiers == nil, "MinimumTiers argument must be a number or nil")
 
 	number = typeof(number) == "string" and tonumber(number) or number
 
@@ -198,25 +208,26 @@ function mathMethods.shortenNumber(number: number | string, minimumTiers: number
 	local negative: number = math.abs(number) == number and 1 or -1
 	number = math.abs(number)
 
-	local tier = math.log10(number) / 3
+	local tier: number = math.log10(number) / 3
 
 	if tier < (minimumTiers or 1) then -- If tier is less than minimumTiers, return the number
-		return mathMethods.formatInt(number * negative)
+		return MathUtil.formatInt(number * negative)
 	end
 
 	tier = math.floor(tier)
 
-	local tierSuffix = si[tier] or si[#si] -- Get tier or use highest tier if # too high
+	local tierSuffix: string? = shortNumberSuffixes[tier]
+		or shortNumberSuffixes[#shortNumberSuffixes] -- Get tier or use highest tier if # too high
 
 	local _number: number? = tonumber(
 		string.format("%.2f", number / 10 ^ (3 * tier))
 	)
 
-	if not _number then
+	if not _number or not tierSuffix then
 		return ""
 	end
 
-	return (mathMethods.formatInt(_number)) .. tierSuffix
+	return (MathUtil.formatInt(_number)) .. tierSuffix
 end
 
 --[=[
@@ -235,7 +246,7 @@ end
 	@param object Vector3 | CFrame | Instance
 	@return Vector3?
 ]=]
-function mathMethods.getVector3(object: Vector3 | CFrame | Instance): Vector3?
+function MathUtil.getVector3(object: Vector3 | CFrame | Instance): Vector3?
 	return (
 		typeof(object) == "Vector3" and object
 	) or (
@@ -259,9 +270,9 @@ end
 	@param target Vector3 | Instance
 	@return number
 ]=]
-function mathMethods.getDistance(origin: any, target: any)
-	local originVector3: Vector3? = mathMethods.getVector3(origin)
-	local targetVector3: Vector3? = mathMethods.getVector3(target)
+function MathUtil.getDistance(origin: any, target: any)
+	local originVector3: Vector3? = MathUtil.getVector3(origin)
+	local targetVector3: Vector3? = MathUtil.getVector3(target)
 
 	assert(
 		originVector3,
@@ -282,8 +293,8 @@ end
 	@param part BasePart
 	@return CFrame
 ]=]
-function mathMethods.getPartBottomSurface(part: BasePart): CFrame
+function MathUtil.getPartBottomSurface(part: BasePart): CFrame
 	return part.CFrame * CFrame.new(0, -part.Size.Y / 2, 0)
 end
 
-return mathMethods
+return MathUtil

@@ -2,7 +2,7 @@
 
 local RunService = game:GetService("RunService")
 
-local sys = {}
+local SystemUtil = {}
 
 --[=[
 	Runs a function after `delay` seconds.
@@ -20,7 +20,7 @@ local sys = {}
 	@param callback function
 	@return nil
 ]=]
-function sys.timeout(delay: number, callback: (number) -> boolean?)
+function SystemUtil.timeout(delay: number, callback: (number) -> boolean?)
 	assert(typeof(delay) == "number", "Util.timeout - delay must be a number")
 	assert(typeof(callback) == "function", "Util.timeout - callback must be a function")
 
@@ -56,7 +56,7 @@ end
 	@param callback function
 	@return table
 ]=]
-function sys.interval(interval: number, callback: (number, number) -> boolean?): any
+function SystemUtil.interval(interval: number, callback: (number, number) -> boolean?): any
 	assert(typeof(interval) == "number", "Util.interval - interval must be a number")
 	assert(typeof(callback) == "function", "Util.interval - callback must be a function")
 
@@ -99,7 +99,7 @@ end
 	@param target any
 	@return boolean
 ]=]
-function sys.inTable(searchTable: { [any]: any }, target: any): boolean
+function SystemUtil.inTable(searchTable: { [any]: any }, target: any): boolean
 	assert(typeof(searchTable) == "table", "Util.inTable - searchTable must be a table")
 
 	for _, value: any in pairs(searchTable) do
@@ -111,4 +111,4 @@ function sys.inTable(searchTable: { [any]: any }, target: any): boolean
 	return false
 end
 
-return sys
+return SystemUtil

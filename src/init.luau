@@ -5,9 +5,6 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
-local Shared: any = ReplicatedStorage:FindFirstChild("Shared")
-local Packages: any = ReplicatedStorage:FindFirstChild("Packages")
-
 -- Load all modules
 local Util = require(script.Util)
 local Animation = require(script.Animation)
@@ -20,8 +17,8 @@ local Palette = require(script.Palette)
 local PartExplosion = require(script.PartExplosion)
 local Promise = require(script.Promise)
 local Ragdoll = require(script.Ragdoll)
--- local WeaponClient: any = require(script.WeaponClient)
--- local WeaponServer: any = require(script.WeaponServer)
+-- local WeaponClient = require(script.WeaponClient)
+-- local WeaponServer = require(script.WeaponServer)
 
 --[=[
 	Bootstrapping library to allow for importing modules.
@@ -188,6 +185,9 @@ function dLib.import(path: string): ImportResult
 end
 
 -- Set default root paths
+local Shared = ReplicatedStorage:FindFirstChild("Shared")
+local Packages = ReplicatedStorage:FindFirstChild("Packages")
+
 dLib.setRootPath("dLib", script)
 
 if Shared then
@@ -199,12 +199,10 @@ if Packages then
 end
 
 if RunService:IsServer() then
-	local ServerPackages: any = ServerScriptService:FindFirstChild("ServerPackages")
-	local Server: any = ServerScriptService
+	local ServerPackages = ServerScriptService:FindFirstChild("ServerPackages")
+	local Server = ServerScriptService
 
-	if Server then
-		dLib.setRootPath("Server", Server)
-	end
+	dLib.setRootPath("Server", Server)
 
 	if ServerPackages then
 		dLib.setRootPath("ServerPackages", ServerPackages)
