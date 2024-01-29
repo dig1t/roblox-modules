@@ -117,7 +117,8 @@ jobs:
           rm -rf packages testez.toml .github node_modules .vscode
           mkdir -p ~/.wally
           printf "[tokens]\n\"https://api.wally.run/\" = \"%s\"" "$WALLY_TOKEN" >> ~/.wally/auth.toml
-          wally publish --project-path src
+          cd src
+          wally publish
 
       - name: Build package place file
         run: rojo build -o ${{ github.event.repository.name }}.rbxl build.project.json
