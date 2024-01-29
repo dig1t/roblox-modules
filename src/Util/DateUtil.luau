@@ -1,6 +1,6 @@
 --!strict
 
-local dateUtil = {}
+local DateUtil = {}
 
 export type DateTimeComponents = {
 	Year: number,
@@ -25,6 +25,15 @@ local secondsInDay: number = secondsInHour * 24
 local secondsInMonth: number = 2629746
 local secondsInYear: number = 31556952
 
+local timeNames: {{ any }} = {
+	{ secondsInYear, "year" },
+	{ secondsInMonth, "month" },
+	{ secondsInDay, "day" },
+	{ secondsInHour, "hour" },
+	{ secondsInMinute, "minute" },
+	{ 1, "second" }
+}
+
 --[=[
 	Converts a DateTimeComponents table to a timestamp.
 
@@ -32,7 +41,7 @@ local secondsInYear: number = 31556952
 	@param components DateTimeComponents
 	@return number
 ]=]
-function dateUtil.dateTimeComponentsToTimestamp(components: DateTimeComponents): number
+function DateUtil.dateTimeComponentsToTimestamp(components: DateTimeComponents): number
 	assert(typeof(components) == "table", "Components must be a table")
 	assert(typeof(components.Year) == "number", "Components.Year must be a number")
 	assert(typeof(components.Month) == "number", "Components.Month must be a number")
@@ -62,10 +71,10 @@ end
 	@within Util
 	@return number
 ]=]
-function dateUtil.unix(): number
+function DateUtil.unix(): number
 	local utcDateComponents: DateTimeComponents = DateTime.now():ToUniversalTime()
 
-	return dateUtil.dateTimeComponentsToTimestamp(utcDateComponents)
+	return DateUtil.dateTimeComponentsToTimestamp(utcDateComponents)
 end
 
 --[=[
@@ -76,11 +85,11 @@ end
 	@param endTimestamp number? -- The timestamp to compare to. Defaults to current time.
 	@return number
 ]=]
-function dateUtil.timeAgoUnix(timestamp: number, endTimestamp: number?): number
+function DateUtil.timeAgoUnix(timestamp: number, endTimestamp: number?): number
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(typeof(endTimestamp) == "number" or endTimestamp == nil, "toTimestamp must be a number or nil")
 
-	return (endTimestamp or dateUtil.unix()) - timestamp
+	return (endTimestamp or DateUtil.unix()) - timestamp
 end
 
 --[=[
@@ -103,7 +112,7 @@ end
 	@param locale string? -- The locale to use. Defaults to `en-us`.
 	@return string -- The formatted time in local time.
 ]=]
-function dateUtil.formatUnix(timestamp: number, format: string, locale: string?): string
+function DateUtil.formatUnix(timestamp: number, format: string, locale: string?): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(typeof(format) == "string", "format must be a string")
 	assert(typeof(locale) == "string" or locale == nil, "locale must be a string or nil")
@@ -130,8 +139,8 @@ end
 	@param locale string? -- The locale to use. Defaults to `en-us`.
 	@return string -- The formatted time in local time.
 ]=]
-function dateUtil.unixToClockFormat(timestamp: number, format: string?, locale: string?): string
-	return dateUtil.formatUnix(timestamp, format or "mm:ss", locale)
+function DateUtil.unixToClockFormat(timestamp: number, format: string?, locale: string?): string
+	return DateUtil.formatUnix(timestamp, format or "mm:ss", locale)
 end
 
 --[=[
@@ -155,21 +164,12 @@ end
 	@param endTimestamp number? -- The timestamp to compare to. Defaults to current time.
 	@return string
 ]=]
-function dateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
+function DateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(typeof(endTimestamp) == "number" or endTimestamp == nil, "endTimestamp must be a number or nil")
 
-	local timeAgo: number = dateUtil.timeAgoUnix(timestamp, endTimestamp)
+	local timeAgo: number = DateUtil.timeAgoUnix(timestamp, endTimestamp)
 	local result: string = ""
-
-	local times: {{ any }} = {
-		{ secondsInYear, "year" },
-		{ secondsInMonth, "month" },
-		{ secondsInDay, "day" },
-		{ secondsInHour, "hour" },
-		{ secondsInMinute, "minute" },
-		{ 1, "second" }
-	}
 
 	if timeAgo < 1 then
 		return "now"
@@ -178,13 +178,13 @@ function dateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 	local current: number = 1
 	local previousUnitSeconds: number = 0
 
-	while current <= #times do
-		local _time: {} = times[current]
-		local unitThreshold: number = times[current][1]
-		local unit: string = times[current][2]
+	while current <= #timeNames do
+		local _time: {} = timeNames[current]
+		local unitThreshold: number = timeNames[current][1]
+		local unit: string = timeNames[current][2]
 
-		if (timeAgo >= unitThreshold) and current <= #times then
-			local amount = math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
+		if (timeAgo >= unitThreshold) and current <= #timeNames then
+			local amount: number = math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
 
 			previousUnitSeconds += amount * unitThreshold
 
@@ -201,4 +201,66 @@ function dateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 	return `{result}ago`
 end
 
-return dateUtil
+--[=[
+	Similar to `Util.timeAgo` but returns a more detailed string with the total time instead of the largest unit.
+	Convert a unix timestamp to a readable format (1 days, 1 hours, 1 minutes, 1 seconds).
+
+	#### Example
+	```lua
+	local secondsLeft: number = 80
+
+	Util.totalTime(secondsLeft) -- 1 minute 20 seconds
+	```
+
+	@within Util
+	@param timestamp number
+	@param endTimestamp number? -- The timestamp to compare to. Defaults to current time.
+	@param separator string? -- The separator to use between each unit. Defaults to a space.
+	@param depth number? -- The maximum number of units to return.
+	@return string
+]=]
+function DateUtil.totalTime(timestamp: number, endTimestamp: number?, separator: string?, depth: number?): string
+	assert(typeof(timestamp) == "number", "Timestamp must be a number")
+	assert(typeof(endTimestamp) == "number" or endTimestamp == nil, "endTimestamp must be a number or nil")
+	assert(typeof(separator) == "string" or separator == nil, "separator must be a string or nil")
+	assert(typeof(depth) == "number" or depth == nil, "depth must be a number or nil")
+
+	local _separator: string = separator or " "
+
+	local timeAgo: number = DateUtil.timeAgoUnix(timestamp, endTimestamp)
+	local result: string = ""
+
+	if timeAgo < 1 then
+		return "now"
+	end
+
+	local current: number = 1
+	local previousUnitSeconds: number = 0
+	local iteration: number = 0
+
+	while current <= #timeNames and (depth == nil or iteration < depth) do
+		local _time: {} = timeNames[current]
+		local unitThreshold: number = timeNames[current][1]
+		local unit: string = timeNames[current][2]
+
+		if (timeAgo >= unitThreshold) and current <= #timeNames then
+			local amount: number = math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
+
+			previousUnitSeconds += amount * unitThreshold
+
+			if amount > 0 then
+				local plural: string = amount > 1 and "s" or ""
+
+				result = `{result}{amount} {unit}{plural}{_separator}`
+				iteration += 1
+			end
+		end
+
+		current += 1
+	end
+
+	-- Trim last separator and return
+	return string.sub(result, 1, string.len(result) - string.len(_separator))
+end
+
+return DateUtil

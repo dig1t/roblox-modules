@@ -246,7 +246,7 @@ end
 	@param object Vector3 | CFrame | Instance
 	@return Vector3?
 ]=]
-function MathUtil.getVector3(object: Vector3 | CFrame | Instance): Vector3?
+function MathUtil.getVector3(object: Vector3 | CFrame | Attachment | BasePart | CFrameValue | Vector3Value | Camera): Vector3?
 	return (
 		typeof(object) == "Vector3" and object
 	) or (

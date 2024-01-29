@@ -3,6 +3,8 @@
 	"luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
   "luau-lsp.types.definitionFiles": ["testez.d.lua"],
 
+  "testez-companion.runTestsOnSave": true,
+
   "[lua]": {
 		"editor.defaultFormatter": "EditorConfig.EditorConfig",
 		"editor.formatOnSave": true

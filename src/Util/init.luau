@@ -298,12 +298,10 @@ end
 	```
 
 	@within Util
-	@param assetId number | string
+	@param assetId (number | string)?
 	@return string
 ]=]
-function Util.getAssetURI(assetId: number | string): string
-	assert(typeof(assetId) == "number" or typeof(assetId) == "string", "Util.getAssetId - assetId must be a number or string")
-
+function Util.getAssetURI(assetId: (number | string)?): string
 	return (typeof(assetId) == "number" and `rbxassetid://{assetId}`)
 		or (typeof(assetId) == "string" and assetId)
 		or ""
