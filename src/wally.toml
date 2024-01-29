@@ -6,7 +6,7 @@ license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
-include = ["src", "default.project.json"]
-exclude = ["!src", "src/**/*.spec.luau"]
+include = ["default.project.json"]
+exclude = ["**/*.spec.luau", "wally.toml"]
 
 [dependencies]
