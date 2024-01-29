@@ -4,7 +4,7 @@
   "description": "Modules and Libraries for development in Roblox",
   "main": "src/init.luau",
   "scripts": {
-    "build:dependencies": "wally install",
+    "build:dependencies": "wally install --project-path src",
     "build:rojo": "rojo build -o dev-build.rbxl build.project.json",
     "build:docs": "moonwave build",
     "build": "npm run build:dependencies && npm run build:rojo",
