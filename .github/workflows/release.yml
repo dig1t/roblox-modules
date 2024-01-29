@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           # read wally.toml file
-          wally_toml_contents=$(<src/wally.toml)
+          wally_toml_contents=$(<wally.toml)
 
           # swap out name
           target_name_line=$(echo "$wally_toml_contents" | grep -F "name = ")
@@ -57,7 +57,7 @@ jobs:
           wally_toml_contents="${wally_toml_contents/${target_version_line}/${goal_version_line}}"
 
           # update wally.toml file
-          echo "$wally_toml_contents" > src/wally.toml
+          echo "$wally_toml_contents" > wally.toml
 
           # read package.json file
           default_json_contents=$(<package.json)
@@ -117,7 +117,6 @@ jobs:
           rm -rf packages testez.toml .github node_modules .vscode
           mkdir -p ~/.wally
           printf "[tokens]\n\"https://api.wally.run/\" = \"%s\"" "$WALLY_TOKEN" >> ~/.wally/auth.toml
-          cd src
           wally publish
 
       - name: Build package place file
