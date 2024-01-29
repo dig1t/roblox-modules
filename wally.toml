@@ -7,6 +7,6 @@ registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 include = ["src", "src/**", "wally.toml", "default.project.json"]
-exclude = ["**/*.spec.luau"]
+exclude = ["*.spec.luau"]
 
 [dependencies]
