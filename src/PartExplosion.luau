@@ -1,7 +1,10 @@
+-- TODO: refactor this module
+
 --!strict
 
 local Workspace = game:GetService("Workspace")
 local PhysicsService = game:GetService("PhysicsService")
+local RunService = game:GetService("RunService")
 
 local Util = require(script.Parent.Util)
 
@@ -33,6 +36,8 @@ export type PartExplosionConfig = {
 local PartExplosion = {}
 PartExplosion.__index = PartExplosion
 
+PartExplosion.isReady = false -- Whether or not the collision groups are registered
+
 --[=[
 	Whether or not the fragments are collidable
 
@@ -40,37 +45,6 @@ PartExplosion.__index = PartExplosion
 	@prop isCollidable boolean
 ]=]
 PartExplosion.isCollidable = false -- Players cannot interact with these objects
-
--- Insert collision groups if missing
-if not PartExplosion.isCollidable then
-	local playerGroupExists
-	local propGroupExists
-
-	for _, group in pairs(PhysicsService:GetRegisteredCollisionGroups()) do
-		if group.name == PLAYER_COLLISION_GROUP_NAME then
-			playerGroupExists = true
-		elseif group.name == PROPS_COLLISION_GROUP_NAME then
-			propGroupExists = true
-		end
-	end
-
-	if not playerGroupExists then
-		PhysicsService:RegisterCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
-	end
-
-	if not propGroupExists then
-		PhysicsService:RegisterCollisionGroup(PROPS_COLLISION_GROUP_NAME)
-	end
-
-	if not playerGroupExists or not propGroupExists then
-		-- Disable collisions with ragdoll characters
-		PhysicsService:CollisionGroupSetCollidable(
-			PLAYER_COLLISION_GROUP_NAME,
-			PROPS_COLLISION_GROUP_NAME,
-			false
-		)
-	end
-end
 
 --[=[
 	@param source Instance | table -- part or list of parts to destroy
@@ -85,6 +59,8 @@ function PartExplosion.new(source: { Instance } | Instance, config: {
 	assert(typeof(source) == "Instance" and source:IsA("BasePart") or typeof(source) == "table", "Missing part(s) to break")
 
 	local self = setmetatable({}, PartExplosion)
+
+	PartExplosion.setup()
 
 	local parts: { BasePart } = {}
 
@@ -144,6 +120,43 @@ function PartExplosion.new(source: { Instance } | Instance, config: {
 	end)
 
 	return self
+end
+
+function PartExplosion.setup()
+	-- Insert collision groups if missing
+	if PartExplosion.isReady or PartExplosion.isCollidable or RunService:IsServer() then
+		return
+	end
+
+	local playerGroupExists
+	local propGroupExists
+
+	for _, group in pairs(PhysicsService:GetRegisteredCollisionGroups()) do
+		if group.name == PLAYER_COLLISION_GROUP_NAME then
+			playerGroupExists = true
+		elseif group.name == PROPS_COLLISION_GROUP_NAME then
+			propGroupExists = true
+		end
+	end
+
+	if not playerGroupExists then
+		PhysicsService:RegisterCollisionGroup(PLAYER_COLLISION_GROUP_NAME)
+	end
+
+	if not propGroupExists then
+		PhysicsService:RegisterCollisionGroup(PROPS_COLLISION_GROUP_NAME)
+	end
+
+	if not playerGroupExists or not propGroupExists then
+		-- Disable collisions with ragdoll characters
+		PhysicsService:CollisionGroupSetCollidable(
+			PLAYER_COLLISION_GROUP_NAME,
+			PROPS_COLLISION_GROUP_NAME,
+			false
+		)
+	end
+
+	PartExplosion.isReady = true
 end
 
 function PartExplosion:_breakPart(part)

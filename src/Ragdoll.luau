@@ -2,7 +2,8 @@
 
 local PhysicsService = game:GetService("PhysicsService")
 local Workspace = game:GetService("Workspace")
-local Debris = game:GetService("Debris")
+local Debris = game:GetService("Debris") -- TODO: Replace with a better Debris module
+local RunService = game:GetService("RunService")
 
 local Util = require(script.Parent.Util)
 
@@ -13,6 +14,8 @@ local RAGDOLL_COLLISION_GROUP_NAME: string = "Ragdoll"
 	@class Ragdoll
 ]=]
 local Ragdoll = {}
+
+Ragdoll.isReady = false
 
 --[=[
 	Whether or not the ragdoll is collidable (default: false)
@@ -40,7 +43,7 @@ Ragdoll.destroyTime = 5 -- Roblox default for characters
 ]=]
 function Ragdoll.setup(character: Model): nil -- Sets up the player's collision group
 	-- Insert collision groups if missing or if isCollidable changed
-	if not Ragdoll.isCollidable then
+	if not Ragdoll.isReady and not Ragdoll.isCollidable and RunService:IsServer() then
 		local playerGroupExists
 		local ragdollGroupExists
 
@@ -64,6 +67,8 @@ function Ragdoll.setup(character: Model): nil -- Sets up the player's collision 
 			-- Disable collisions with ragdoll characters
 			PhysicsService:CollisionGroupSetCollidable(PLAYER_COLLISION_GROUP_NAME, RAGDOLL_COLLISION_GROUP_NAME, false)
 		end
+
+		Ragdoll.isReady = true
 	end
 
 	local _successful, humanoid, _tries = Util.attempt(function()
@@ -174,16 +179,14 @@ function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: numb
 		-- Place parts inside the ragdoll model (newCharacter)
 		-- and filter out unwanted instances and scripts
 		for _, obj in pairs(player.Character:GetChildren()) do
-			if obj.Name == "OverheadDisplay" then
-				obj:Destroy()
-			elseif not obj:IsA("Tool") then
+			if not obj:IsA("Tool") then
 				obj.Parent = parent
 			elseif obj:FindFirstChild("Handle") then
 				local handle = obj:FindFirstChild("Handle")
 
 				if handle then
 					handle.Parent = parent
-					obj.Parent = player:FindFirstChild("Backpack")
+					obj:Destroy()
 				end
 			end
 		end
@@ -210,6 +213,3 @@ function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: numb
 end
 
 return Ragdoll
-
-
-
