@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           # read wally.toml file
-          wally_toml_contents=$(<wally.toml)
+          wally_toml_contents=$(<src/wally.toml)
 
           # swap out name
           target_name_line=$(echo "$wally_toml_contents" | grep -F "name = ")
@@ -57,7 +57,7 @@ jobs:
           wally_toml_contents="${wally_toml_contents/${target_version_line}/${goal_version_line}}"
 
           # update wally.toml file
-          echo "$wally_toml_contents" > wally.toml
+          echo "$wally_toml_contents" > src/wally.toml
 
           # read package.json file
           default_json_contents=$(<package.json)
