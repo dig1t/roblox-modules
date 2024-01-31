@@ -14,7 +14,12 @@ local SearchUtil = {}
 	@param instance Instance
 	@return number
 ]=]
-function SearchUtil.getPartCount(instance: Instance): number
+function SearchUtil.getPartCount(instance: Instance?): number
+	if instance == nil then
+		warn("Util.getPartCount() - instance is nil")
+		return 0
+	end
+
 	assert(typeof(instance) == "Instance", "Util.getPartCount() - argument must be an Instance")
 
 	local count: number = 0
@@ -282,15 +287,19 @@ end
 	@param children string | { string }
 	@return boolean
 ]=]
-function SearchUtil.exists(node: Instance | { [string]: any }, children: string | { string }): boolean
+function SearchUtil.exists(node: Instance | { [string]: any }, children: (string | { string })?): boolean
 	assert(
 		typeof(node) == "Instance" or typeof(node) == "table",
 		"Util.exists() - node argument must be an Instance or table"
 	)
 	assert(
-		typeof(children) == "string" or typeof(children) == "table",
+		typeof(children) == "string" or typeof(children) == "table" or children == nil,
 		"Util.exists() - children argument must be a string or table"
 	)
+
+	if children == nil then
+		return false
+	end
 
 	local nodes: { [string]: any } = {}
 
@@ -334,7 +343,11 @@ end
 	@param instance Instance
 	@return BasePart?
 ]=]
-function SearchUtil.getFirstPart(instance: Instance): BasePart?
+function SearchUtil.getFirstPart(instance: Instance?): BasePart?
+	if instance == nil then
+		return nil
+	end
+
 	assert(typeof(instance) == "Instance", "instance argument must be an Instance")
 
 	local children: { BasePart | Instance } = instance:GetChildren()

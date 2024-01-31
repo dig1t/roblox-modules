@@ -119,7 +119,6 @@ function PlayerUtil.getUserLevel(player: Player): number
 	)
 end
 
-
 --[=[
 	Gets the humanoid object from a player's character part, character model, player object, or humanoid.
 
@@ -132,23 +131,23 @@ end
 	@param object Instance
 	@return Humanoid?
 ]=]
-function PlayerUtil.getHumanoid(object: Instance): Humanoid?
+function PlayerUtil.getHumanoid(object: Instance?): Humanoid?
 	if typeof(object) ~= "Instance" then
-		warn("Util.getHumanoid - object argument is not an Instance")
-		return nil
+		warn(`Util.getHumanoid - expected Instance, got type "{typeof(object)}"`)
 	elseif object:IsA("Humanoid") then
 		return object
 	elseif object:IsA("Player") then
 		return object.Character and object.Character:FindFirstChildOfClass("Humanoid")
 	elseif object:IsA("Model") then
 		return object:FindFirstChildOfClass("Humanoid")
-	else
-		return nil
 	end
+
+	return nil
 end
 
 --[=[
 	Checks if a humanoid is alive.
+	If no humanoid is found, it will return nil
 
 	#### Example:
 	```lua
@@ -189,28 +188,29 @@ end
 
 	#### Example:
 	```lua
-	Util.getPlayerFromPart(game.Workspace.Part) -- Player
+	Util.getPlayerFromInstance(game.Workspace.Part) -- Player
 	```
 
 	@within Util
 	@param part BasePart
 	@return Player?
 ]=]
-function PlayerUtil.getPlayerFromPart(part: BasePart): Player?
-	assert(
-		typeof(part) == "Instance" and part:IsA("BasePart"),
-		"Util.getPlayerFromPart - part argument is not a BasePart"
-	)
+function PlayerUtil.getPlayerFromInstance(part: Instance?): Player?
+	if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
+		return nil
+	end
 
-	local node: Instance = part
+	local node: Instance? = part
 	local humanoid: Humanoid?
 
-	repeat
+	while node ~= nil and humanoid == nil and node ~= game do
 		humanoid = node and node:FindFirstChildOfClass("Humanoid")
-		node = node.Parent :: Instance
-	until not node or humanoid or node == game
+		node = node.Parent :: Instance?
+	end
 
 	return humanoid and Players:GetPlayerFromCharacter(humanoid.Parent) or nil
 end
+
+PlayerUtil.getPlayerFromPart = PlayerUtil.getPlayerFromInstance
 
 return PlayerUtil

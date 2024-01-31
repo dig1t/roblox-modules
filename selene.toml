@@ -1,1 +1,3 @@
 std = "roblox+testez"
+
+exclude = ["testez.d.lua"]
