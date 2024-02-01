@@ -182,6 +182,8 @@ function methods:damagePlayer(victim, amount)
 
 		return true
 	end
+
+	return false
 end
 
 --[[
@@ -458,6 +460,8 @@ function WeaponServer.new(config)
 
 					return obj
 				end
+
+				return nil
 			end)
 		end
 	end
@@ -531,6 +535,8 @@ function WeaponServer.new(config)
 		end
 
 		self:processAction(action)
+
+		return nil
 	end)
 
 	task.spawn(function()

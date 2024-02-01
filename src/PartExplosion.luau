@@ -80,7 +80,7 @@ function PartExplosion.new(source: { Instance } | Instance, config: {
 		throw = true;
 		parent = Workspace;
 	}
-	self.fragments = {} :: { BasePart }?
+	self.fragments = {} :: { BasePart }
 
 	task.spawn(function()
 		for _, _part in pairs(parts) do
@@ -159,7 +159,7 @@ function PartExplosion.setup()
 	PartExplosion.isReady = true
 end
 
-function PartExplosion:_breakPart(part)
+function PartExplosion:_breakPart(part: BasePart): nil
 	local partMagnitude = 0
 
 	repeat
@@ -175,7 +175,7 @@ function PartExplosion:_breakPart(part)
 		fragment.Anchored = false
 		fragment.CanCollide = true
 
-		local newPosition = part.CFrame:ToWorldSpace(CFrame.new(
+		local newPosition: CFrame = part.CFrame:ToWorldSpace(CFrame.new(
 			Util.random(-part.Size.X * 10, part.Size.X * 10) / 10 / 2,
 			Util.random(-part.Size.Y * 10, part.Size.Y * 10) / 10 / 2,
 			Util.random(-part.Size.Z * 10, part.Size.Z * 10) / 10 / 2
@@ -234,7 +234,7 @@ function PartExplosion:destroy(): nil
 		end
 	end
 
-	self.fragments = nil
+	self.fragments = {}
 
 	return nil
 end
