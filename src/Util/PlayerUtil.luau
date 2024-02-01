@@ -192,15 +192,15 @@ end
 	```
 
 	@within Util
-	@param part BasePart
+	@param instance Instance
 	@return Player?
 ]=]
-function PlayerUtil.getPlayerFromInstance(part: Instance?): Player?
-	if typeof(part) ~= "Instance" or not part:IsA("BasePart") then
+function PlayerUtil.getPlayerFromInstance(instance: Instance?): Player?
+	if typeof(instance) ~= "Instance" or not instance:IsA("BasePart") then
 		return nil
 	end
 
-	local node: Instance? = part
+	local node: Instance? = instance
 	local humanoid: Humanoid?
 
 	while node ~= nil and humanoid == nil and node ~= game do
@@ -211,6 +211,7 @@ function PlayerUtil.getPlayerFromInstance(part: Instance?): Player?
 	return humanoid and Players:GetPlayerFromCharacter(humanoid.Parent) or nil
 end
 
+-- Alias
 PlayerUtil.getPlayerFromPart = PlayerUtil.getPlayerFromInstance
 
 return PlayerUtil
