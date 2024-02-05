@@ -138,7 +138,7 @@ function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) ->
 		typeof(source) == "Instance" and source:GetChildren() or source
 	) do
 		if callbackFn(value, key, source) == true then
-			res[key] = value
+			res[#res + 1] = value
 		end
 	end
 
