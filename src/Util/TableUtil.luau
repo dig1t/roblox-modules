@@ -60,10 +60,6 @@ function TableUtil.flip(source: { [any]: any }, mergeDuplicates: boolean?): { [a
 	return res
 end
 
--- @desc Returns a table of filtered values from the original table or instance
--- @reference https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
--- @return table: filtered table
-
 --[=[
 	Maps a table or instance to a new table.
 
@@ -80,27 +76,23 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to map
-	@param filterFn (any, any) -> any -- The function to filter the table with
+	@param callbackFn (any, any, any) -> any -- The function to map the table with
 	@return { [any]: any }
 ]=]
-function TableUtil.map(source: { [any]: any }, filterFn: (any, any) -> (any, any)): { [any]: any }
+function TableUtil.map(source: { [any]: any }, callbackFn: (any, any, any) -> (any, any)): { [any]: any }
 	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
-	assert(filterFn == nil or typeof(filterFn) == "function", "filterFn must be a function or nil")
+	assert(callbackFn == nil or typeof(callbackFn) == "function", "callbackFn must be a function or nil")
 
 	local res = {}
 
-	--[[for index, value in ipairs(source) do
-		res[#res + 1] = filterFn(value, index) or value
-	end]]
-
 	for key: any, value: any in pairs(
-		-- If instance, convert variable to a table of it's children
+		-- If instance, convert variable to a table of its children
 		typeof(source) == "Instance" and source:GetChildren() or source
-	) do -- Order not guaranteed
+	) do
 		local index: any = #res + 1
 
-		if filterFn then
-			local result, secondResult = filterFn(value, key)
+		if callbackFn then
+			local result, secondResult = callbackFn(value, key, source)
 
 			if secondResult ~= nil then -- Both the index and value are specified
 				index = result
@@ -111,6 +103,43 @@ function TableUtil.map(source: { [any]: any }, filterFn: (any, any) -> (any, any
 		end
 
 		res[index] = value
+	end
+
+	return res
+end
+
+--[=[
+	Filter a table or instance to a new table.
+
+	#### Example:
+	```lua
+	local noTwo = Util.filter({ 1, 2, 3 }, function(value)
+		return value ~= 2
+	end) -- { 1, 3 }
+
+	local parts = Util.filter(Workspace, function(value)
+		return value:IsA("Part")
+	end) -- { Part = Instance, Part2 = Instance }
+	```
+
+	@within Util
+	@param source { [any]: any } -- The table you want to filter
+	@param callbackFn (any, any, any) -> any -- The function to filter the table with (element, index, source)
+	@return { [any]: any }
+]=]
+function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) -> boolean): { [any]: any }
+	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
+	assert(callbackFn == nil or typeof(callbackFn) == "function", "callbackFn must be a function or nil")
+
+	local res = {}
+
+	for key: any, value: any in pairs(
+		-- If instance, convert variable to a table of its children
+		typeof(source) == "Instance" and source:GetChildren() or source
+	) do
+		if callbackFn(value, key, source) == true then
+			res[key] = value
+		end
 	end
 
 	return res
@@ -138,10 +167,10 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to map
-	@param filterFn (key: any, value: any) -> (value: any, key: any?) -- The function to filter the table with
+	@param filterFn (key: any, value: any, source: any) -> (value: any, key: any?) -- The function to filter the table with
 	@return { [any]: any }
 ]=]
-function TableUtil.mapIndex(source: { [any]: any }, filterFn: (any, any) -> (any, any)): { [any]: any }
+function TableUtil.mapIndex(source: { [any]: any }, filterFn: (any, any, any) -> (any, any)): { [any]: any }
 	assert(typeof(source) == "table", "source must be a table")
 	assert(filterFn == nil or typeof(filterFn) == "function", "filterFn must be a function or nil")
 
@@ -151,7 +180,7 @@ function TableUtil.mapIndex(source: { [any]: any }, filterFn: (any, any) -> (any
 		local index = #res + 1
 
 		if filterFn then
-			local fnVal, fnKey = filterFn(value, key)
+			local fnVal, fnKey = filterFn(value, key, source)
 
 			if fnKey then
 				index = fnKey
