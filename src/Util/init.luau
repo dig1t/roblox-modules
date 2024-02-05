@@ -295,16 +295,38 @@ end
 	```lua
 	Util.getAssetId("rbxassetid://1234567890") -- rbxassetid://1234567890
 	Util.getAssetId(1234567890) -- rbxassetid://1234567890
+
+	-- Fallback URIs
+	Util.getAssetId(nil, "rbxassetid://1234567890") -- rbxassetid://1234567890 (fallback)
+	Util.getAssetId(nil, 1234567890) -- rbxassetid://1234567890 (fallback)
 	```
 
 	@within Util
 	@param assetId (number | string)?
+	@param fallbackAssetId (number | string)?
 	@return string
 ]=]
-function Util.getAssetURI(assetId: (number | string)?): string
-	return (typeof(assetId) == "number" and `rbxassetid://{assetId}`)
+function Util.getAssetURI(assetId: (number | string)?, fallbackAssetId: (number | string)?): string
+	assert(
+		assetId == nil or typeof(assetId) == "number" or typeof(assetId) == "string",
+		"Util.getAssetURI - assetId must be a number or string or nil"
+	)
+	assert(
+		fallbackAssetId == nil or typeof(fallbackAssetId) == "number" or typeof(fallbackAssetId) == "string",
+		"Util.getAssetURI - fallbackAssetId must be a number or string or nil"
+	)
+
+	local URI: string? = (typeof(assetId) == "number" and `rbxassetid://{assetId}`)
 		or (typeof(assetId) == "string" and assetId)
-		or ""
+		or nil
+
+	-- Handle fallback
+	if URI == nil then
+		-- This will not cause an infinite loop because the second argument will be nil.
+		return fallbackAssetId ~= nil and Util.getAssetURI(fallbackAssetId) or ""
+	end
+
+	return URI
 end
 
 --[=[
