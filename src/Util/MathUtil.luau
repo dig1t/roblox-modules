@@ -53,9 +53,10 @@ end
 
 	@within Util
 	@param number number
+	@param decimals number? -- The number of decimal places to round to. Defaults to 2.
 	@return string
 ]=]
-function MathUtil.formatInt(number: number): string -- 1000.01 to 1,000.01
+function MathUtil.formatInt(number: number, decimals: number?): string -- 1000.01 to 1,000.01
 	assert(typeof(number) == "number", "Number argument must be a number")
 
 	local numberString: string = tostring(number)
@@ -68,6 +69,16 @@ function MathUtil.formatInt(number: number): string -- 1000.01 to 1,000.01
 
 	if not minus or not int or not fraction then
 		return ""
+	end
+
+	if #fraction > 0 then
+		print('len:',#fraction, 'decimals:', decimals, 'fraction:',fraction)
+		fraction = fraction:sub(1, (decimals or 2) + 1)
+		if #fraction == 1 then
+			fraction = ""
+		end
+		print('res:',fraction)
+
 	end
 
 	int = string.gsub(int:reverse(), "(%d%d%d)", "%1,"):reverse():gsub("^,", "")
@@ -211,7 +222,7 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?):
 	local tier: number = math.log10(number) / 3
 
 	if tier < (minimumTiers or 1) then -- If tier is less than minimumTiers, return the number
-		return MathUtil.formatInt(number * negative)
+		return MathUtil.formatInt(number * negative, 0)
 	end
 
 	tier = math.floor(tier)
@@ -227,7 +238,7 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?):
 		return ""
 	end
 
-	return (MathUtil.formatInt(_number)) .. tierSuffix
+	return (MathUtil.formatInt(_number, 0)) .. tierSuffix
 end
 
 --[=[

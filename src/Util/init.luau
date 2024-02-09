@@ -293,12 +293,12 @@ end
 
 	Example:
 	```lua
-	Util.getAssetId("rbxassetid://1234567890") -- rbxassetid://1234567890
-	Util.getAssetId(1234567890) -- rbxassetid://1234567890
+	Util.getAssetURI("rbxassetid://1234567890") -- rbxassetid://1234567890
+	Util.getAssetURI(1234567890) -- rbxassetid://1234567890
 
 	-- Fallback URIs
-	Util.getAssetId(nil, "rbxassetid://1234567890") -- rbxassetid://1234567890 (fallback)
-	Util.getAssetId(nil, 1234567890) -- rbxassetid://1234567890 (fallback)
+	Util.getAssetURI(nil, "rbxassetid://1234567890") -- rbxassetid://1234567890 (fallback)
+	Util.getAssetURI(nil, 1234567890) -- rbxassetid://1234567890 (fallback)
 	```
 
 	@within Util
