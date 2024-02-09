@@ -72,13 +72,10 @@ function MathUtil.formatInt(number: number, decimals: number?): string -- 1000.0
 	end
 
 	if #fraction > 0 then
-		print('len:',#fraction, 'decimals:', decimals, 'fraction:',fraction)
 		fraction = fraction:sub(1, (decimals or 2) + 1)
 		if #fraction == 1 then
 			fraction = ""
 		end
-		print('res:',fraction)
-
 	end
 
 	int = string.gsub(int:reverse(), "(%d%d%d)", "%1,"):reverse():gsub("^,", "")
