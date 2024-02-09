@@ -7,7 +7,7 @@ Modules and Libraries for development in Roblox.
 ## Installing with wally
 Add the below line to your wally.toml file
 ```toml
-dlib = "dig1t/dlib@1.2.7"
+dlib = "dig1t/dlib@1.2.8"
 ```
 ## Installing with Roblox Studio
 Download the rbxl file from the [releases](https://github.com/dig1t/dlib/releases) tab.
