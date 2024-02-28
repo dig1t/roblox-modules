@@ -412,11 +412,15 @@ end
 	```
 
 	@within Util
-	@param targetTable { [any]: any } -- The table you want to extend
-	@param ... { [any]: any } -- The tables you want to extend the target table with
+	@param arg1 boolean? -- Whether to perform a deep merge
+	@param arg2 { [any]: any } -- The target table you want to extend
+	@param ... { [any]: any } -- The tables you want to merge into the target table
 	@return { [any]: any }
 ]=]
-function TableUtil.extend(targetTable: { [any]: any }, ...): { [any]: any }
+function TableUtil.extend(arg1: boolean | { [any] : any }, arg2: { [any]: any }, ...): { [any]: any }
+	local deep: boolean? = typeof(arg1) == "boolean" and arg1 or nil
+	local targetTable: { [any]: any } = typeof(arg1) == "table" and arg1 or arg2
+
 	assert(typeof(targetTable) == "table", "targetTable must be a table")
 
 	local args: { [any]: any } = {...}
@@ -426,10 +430,23 @@ function TableUtil.extend(targetTable: { [any]: any }, ...): { [any]: any }
 
 		for key, value in pairs(sourceTable) do
 			targetTable[key] = value
+
+			if deep and typeof(value) == "table" then
+				targetTable[key] = TableUtil.extend(targetTable[key], value)
+			end
 		end
 	end
 
 	return targetTable
+end
+
+--[=[
+	The assign function copies all properties from one or more source objects to a target object.
+
+	Alias for `Util.extend`.
+]=]
+function TableUtil.assign(targetTable: { [any]: any }, ...): { [any]: any }
+	return TableUtil.extend(targetTable, ...)
 end
 
 --[=[
