@@ -1,12 +1,10 @@
 --!strict
 
-local Players = game:GetService("Players")
-
 local TableUtil = require(script.Parent.TableUtil)
 
 return function()
 	describe("Extend", function()
-		it("should deep merge", function(context)
+		it("should deep merge", function(_context)
 			local testCase = {
 				foo = {
 					bar = "baz",
@@ -33,7 +31,7 @@ return function()
 			expect(result2.foo.qux).to.equal("quux") -- qux will be merged because it's a deep merge, regardless if testCase2.foo.qux is nil
 		end)
 
-		it("should not deep merge if the first argument is a table", function(context)
+		it("should not deep merge if the first argument is a table", function(_context)
 			local testCase = {
 				foo = {
 					bar = "baz",
