@@ -423,7 +423,7 @@ function TableUtil.extend(arg1: boolean | { [any] : any }, arg2: { [any]: any },
 
 	assert(typeof(targetTable) == "table", "targetTable must be a table")
 
-	local args: { [any]: any } = {...}
+	local args: { [any]: any } = typeof(arg1) == "table" and { arg2, ... } or { ... }
 
 	for argIndex: number, sourceTable in pairs(args) do
 		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)

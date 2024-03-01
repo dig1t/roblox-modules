@@ -24,7 +24,7 @@ setmetatable({}, {
 })
 
 -- Add util modules
-TableUtil.extend(
+TableUtil.assign(
 	Util,
 	DateUtil,
 	MathUtil,
