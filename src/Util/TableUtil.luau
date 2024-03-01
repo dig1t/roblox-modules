@@ -418,12 +418,12 @@ end
 	@return { [any]: any }
 ]=]
 function TableUtil.extend(arg1: boolean | { [any] : any }, arg2: { [any]: any }, ...): { [any]: any }
-	local deep: boolean? = typeof(arg1) == "boolean" and arg1 or nil
-	local targetTable: { [any]: any } = typeof(arg1) == "table" and arg1 or arg2
+	local deep: boolean = typeof(arg1) == "boolean" and arg1 or false
+	local targetTable = deep and arg2 or arg1 :: { [any]: any }
 
 	assert(typeof(targetTable) == "table", "targetTable must be a table")
 
-	local args: { [any]: any } = typeof(arg1) == "table" and { arg2, ... } or { ... }
+	local args: { [any]: any } = deep and { ... } or { arg2, ... }
 
 	for argIndex: number, sourceTable in pairs(args) do
 		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)
