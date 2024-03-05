@@ -444,6 +444,11 @@ end
 	The assign function copies all properties from one or more source objects to a target object.
 
 	Alias for `Util.extend`.
+
+	@within Util
+	@param targetTable { [any]: any } -- The target table you want to assign values to
+	@param ... { [any]: any } -- The tables you want to merge into the target table
+	@return { [any]: any }
 ]=]
 function TableUtil.assign(targetTable: { [any]: any }, ...): { [any]: any }
 	return TableUtil.extend(targetTable, ...)
