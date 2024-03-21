@@ -23,9 +23,6 @@ jobs:
       - name: Generate sourcemaps
         run: rojo sourcemap --include-non-scripts --output sourcemap.json
 
-      - name: Add wally package types
-        run: wally-package-types --sourcemap sourcemap.json Packages
-
       - name: Lint with luau-lsp
         run: luau-lsp analyze --defs=globalTypes.d.luau --sourcemap=sourcemap.json --no-strict-dm-types --ignore=Packages/** --ignore=*.spec.lua --ignore=*.spec.luau --flag:LuauTinyControlFlowAnalysis=True src
 
