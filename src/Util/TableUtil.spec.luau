@@ -1,5 +1,3 @@
---!strict
-
 local TableUtil = require(script.Parent.TableUtil)
 
 return function()

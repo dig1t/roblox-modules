@@ -1,5 +1,3 @@
---!strict
-
 type PromiseClass = {
 	__index: PromiseClass,
 	statusType: {

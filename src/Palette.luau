@@ -1,5 +1,3 @@
---!strict
-
 local shadeIndex = {
 	[50] = 1,
 	[100] = 2,

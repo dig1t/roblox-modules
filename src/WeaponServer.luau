@@ -5,6 +5,8 @@
 -- @version 1.1.2
 ]]
 
+--!nocheck
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")

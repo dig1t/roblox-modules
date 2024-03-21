@@ -1,5 +1,3 @@
---!strict
-
 local PhysicsService = game:GetService("PhysicsService")
 local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris") -- TODO: Replace with a better Debris module

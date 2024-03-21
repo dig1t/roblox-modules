@@ -1,5 +1,3 @@
---!strict
-
 local DateUtil = require(script.Parent.DateUtil)
 
 return function()

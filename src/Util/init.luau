@@ -1,5 +1,3 @@
---!strict
-
 local HttpService = game:GetService("HttpService")
 local MarketplaceService = game:GetService("MarketplaceService")
 
@@ -641,24 +639,26 @@ function Util.rotateModel(model: Model, angle: number): nil
 end
 
 function Util.moveModel(model: Model, to: CFrame): nil
-	local firstPart: BasePart = Util.getFirstPart(model)
+	local firstPart: BasePart? = Util.getFirstPart(model)
 
-	if firstPart then
-		local origin: Vector3 = firstPart.CFrame.Position
+	if not firstPart then
+		return nil
+	end
 
-		for _, part: BasePart | Instance in pairs(model:GetDescendants()) do
-			if not part:IsA("BasePart") then
-				continue
-			end
+	local origin: Vector3 = firstPart.CFrame.Position
 
-			local newPositionInWorld: Vector3 = part.Position - origin + to.Position
-			local _x, _y, _z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
-
-			part.CFrame = CFrame.new(
-				newPositionInWorld.X, newPositionInWorld.Y, newPositionInWorld.Z,
-				R00, R01, R02, R10, R11, R12, R20, R21, R22
-			)
+	for _, part: BasePart | Instance in pairs(model:GetDescendants()) do
+		if not part:IsA("BasePart") then
+			continue
 		end
+
+		local newPositionInWorld: Vector3 = part.Position - origin + to.Position
+		local _x, _y, _z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
+
+		part.CFrame = CFrame.new(
+			newPositionInWorld.X, newPositionInWorld.Y, newPositionInWorld.Z,
+			R00, R01, R02, R10, R11, R12, R20, R21, R22
+		)
 	end
 
 	return nil
@@ -831,7 +831,7 @@ function Util.onPlayerTouch(
 	offsetPart: boolean?
 ): RBXScriptConnection
 	local callback: (part: BasePart) -> nil = function(part: BasePart): nil
-		local player: Player = Util.getPlayerFromPart(part)
+		local player: Player? = Util.getPlayerFromPart(part)
 
 		if player then
 			local alive: boolean = Util.isAlive(player)

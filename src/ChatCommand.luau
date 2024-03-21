@@ -18,11 +18,11 @@ ChatCommand.minimumLevel = Util.userLevel.normal
 
 -- Loads all commands from given table or ModuleScript
 function ChatCommand.use(source)
-	local res = source
+	local res: any = source
 
 	if typeof(source) == "Instance" then
 		local success, err = pcall(function()
-			res = require(source)
+			res = require(source) :: any
 		end)
 
 		if not success then

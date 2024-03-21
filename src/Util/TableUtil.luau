@@ -1,5 +1,3 @@
---!strict
-
 local valueClasses = {
 	BoolValue = true;
 	BrickColorValue = true;

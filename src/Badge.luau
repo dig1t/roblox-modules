@@ -1,5 +1,3 @@
---!strict
-
 local BadgeService = game:GetService("BadgeService")
 local Players = game:GetService("Players")
 

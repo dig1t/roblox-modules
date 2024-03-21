@@ -1,5 +1,3 @@
---!strict
-
 local Util = require(script.Parent.Util)
 
 type MaidClass = {

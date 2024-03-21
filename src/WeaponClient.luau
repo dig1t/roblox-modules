@@ -5,6 +5,8 @@
 -- @version 1.1.2
 ]]
 
+--!nocheck
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -57,10 +59,12 @@ weapon:unsetInput("primary") -- get rid of this input
 weapon:unsetInputCondition("canUse") -- get rid of this condition check
 ]]
 
-function methods:inCooldown(inputName)
+function methods:inCooldown(inputName): boolean
 	if self._inputData[inputName].cooldownTime and self._inputData[inputName].lastEventTime then
 		return os.clock() - self._inputData[inputName].lastEventTime <= self._inputData[inputName].cooldownTime
 	end
+
+	return false
 end
 
 function methods:_onInputEvent(eventName, ...)

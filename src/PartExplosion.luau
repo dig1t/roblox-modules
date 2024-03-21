@@ -1,7 +1,5 @@
 -- TODO: refactor this module
 
---!strict
-
 local Workspace = game:GetService("Workspace")
 local PhysicsService = game:GetService("PhysicsService")
 local RunService = game:GetService("RunService")

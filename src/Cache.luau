@@ -1,5 +1,3 @@
---!strict
-
 local Util = require(script.Parent.Util)
 local Maid = require(script.Parent.Maid)
 
@@ -110,6 +108,8 @@ function Cache.new(options: CacheOptions?): CacheType
 				self:delete(key)
 			end
 		end
+
+		return nil
 	end))
 
 	return self
@@ -144,7 +144,7 @@ function Cache:set(key: string, value: any, ttl: number?): boolean
 	self._cache[key] = {
 		key = key;
 		value = value;
-		expires = ttl or Util.unix() + self.options.defaultTTL
+		expires = ttl or Util.unix() + (self.options.defaultTTL or defaultOptions.defaultTTL)
 	} :: CacheEntry
 
 	return true
