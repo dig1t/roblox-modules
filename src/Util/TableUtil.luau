@@ -516,7 +516,7 @@ end
 	@within Util
 	@param target { [any]: any } -- The table you want to insert the value into
 	@param value any -- The value you want to insert
-	@param condition boolean | () -> boolean -- The test condition
+	@param condition nil | boolean | () -> boolean -- The test condition
 	@return nil
 ]=]
 function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | () -> boolean): nil
