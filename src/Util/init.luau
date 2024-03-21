@@ -23,17 +23,91 @@ setmetatable({}, {
 	end
 })
 
--- Add util modules
-TableUtil.assign(
-	Util,
-	DateUtil,
-	MathUtil,
-	PlayerUtil,
-	SearchUtil,
-	SystemUtil,
-	TableUtil
-)
+-- Add util modules for intellisense
+export type DateTimeComponents = DateUtil.DateTimeComponents
 
+-- DateUtil
+Util.dateTimeComponentsToTimestamp = DateUtil.dateTimeComponentsToTimestamp
+Util.formatUnix = DateUtil.formatUnix
+Util.timeAgo = DateUtil.timeAgo
+Util.timeAgoUnix = DateUtil.timeAgoUnix
+Util.totalTime = DateUtil.totalTime
+Util.unix = DateUtil.unix
+Util.unixToClockFormat = DateUtil.unixToClockFormat
+
+-- MathUtil
+Util.formatInt = MathUtil.formatInt
+Util.getDistance = MathUtil.getDistance
+Util.getPartBottomSurface = MathUtil.getPartBottomSurface
+Util.getVector3 = MathUtil.getVector3
+Util.lerp = MathUtil.lerp
+Util.random = MathUtil.random
+Util.randomObj = MathUtil.randomObj
+Util.randomString = MathUtil.randomString
+Util.round = MathUtil.round
+Util.shortenNumber = MathUtil.shortenNumber
+
+-- PlayerUtil
+Util.getGroupRank = PlayerUtil.getGroupRank
+Util.getHumanoid = PlayerUtil.getHumanoid
+Util.getPlayerFromInstance = PlayerUtil.getPlayerFromInstance
+Util.getPlayerFromPart = PlayerUtil.getPlayerFromPart
+Util.getUserLevel = PlayerUtil.getUserLevel
+Util.hasHumanoid = PlayerUtil.hasHumanoid
+Util.isAlive = PlayerUtil.isAlive
+Util.isCreator = PlayerUtil.isCreator
+Util.userLevel = PlayerUtil.userLevel
+
+-- SearchUtil
+Util.exists = SearchUtil.exists
+Util.find = SearchUtil.find
+Util.getAncestor = SearchUtil.getAncestor
+Util.getDescendantParts = SearchUtil.getDescendantParts
+Util.getFirstPart = SearchUtil.getFirstPart
+Util.getPartCount = SearchUtil.getPartCount
+
+-- SystemUtil
+Util.inTable = SystemUtil.inTable
+Util.interval = SystemUtil.interval
+Util.timeout = SystemUtil.timeout
+
+-- TableUtil
+Util.assign = TableUtil.assign
+Util.extend = TableUtil.extend
+Util.filter = TableUtil.filter
+Util.flip = TableUtil.flip
+Util.indexOf = TableUtil.indexOf
+Util.insertIf = TableUtil.insertIf
+Util.instanceChildrenToTable = TableUtil.instanceChildrenToTable
+Util.join = TableUtil.join
+Util.makeConfigFromValues = TableUtil.makeConfigFromValues
+Util.map = TableUtil.map
+Util.mapIndex = TableUtil.mapIndex
+Util.split = TableUtil.split
+Util.tableLength = TableUtil.tableLength
+Util.tableRandom = TableUtil.tableRandom
+Util.tableRandomIndex = TableUtil.tableRandomIndex
+Util.tableRemove = TableUtil.tableRemove
+Util.treePath = TableUtil.treePath
+Util.trimLeadingWhitespace = TableUtil.trimLeadingWhitespace
+Util.trimTrailingWhitespace = TableUtil.trimTrailingWhitespace
+Util.trimWhitespace = TableUtil.trimWhitespace
+
+--[=[
+	Injects a module into the Util module.
+
+	Example:
+	```lua
+	-- Before
+	Util.requiredFunction() -- error: "Function not found"
+
+	-- After
+	local pathToModule: ModuleScript = script.Parent.Module
+	Util.use(pathToModule)
+
+	Util.requiredFunction() -- "Hello world!"
+	```
+]=]
 function Util.use(moduleName: string | ModuleScript)
 	local module: { [any]: any }
 
