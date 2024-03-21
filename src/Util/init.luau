@@ -757,13 +757,13 @@ end
 	@within Util
 	@param instance Instance
 	@param listenTo string
-	@param callback (any, any) -> any
+	@param callback (any, any) -> ()
 	@return RBXScriptConnection
 ]=]
 function Util.addPropertyListener(
 	instance: Instance,
 	listenTo: string,
-	callback: (oldValue: any, newValue: any) -> any
+	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
 	assert(instance and typeof(instance) == "Instance", "Util.addPropertyListener - First argument must be an instance")
 	assert(listenTo, "Util.addPropertyListener - Missing listenTo argument")
@@ -786,13 +786,13 @@ end
 	@within Util
 	@param instance Instance
 	@param listenTo string
-	@param callback (any, any) -> any
+	@param callback (any, any) -> ()
 	@return RBXScriptConnection
 ]=]
 function Util.addAttributeListener(
 	instance: Instance,
 	listenTo: string,
-	callback: (oldValue: any, newValue: any) -> any
+	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
 	assert(instance and typeof(instance) == "Instance", "Util.addAttributeListener - First argument must be an instance")
 	assert(listenTo, "Util.addAttributeListener - Missing listenTo argument")
@@ -806,7 +806,23 @@ local ON_TOUCH_OFFSET: number = 4
 -- onTouch will increase the likelyhood that
 -- players get detected when walking on a part
 -- by placing a clone of the part above the part
-function Util.onTouch(part: BasePart, fn: (any) -> any): RBXScriptConnection
+
+--[=[
+	Listens to when a part is touched by another part and runs a callback.
+
+	Example:
+	```lua
+	local connection = Util.onTouch(game.Workspace.NPC, function(part)
+		print(part.Name .. " was touched")
+	end)
+	```
+
+	@within Util
+	@param part BasePart
+	@param callback (BasePart) -> ()
+	@return RBXScriptConnection
+]=]
+function Util.onTouch(part: BasePart, callback: (BasePart) -> ()): RBXScriptConnection
 	local detector: BasePart = part:Clone()
 	detector.Name = "Detector"
 	detector.Transparency = 1
@@ -821,30 +837,46 @@ function Util.onTouch(part: BasePart, fn: (any) -> any): RBXScriptConnection
 		Util.weld(detector, part)
 	end
 
-	return detector.Touched:Connect(fn)
+	return detector.Touched:Connect(callback)
 end
 
+--[=[
+	Similar to onTouch, but will only run the callback if the part is touched by a player that is alive.
+
+	Example:
+	```lua
+	local connection = Util.onPlayerTouch(game.Workspace.NPC, function(player, part)
+		print(player.Name .. " touched " .. part.Name)
+	end)
+	```
+
+	@within Util
+	@param obj BasePart
+	@param callback (Player, BasePart) -> any
+	@param ignoreIfDead boolean?
+	@param offsetPart boolean?
+	@return RBXScriptConnection
+]=]
 function Util.onPlayerTouch(
 	obj: BasePart,
-	fn: (Player, BasePart) -> any,
+	callback: (Player, BasePart) -> (),
 	ignoreIfDead: boolean?,
 	offsetPart: boolean?
 ): RBXScriptConnection
-	local callback: (part: BasePart) -> nil = function(part: BasePart): nil
+	local _callback: (part: BasePart) -> () = function(part: BasePart)
 		local player: Player? = Util.getPlayerFromPart(part)
+		local alive: boolean? = player and Util.isAlive(player)
 
-		if player then
-			local alive: boolean = Util.isAlive(player)
-
-			if alive or (not alive and ignoreIfDead) then
-				fn(player, part)
-			end
+		if alive == nil or not player then
+			return
 		end
 
-		return nil
+		if alive or (not alive and ignoreIfDead) then
+			callback(player, part)
+		end
 	end
 
-	return offsetPart and Util.onTouch(obj, callback) or obj.Touched:Connect(callback)
+	return offsetPart and Util.onTouch(obj, _callback) or obj.Touched:Connect(_callback)
 end
 
 return Util

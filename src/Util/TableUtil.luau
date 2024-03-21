@@ -165,7 +165,7 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to map
-	@param filterFn (key: any, value: any, source: any) -> (value: any, key: any?) -- The function to filter the table with
+	@param filterFn (key: any, value: any, source: any) -> (value: any, key: any) -- The function to filter the table with
 	@return { [any]: any }
 ]=]
 function TableUtil.mapIndex(source: { [any]: any }, filterFn: (any, any, any) -> (any, any)): { [any]: any }
