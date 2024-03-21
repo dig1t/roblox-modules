@@ -516,10 +516,10 @@ end
 	@within Util
 	@param target { [any]: any } -- The table you want to insert the value into
 	@param value any -- The value you want to insert
-	@param condition nil | boolean | () -> boolean -- The test condition
+	@param condition nil | boolean | () -> boolean? -- The test condition
 	@return nil
 ]=]
-function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | () -> boolean): nil
+function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | () -> boolean?): nil
 	assert(typeof(target) == "table", "Target is missing")
 	assert(typeof(value) ~= "nil", "Value is missing")
 	assert(
@@ -527,9 +527,9 @@ function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil |
 		"Test must be a function, boolean, or nil"
 	)
 
-	local canInsert = if typeof(condition) ~= "function" then condition else condition()
+	local canInsert: boolean? = if typeof(condition) ~= "function" then condition else condition()
 
-	if canInsert then
+	if canInsert == true then
 		target[#target + 1] = value
 	end
 
