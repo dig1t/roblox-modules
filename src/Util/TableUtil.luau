@@ -519,7 +519,7 @@ end
 	@param condition nil | boolean | () -> boolean? -- The test condition
 	@return nil
 ]=]
-function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | () -> boolean?): nil
+function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | (() -> boolean?)): nil
 	assert(typeof(target) == "table", "Target is missing")
 	assert(typeof(value) ~= "nil", "Value is missing")
 	assert(
