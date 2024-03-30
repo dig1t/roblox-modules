@@ -44,38 +44,38 @@ jobs:
         shell: bash
         run: |
           # read wally.toml file
-          wally_toml_contents=$(<wally.toml)
+          wallyTOMLContents=$(<wally.toml)
 
           # swap out name
-          target_name_line=$(echo "$wally_toml_contents" | grep -F "name = ")
-          goal_name_line="name = \"${{github.repository}}\""
-          wally_toml_contents="${wally_toml_contents/${target_name_line}/${goal_name_line}}"
+          targetNameLine=$(echo "$wallyTOMLContents" | grep -F "name = ")
+          goalNameLine="name = \"${{github.repository}}\""
+          wallyTOMLContents="${wallyTOMLContents/${targetNameLine}/${goalNameLine}}"
 
           # swap out version
-          target_version_line=$(echo "$wally_toml_contents" | grep -F "version = ")
-          goal_version_line="version = \"${{ steps.version.outputs.version }}\""
-          wally_toml_contents="${wally_toml_contents/${target_version_line}/${goal_version_line}}"
+          targetVersionLine=$(echo "$wallyTOMLContents" | grep -F "version = ")
+          goalVersionLine="version = \"${{ steps.version.outputs.version }}\""
+          wallyTOMLContents="${wallyTOMLContents/${targetVersionLine}/${goalVersionLine}}"
 
           # update wally.toml file
-          echo "$wally_toml_contents" > wally.toml
+          echo "$wallyTOMLContents" > wally.toml
 
           # read package.json file
-          default_json_contents=$(<package.json)
-          target_json_version_line=$(echo "$default_json_contents" | grep -F "\"version\": ")
-          goal_json_version_line="  \"version\": \"${{ steps.version.outputs.version }}\","
-          default_json_contents="${default_json_contents/${target_json_version_line}/${goal_json_version_line}}"
+          defaultJSONContents=$(<package.json)
+          targetJSONVersionLine=$(echo "$defaultJSONContents" | grep -F "\"version\": ")
+          goalJSONVersionLine="  \"version\": \"${{ steps.version.outputs.version }}\","
+          defaultJSONContents="${defaultJSONContents/${targetJSONVersionLine}/${goalJSONVersionLine}}"
 
           # update package.json file
-          echo "$default_json_contents" > package.json
+          echo "$defaultJSONContents" > package.json
 
           # read README.md file
-          readme_contents=$(<README.md)
-          target_readme_version_line=$(echo "$readme_contents" | grep -F "${{ github.event.repository.name }} = \"")
-          goal_readme_version_line="${{ github.event.repository.name }} = \"${{github.repository}}@${{ steps.version.outputs.version }}\""
-          readme_contents="${readme_contents/${target_readme_version_line}/${goal_readme_version_line}}"
+          readmeContents=$(<README.md)
+          targetReadmeVersionLine=$(echo "$readmeContents" | grep -F "${{ github.event.repository.name }} = \"")
+          goalReadmeVersionLine="${{ github.event.repository.name }} = \"${{github.repository}}@${{ steps.version.outputs.version }}\""
+          readmeContents="${readmeContents/${targetReadmeVersionLine}/${goalReadmeVersionLine}}"
 
           # update README.md file
-          echo "$readme_contents" > README.md
+          echo "$readmeContents" > README.md
 
       - name: Commit files with new version
         id: commit-files
@@ -90,7 +90,7 @@ jobs:
           COMMIT_SHA=$(git rev-parse HEAD)
 
           echo "Committed changes"
-          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "commitSHA=$COMMIT_SHA" >> $GITHUB_OUTPUT
 
       # Create GitHub release
       - name: Create ${{ steps.version.outputs.version }} Runner Release
@@ -101,7 +101,7 @@ jobs:
         with:
           tag_name: "v${{ steps.version.outputs.version }}"
           release_name: "v${{ steps.version.outputs.version }}"
-          commitish: ${{ steps.commit-files.outputs.commit_sha }}
+          commitish: ${{ steps.commit-files.outputs.commitSHA }}
 
       - name: Install aftman dependencies
         uses: ok-nick/setup-aftman@v0.4.2

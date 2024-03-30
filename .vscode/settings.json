@@ -6,7 +6,8 @@
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
   "luau-lsp.types.definitionFiles": ["testez.d.lua"],
   "luau-lsp.ignoreGlobs": [
-    "**/_Index/**"
+    "**/_Index/**",
+    "*.d.lua"
   ],
 
   "testez-companion.runTestsOnSave": true,
