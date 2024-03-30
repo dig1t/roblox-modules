@@ -5,23 +5,28 @@
   "luau-lsp.sourcemap.enabled": true,
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
   "luau-lsp.types.definitionFiles": ["testez.d.lua"],
+  "luau-lsp.ignoreGlobs": [
+    "**/_Index/**"
+  ],
 
   "testez-companion.runTestsOnSave": true,
 
   "[lua]": {
-		"editor.defaultFormatter": "EditorConfig.EditorConfig",
-		"editor.formatOnSave": true
-	},
+    "editor.defaultFormatter": "EditorConfig.EditorConfig",
+    "editor.formatOnSave": true
+  },
 
-	"[luau]": {
-		"editor.defaultFormatter": "EditorConfig.EditorConfig",
-		"editor.formatOnSave": true
-	},
+  "[luau]": {
+    "editor.defaultFormatter": "EditorConfig.EditorConfig",
+    "editor.formatOnSave": true
+  },
 
   "files.exclude": {
     //"Packages": true,
     "build": true,
+    "placeAssets": true,
     "node_modules": true,
+    "test-build.rbxl": true,
     "dev-build.rbxl": true,
     "modules/*/*": true // only show that the submodules folder exists
   },
