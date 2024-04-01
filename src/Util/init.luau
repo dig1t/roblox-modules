@@ -852,7 +852,7 @@ end
 
 	@within Util
 	@param obj BasePart
-	@param callback (Player, BasePart) -> any
+	@param callback (Player, BasePart) -> ()
 	@param ignoreIfDead boolean?
 	@param offsetPart boolean?
 	@return RBXScriptConnection

@@ -42,6 +42,8 @@ end
 	Runs a function every `interval` in seconds.
 	Return `false` within the callback to stop the interval or call `:Disconnect()` on the returned `RBXScriptConnection`.
 
+	This function returns an `RBXScriptConnection` that can be disconnected to stop the interval.
+
 	#### Example:
 	```lua
 	Util.interval(1, function(elapsedTime: number, deltaTime: number)
@@ -52,9 +54,9 @@ end
 	@within Util
 	@param interval number
 	@param callback function
-	@return table
+	@return RBXScriptConnection
 ]=]
-function SystemUtil.interval(interval: number, callback: (number, number) -> boolean?): any
+function SystemUtil.interval(interval: number, callback: (number, number) -> boolean?): RBXScriptConnection
 	assert(typeof(interval) == "number", "Util.interval - interval must be a number")
 	assert(typeof(callback) == "function", "Util.interval - callback must be a function")
 
