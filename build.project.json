@@ -13,14 +13,6 @@
           "$path": "src"
         }
       }
-	  },
-
-    "ServerScriptService": {
-      "$className": "ServerScriptService",
-
-      "ServerSample": {
-        "$path": "sample"
-      }
-    }
+	  }
   }
 }
