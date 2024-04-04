@@ -14,9 +14,9 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris")
 
-local Util = require(script.Parent.Util)
-local Animation = require(script.Parent.Animation)
--- local CollectionService = require(script.Parent.CollectionService)
+local Util = require(script.Parent.Parent.Util)
+local Animation = require(script.Parent.Parent.Animation)
+-- local CollectionService = require(script.Parent.Parent.CollectionService)
 local CollectionService = {
 	watch = function(_) end,
 	getAll = function() return {} end
