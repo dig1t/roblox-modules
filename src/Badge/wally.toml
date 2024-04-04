@@ -1,0 +1,11 @@
+[package]
+name = "dig1t/badge"
+version = "1.0.0"
+description = "Modules and Libraries for development in Roblox"
+license = "Apache-2.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["*.spec.luau", "wally.toml"]
+
+[dependencies]
+Cache = "dig1t/cache@1.0.0"

@@ -1,9 +1,11 @@
 [package]
-name = "dig1t/{MODULE}"
-version = "{VERSION}"
+name = "dig1t/ragdoll"
+version = "1.0.0"
 description = "Modules and Libraries for development in Roblox"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+exclude = ["*.spec.luau", "wally.toml"]
 
-exclude = ["*.spec.luau", "wally.toml", "version.txt"]
+[dependencies]
+Util = "dig1t/util@1.0.0"
