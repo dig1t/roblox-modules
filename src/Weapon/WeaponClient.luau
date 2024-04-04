@@ -2,7 +2,7 @@
 -- @name Weapon System Client
 -- @description A weapon library for quickly building weapons.
 -- @author dig1t
--- @version 1.1.2
+-- @version 1.0.0
 ]]
 
 --!nocheck

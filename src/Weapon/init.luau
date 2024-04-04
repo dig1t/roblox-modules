@@ -1,11 +1,9 @@
+-- WIP module
+
 local RunService = game:GetService("RunService")
 
-local module
-
-if RunService:IsClient() then
-	module = require(script.WeaponClient)
+if RunService:IsServer() then
+	return require(script.WeaponServer)
 else
-	module = require(script.WeaponServer)
+	return require(script.WeaponClient)
 end
-
-return module
