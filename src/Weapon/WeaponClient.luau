@@ -1,8 +1,8 @@
 --[[
--- @name Weapon System Client
--- @description A weapon library for quickly building weapons.
--- @author dig1t
--- @version 1.0.0
+	@name Weapon System Client
+	@description A weapon library for quickly building weapons.
+	@author dig1t
+	@version 1.0.0
 ]]
 
 --!nocheck
