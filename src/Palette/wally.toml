@@ -1,8 +1,8 @@
 [package]
 name = "dig1t/palette"
-version = "1.0.0"
+version = "0.0.1"
 description = "Module part of the dig1t/dLib repository"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
-exclude = ["*.spec.luau", "wally.toml"]
+exclude = ["*.spec.luau"]

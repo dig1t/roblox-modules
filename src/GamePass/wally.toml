@@ -5,7 +5,7 @@ description = "Module part of the dig1t/dLib repository"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
-exclude = ["*.spec.luau", "wally.toml"]
+exclude = ["*.spec.luau"]
 
 [dependencies]
 Cache = "dig1t/cache@1.0.0"
