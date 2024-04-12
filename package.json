@@ -4,6 +4,7 @@
   "description": "Module part of the dig1t/dLib repository",
   "main": "src/init.luau",
   "scripts": {
+    "build:dependencies-unix": "find src -type d -exec sh -c 'cd \"{}\" && wally install || true' \\;",
     "build:dependencies": "wally install",
     "build:rojo": "rojo build -o dev-build.rbxl build.project.json",
     "build:docs": "moonwave build",
