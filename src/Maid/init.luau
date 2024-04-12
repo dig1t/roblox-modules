@@ -8,18 +8,15 @@ type MaidClass = {
 	clean: (self: MaidType) -> (),
 	destroy: (self: MaidType) -> (),
 
-	MaidType: MaidType
+	MaidType: MaidType,
 }
 
 type MaidInstance = {
 	_tasks: { [string]: MaidTask },
-	[any]: any
+	[any]: any,
 }
 
-export type MaidType = typeof(setmetatable(
-	{} :: MaidInstance,
-	{} :: MaidClass
-))
+export type MaidType = typeof(setmetatable({} :: MaidInstance, {} :: MaidClass))
 
 type MaidTask = {
 	Connected: boolean?,
@@ -27,8 +24,8 @@ type MaidTask = {
 	Destroy: (any) -> (),
 	destroy: (any) -> (),
 	destructor: (task: any) -> (),
-	[any]: any
-}? | () -> ()? | Instance;
+	[any]: any,
+}? | () -> ()? | Instance
 
 --[=[
 	Task management class for cleaning up things for garbage collection.

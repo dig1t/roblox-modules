@@ -7,9 +7,9 @@ export type Callback = (...any) -> ()
 type PromiseClass = {
 	__index: PromiseClass,
 	statusType: {
-		pending: "pending";
-		fulfilled: "fulfilled";
-		rejected: "rejected";
+		pending: "pending",
+		fulfilled: "fulfilled",
+		rejected: "rejected",
 	},
 	new: (fn: (resolve: Callback, reject: Callback) -> ()) -> PromiseType,
 	resolve: (self: PromiseType, ...any) -> (),
@@ -20,7 +20,7 @@ type PromiseClass = {
 	finally: (self: PromiseType, fn: Callback) -> PromiseType,
 	_run: (self: PromiseType) -> (),
 
-	PromiseType: PromiseType
+	PromiseType: PromiseType,
 }
 
 type PromiseInstance = {
@@ -30,12 +30,9 @@ type PromiseInstance = {
 	_resultArgs: { [any]: any },
 	_executor: PromiseExecutor,
 	status: string?,
-	[any]: any
+	[any]: any,
 }
-export type PromiseType = typeof(setmetatable(
-	{} :: PromiseInstance,
-	{} :: PromiseClass
-))
+export type PromiseType = typeof(setmetatable({} :: PromiseInstance, {} :: PromiseClass))
 
 --[=[
 	@within Promise
@@ -81,9 +78,9 @@ Promise.__index = Promise
 	@prop statusType table -- The status types of the promise
 ]=]
 Promise.statusType = {
-	pending = "pending"; -- The promise is waiting for a result
-	fulfilled = "fulfilled"; -- The promise was fulfilled successfully
-	rejected = "rejected"; -- The promise was rejected
+	pending = "pending", -- The promise is waiting for a result
+	fulfilled = "fulfilled", -- The promise was fulfilled successfully
+	rejected = "rejected", -- The promise was rejected
 }
 
 --[=[
@@ -127,15 +124,11 @@ end
 	@return ()
 ]=]
 function Promise:_run(): ()
-	local _success, err = pcall(
-		self._executor,
-		function(...) -- resolve
-			self:resolve(...)
-		end,
-		function(...) -- reject
-			self:reject(...)
-		end
-	)
+	local _success, err = pcall(self._executor, function(...) -- resolve
+		self:resolve(...)
+	end, function(...) -- reject
+		self:reject(...)
+	end)
 
 	if err and self.status == Promise.statusType.pending then
 		self:reject(err)
@@ -156,15 +149,17 @@ end
 ]=]
 function Promise:resolve(...): ()
 	if self.status ~= Promise.statusType.pending then
-		warn(string.format(
-			"Cannot resolve a promise %s",
-			self.status == Promise.statusType.rejected and "after rejection" or "more than once"
-		))
+		warn(
+			string.format(
+				"Cannot resolve a promise %s",
+				self.status == Promise.statusType.rejected and "after rejection" or "more than once"
+			)
+		)
 
 		return
 	end
 
-	self._resultArgs = {...}
+	self._resultArgs = { ... }
 
 	local lastRes = self._resultArgs or {} -- Start the callbacks with the initial resolution tuple
 
@@ -209,16 +204,18 @@ end
 ]=]
 function Promise:reject(...): ()
 	if self.status ~= Promise.statusType.pending then
-		warn(string.format(
-			"Cannot reject a promise %s",
-			self.status == Promise.statusType.fulfilled and "after fulfillment" or "more than once"
-		))
+		warn(
+			string.format(
+				"Cannot reject a promise %s",
+				self.status == Promise.statusType.fulfilled and "after fulfillment" or "more than once"
+			)
+		)
 
 		return
 	end
 
 	self.status = Promise.statusType.rejected
-	self._resultArgs = {...}
+	self._resultArgs = { ... }
 
 	if self._rejectionCallbacks then
 		for _key, fn in ipairs(self._rejectionCallbacks) do

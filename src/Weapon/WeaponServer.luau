@@ -7,31 +7,33 @@
 
 --!nocheck
 
+local Debris = game:GetService("Debris")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
-local Debris = game:GetService("Debris")
-local Players = game:GetService("Players")
 
 local Util = require(script.Parent.Parent.Util)
 local WeaponClient = require(script.Parent.WeaponClient)
 -- local CollectionService = require(script.Parent.Parent.CollectionService)
 local CollectionService = {
 	watch = function(_) end,
-	getAll = function() return {} end
+	getAll = function()
+		return {}
+	end,
 } -- TODO: replace when CollectionService util is fixed
 
 -- Amount to subtract from the cooldown since players
 -- will always be ready before the server by a small amount
-local COOLDOWN_OFFSET = .2
+local COOLDOWN_OFFSET = 0.2
 
 local DEFAULT_CONFIG = {
-	hitscan = true; -- No projectiles will be rendered
-	tracerRound = false;
+	hitscan = true, -- No projectiles will be rendered
+	tracerRound = false,
 
-	damage = 30;
-	maxRange = 2048;
-	rangeModifier = .75;
+	damage = 30,
+	maxRange = 2048,
+	rangeModifier = 0.75,
 }
 
 local passthroughObjects = CollectionService.watch("BULLET_PASSTHROUGH")
@@ -88,8 +90,8 @@ function methods:processAction(action)
 		self.remote:FireClient(self.localPlayer, {
 			type = "WEAPON_REMOTE_ACTION",
 			payload = {
-				actionType = action.type
-			}
+				actionType = action.type,
+			},
 		})
 	end
 
@@ -122,12 +124,13 @@ end
 
 function methods:playSFX(state)
 	local id = Util.tableRandom(self.config.sfx[state])
-	self.currentSFX = self.handle:FindFirstChild(id) or Util.instance("Sound") {
-		Name = id,
-		Parent = self.handle,
-		SoundId = Util.asset .. id,
-		Volume = .3
-	}
+	self.currentSFX = self.handle:FindFirstChild(id)
+		or Util.instance("Sound")({
+			Name = id,
+			Parent = self.handle,
+			SoundId = Util.asset .. id,
+			Volume = 0.3,
+		})
 
 	self.currentSFX:Play()
 end
@@ -261,14 +264,12 @@ end
 function methods:raycast(origin, direction)
 	return Workspace:Raycast(
 		origin.Position,
-		(direction and direction or origin.LookVector) * (self.config.maxRange),
+		(direction and direction or origin.LookVector) * self.config.maxRange,
 		self.raycastFilter
 	) or {}
 end
 
-function methods:renderProjectile()
-
-end
+function methods:renderProjectile() end
 
 -- ProjectilePassThrough
 function methods:shoot(data)
@@ -276,7 +277,9 @@ function methods:shoot(data)
 	assert(data.callback, "WeaponServer:shoot - Missing callback")
 
 	data.origin = (
-		self.localPlayer.Character and self.localPlayer.Character.PrimaryPart and self.localPlayer.Character.PrimaryPart.CFrame
+		self.localPlayer.Character
+		and self.localPlayer.Character.PrimaryPart
+		and self.localPlayer.Character.PrimaryPart.CFrame
 	)
 
 	if not data.origin then
@@ -294,12 +297,9 @@ function methods:shoot(data)
 			passthroughObjects:getAll()
 		)
 
-		local direction = data.direction or ((data.target - data.origin.Position).Unit)
+		local direction = data.direction or (data.target - data.origin.Position).Unit
 
-		local hit = self:raycast(
-			data.origin,
-			direction
-		)
+		local hit = self:raycast(data.origin, direction)
 
 		if self.config.tracerRound and self.config.tool:IsDescendantOf(Workspace) then
 			for _, player in pairs(Players:GetPlayers()) do
@@ -316,9 +316,10 @@ function methods:shoot(data)
 							modelParts = self.modelParts,
 							projectileWeldToHit = self.config.projectileWeldToHit,
 							projectileRotation = self.config.projectileRotation,
-							distance = hit.Position and (data.origin.Position - hit.Position).Magnitude or self.config.maxRange,
-							velocity = self.config.projectileVelocity or 16
-						}
+							distance = hit.Position and (data.origin.Position - hit.Position).Magnitude
+								or self.config.maxRange,
+							velocity = self.config.projectileVelocity or 16,
+						},
 					})
 				end
 			end
@@ -363,10 +364,7 @@ function methods:shoot(data)
 				local position = prevCFrame.Position + (direction * velocity) - Vector3.new(0, bulletDrop, 0)
 				local distance = (position - prevCFrame.Position).magnitude
 
-				local hit = self:raycast(
-					prevCFrame,
-					(position - prevCFrame.Position).unit * velocity
-				)
+				local hit = self:raycast(prevCFrame, (position - prevCFrame.Position).unit * velocity)
 
 				local nextCFrame = CFrame.new(prevCFrame.Position, position) * CFrame.new(0, 0, -distance / 2)
 
@@ -379,11 +377,16 @@ function methods:shoot(data)
 				end
 
 				-- Set variables for next frame
-				velocity = velocity > minVelocity and velocity - .01 or 2
-				bulletDrop = self.config.projectileDrop and bulletDrop > 0 and bulletDrop + (self.config.projectileDrop or .002) or 0
+				velocity = velocity > minVelocity and velocity - 0.01 or 2
+				bulletDrop = self.config.projectileDrop
+						and bulletDrop > 0
+						and bulletDrop + (self.config.projectileDrop or 0.002)
+					or 0
 
 				RunService.Heartbeat:Wait()
-			until not data.projectile.Parent or not projectile.Parent or os.clock() - start > (self.config.projectileLife or 8)
+			until not data.projectile.Parent
+				or not projectile.Parent
+				or os.clock() - start > (self.config.projectileLife or 8)
 
 			-- An instance where this would be set could be where the projectile
 			-- sticks to a part such as a sticky grenade sticking to a wall
@@ -422,7 +425,10 @@ function methods:destroy()
 end
 
 function WeaponServer.new(config)
-	assert(config.tool and typeof(config.tool) == "Instance" and config.tool:IsA("Tool"), "WeaponServer.new - Missing tool object from config")
+	assert(
+		config.tool and typeof(config.tool) == "Instance" and config.tool:IsA("Tool"),
+		"WeaponServer.new - Missing tool object from config"
+	)
 
 	local self = setmetatable({}, methods)
 
@@ -508,13 +514,14 @@ function WeaponServer.new(config)
 	animations.Name = "Animations"
 
 	Util.map(self.config.animations, function(idList, state)
-		return state, Util.map(idList, function(id)
-			Util.instance("Animation") {
-				Name = id,
-				AnimationId = Util.asset .. id,
-				Parent = animations
-			}
-		end)
+		return state,
+			Util.map(idList, function(id)
+				Util.instance("Animation")({
+					Name = id,
+					AnimationId = Util.asset .. id,
+					Parent = animations,
+				})
+			end)
 	end)
 
 	animations.Parent = self.config.tool
@@ -550,7 +557,7 @@ function WeaponServer.new(config)
 			-- Mock action as if it came from the client
 			-- This will prevent equip/unequip action spam
 			self:processAction({
-				type = config.tool:IsDescendantOf(self.localPlayer) and "WEAPON_UNEQUIP" or "WEAPON_EQUIP"
+				type = config.tool:IsDescendantOf(self.localPlayer) and "WEAPON_UNEQUIP" or "WEAPON_EQUIP",
 			})
 		end
 

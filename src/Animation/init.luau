@@ -1,5 +1,5 @@
-local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Util = require(script.Parent.Util)
 
@@ -45,7 +45,7 @@ export type AnimationConfig = {
 	tweenInfo: TweenInfo?,
 	frameCallback: () -> (),
 	stopCallback: () -> (),
-	async: boolean?
+	async: boolean?,
 }
 
 --[=[
@@ -109,11 +109,7 @@ function Animation.animate(config: AnimationConfig): ()
 		end
 	end
 
-	local TweenBuild = TweenService:Create(
-		config.source,
-		config.tweenInfo,
-		config.stop
-	)
+	local TweenBuild = TweenService:Create(config.source, config.tweenInfo, config.stop)
 
 	TweenBuild:Play()
 

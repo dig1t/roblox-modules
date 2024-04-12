@@ -88,19 +88,17 @@ end
 function GamePass.watch(): nil
 	GamePass.unwatch() -- Prevent duplicating watchers
 
-	_maid:task(MarketplaceService.PromptGamePassPurchaseFinished:Connect(
-		function(player, passId, purchased)
-			if not purchased then
-				return
-			end
+	_maid:task(MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
+		if not purchased then
+			return
+		end
 
-			cache:set(`${player.UserId}-${passId}`, true)
+		cache:set(`${player.UserId}-${passId}`, true)
 
-			for _, callback in pairs(callbacks) do
-				callback(player, passId)
-			end
-		end)
-	)
+		for _, callback in pairs(callbacks) do
+			callback(player, passId)
+		end
+	end))
 
 	_maid:task(Players.PlayerRemoving:Connect(function(player: Player)
 		for key: string, _owned: boolean in pairs(cache:keys()) do

@@ -1,12 +1,12 @@
-local Util = require(script.Parent.Util)
 local Maid = require(script.Parent.Maid)
+local Util = require(script.Parent.Util)
 
 type CacheSet = (self: CacheType, key: string, value: any, ttl: number?) -> boolean?
 
 type CacheObject = {
 	key: string,
 	value: any,
-	ttl: number?
+	ttl: number?,
 }
 
 --[=[
@@ -19,7 +19,7 @@ type CacheObject = {
 type CacheOptions = {
 	defaultTTL: number?,
 	checkInterval: number?,
-	maxKeys: number?
+	maxKeys: number?,
 }
 
 type CachedClass = {
@@ -38,19 +38,16 @@ type CachedClass = {
 	has: (self: CacheType, key: string) -> boolean,
 	destroy: (self: CacheType) -> (),
 
-	CacheType: CacheType
+	CacheType: CacheType,
 }
 
 type CachedInstance = {
 	_cache: { [string]: CacheEntry },
 	options: CacheOptions,
-	[any]: any
+	[any]: any,
 }
 
-export type CacheType = typeof(setmetatable(
-	{} :: CachedInstance,
-	{} :: CachedClass
-))
+export type CacheType = typeof(setmetatable({} :: CachedInstance, {} :: CachedClass))
 
 --[=[
 	@within Cache
@@ -60,9 +57,9 @@ export type CacheType = typeof(setmetatable(
 	.expires number -- The unix timestamp of when the cache entry expires.
 ]=]
 type CacheEntry = {
-	key: string;
-	value: any;
-	expires: number;
+	key: string,
+	value: any,
+	expires: number,
 }
 
 --[=[
@@ -78,7 +75,7 @@ Cache.__index = Cache
 local defaultOptions = {
 	defaultTTL = 6000,
 	checkInterval = 600,
-	maxKeys = 0
+	maxKeys = 0,
 }
 
 --[=[
@@ -90,7 +87,10 @@ function Cache.new(options: CacheOptions?): CacheType
 	assert(typeof(options) == "table" or options == nil, "options must be a table or nil")
 
 	if options then
-		assert(typeof(options.defaultTTL) == "number" or options.defaultTTL == nil, "options.defaultTTL must be a number or nil")
+		assert(
+			typeof(options.defaultTTL) == "number" or options.defaultTTL == nil,
+			"options.defaultTTL must be a number or nil"
+		)
 	end
 
 	local self = setmetatable({}, Cache)
@@ -142,9 +142,9 @@ function Cache:set(key: string, value: any, ttl: number?): boolean
 	end
 
 	self._cache[key] = {
-		key = key;
-		value = value;
-		expires = ttl or Util.unix() + (self.options.defaultTTL or defaultOptions.defaultTTL)
+		key = key,
+		value = value,
+		expires = ttl or Util.unix() + (self.options.defaultTTL or defaultOptions.defaultTTL),
 	} :: CacheEntry
 
 	return true
@@ -171,11 +171,7 @@ end
 ]=]
 function Cache:setMultiple(cacheObjects: { CacheObject }): boolean
 	for _, cacheObject: CacheObject in pairs(cacheObjects) do
-		local success: boolean? = self:set(
-			cacheObject.key,
-			cacheObject.value,
-			cacheObject.ttl
-		)
+		local success: boolean? = self:set(cacheObject.key, cacheObject.value, cacheObject.ttl)
 
 		if success ~= true then
 			return false

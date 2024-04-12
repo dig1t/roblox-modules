@@ -185,10 +185,7 @@ function SearchUtil.find(
 		typeof(node) == "Instance" or typeof(node) == "table",
 		"Util.find() - node argument must be an Instance or table"
 	)
-	assert(
-		condition ~= nil,
-		"Util.find() - condition argument must be a function or key"
-	)
+	assert(condition ~= nil, "Util.find() - condition argument must be a function or key")
 	assert(typeof(maxDepth) == "number" or maxDepth == nil, "Util.find() - maxDepth must be a number or nil")
 	assert(typeof(_depth) == "number" or _depth == nil, "Util.find() - _depth must be a number or nil")
 
