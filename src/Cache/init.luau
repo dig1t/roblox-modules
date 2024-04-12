@@ -27,8 +27,8 @@ type CachedClass = {
 	new: (options: CacheOptions?) -> CacheType,
 	set: (self: CacheType, key: string, value: any, ttl: number?) -> boolean?,
 	setMultiple: (self: CacheType, { CacheObject }) -> boolean?,
-	get: (self: CacheType, key: string) -> any,
-	take: (self: CacheType, key: string) -> any,
+	get: (self: CacheType, key: string) -> CacheEntry?,
+	take: (self: CacheType, key: string) -> CacheEntry?,
 	getMultiple: (self: CacheType, { string }) -> { [string]: any },
 	delete: (self: CacheType, key: string) -> number,
 	multipleDelete: (self: CacheType, { string }) -> number,
@@ -36,7 +36,7 @@ type CachedClass = {
 	getTTL: (self: CacheType, key: string) -> number?,
 	keys: (self: CacheType) -> { string },
 	has: (self: CacheType, key: string) -> boolean,
-	destroy: (self: CacheType) -> nil,
+	destroy: (self: CacheType) -> (),
 
 	CacheType: CacheType
 }
@@ -398,13 +398,11 @@ end
 	myCache:destroy()
 	```
 ]=]
-function Cache:destroy(): nil
+function Cache:destroy(): ()
 	self._cache = {}
 
 	self._maid:clean()
 	self._maid = nil
-
-	return
 end
 
 return Cache

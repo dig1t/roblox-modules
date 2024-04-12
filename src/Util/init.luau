@@ -418,12 +418,12 @@ end
 	```
 
 	@within Util
-	@param runner () -> any
+	@param runner () -> ()
 	@param maxTries number? -- Defaults to 3
 	@param yield number?
 	@return (boolean, any, number)
 ]=]
-function Util.attempt(runner: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
+function Util.attempt(runner: () -> (), maxTries: number?, yield: number?): (boolean, any, number)
 	assert(typeof(runner) == "function", "Util.attempt - runner must be a function")
 	assert(maxTries == nil or typeof(maxTries) == "number", "Util.attempt - maxTries must be a number or nil")
 	assert(yield == nil or typeof(yield) == "number", "Util.attempt - yield must be a number or nil")
@@ -476,11 +476,11 @@ end
 	```
 
 	@within Util
-	@param runner () -> any
-	@param catch (any) -> any
+	@param runner () -> ()
+	@param catch (any) -> ()
 	@return any
 ]=]
-function Util.try(runner: () -> any, catch: (any) -> any): any
+function Util.try(runner: () -> (), catch: (any) -> ()): any
 	assert(typeof(runner) == "function", "Util.try - runner argument must be a function")
 	assert(typeof(catch) == "function", "Util.try - catch argument must be a function")
 
@@ -712,14 +712,14 @@ end
 	@param instance Instance
 	@param listenerType string -- "Property" | "Attribute"
 	@param listenTo string -- The property or attribute to listen to
-	@param callback (any, any) -> any -- The callback to run when the property or attribute changes
+	@param callback (any, any) -> () -- The callback to run when the property or attribute changes
 	@return RBXScriptConnection
 ]=]
 function Util.addListener(
 	instance: Instance,
 	listenerType: string,
 	listenTo: string,
-	callback: (oldValue: any, newValue: any) -> any
+	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
 	assert(instance and typeof(instance) == "Instance", "Util.addListener - First argument must be an instance")
 	assert(

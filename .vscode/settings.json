@@ -10,7 +10,7 @@
     "*.d.lua"
   ],
 
-  "testez-companion.runTestsOnSave": true,
+  // "testez-companion.runTestsOnSave": true,
 
   "[lua]": {
     "editor.defaultFormatter": "EditorConfig.EditorConfig",

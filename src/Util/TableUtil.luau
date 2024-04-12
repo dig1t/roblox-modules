@@ -74,7 +74,7 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to map
-	@param callbackFn (any, any, any) -> any -- The function to map the table with
+	@param callbackFn (any, any, any) -> (any, any) -- The function to map the table with
 	@return { [any]: any }
 ]=]
 function TableUtil.map(source: { [any]: any }, callbackFn: (any, any, any) -> (any, any)): { [any]: any }
@@ -122,10 +122,10 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to filter
-	@param callbackFn (any, any, any) -> any -- The function to filter the table with (element, index, source)
+	@param callbackFn (any, any, any) -> (boolean?) -- The function to filter the table with (element, index, source)
 	@return { [any]: any }
 ]=]
-function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) -> boolean): { [any]: any }
+function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) -> (boolean?)): { [any]: any }
 	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
 	assert(callbackFn == nil or typeof(callbackFn) == "function", "callbackFn must be a function or nil")
 

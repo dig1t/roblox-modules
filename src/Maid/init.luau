@@ -3,7 +3,7 @@ local Util = require(script.Parent.Util)
 type MaidClass = {
 	__index: MaidClass,
 	new: () -> MaidType,
-	task: (self: MaidType, task: any, cleaner: () -> any) -> string,
+	task: (self: MaidType, task: any, cleaner: () -> ()) -> string,
 	removeTask: (self: MaidType, taskToRemove: MaidTask) -> nil,
 	clean: (self: MaidType) -> nil,
 	destroy: (any) -> nil,
