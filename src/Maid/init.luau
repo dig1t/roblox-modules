@@ -4,9 +4,9 @@ type MaidClass = {
 	__index: MaidClass,
 	new: () -> MaidType,
 	task: (self: MaidType, task: any, cleaner: () -> ()) -> string,
-	removeTask: (self: MaidType, taskToRemove: MaidTask) -> nil,
-	clean: (self: MaidType) -> nil,
-	destroy: (any) -> nil,
+	removeTask: (self: MaidType, taskToRemove: MaidTask) -> (),
+	clean: (self: MaidType) -> (),
+	destroy: (self: MaidType) -> (),
 
 	MaidType: MaidType
 }
@@ -23,12 +23,12 @@ export type MaidType = typeof(setmetatable(
 
 type MaidTask = {
 	Connected: boolean?,
-	Disconnect: () -> nil?,
-	Destroy: (any) -> nil?,
-	destroy: (any) -> nil?,
-	destructor: (task: any) -> nil?,
+	Disconnect: () -> (),
+	Destroy: (any) -> (),
+	destroy: (any) -> (),
+	destructor: (task: any) -> (),
 	[any]: any
-}? | () -> nil? | Instance;
+}? | () -> ()? | Instance;
 
 --[=[
 	Task management class for cleaning up things for garbage collection.
@@ -120,9 +120,8 @@ end
 	```
 
 	@param taskToRemove any -- The task item to remove.
-	@return nil
 ]=]
-function Maid:removeTask(taskToRemove: string | MaidTask): nil
+function Maid:removeTask(taskToRemove: string | MaidTask): ()
 	-- Remove by task id
 	if typeof(taskToRemove) == "string" then
 		self._tasks[taskToRemove] = nil
@@ -136,8 +135,6 @@ function Maid:removeTask(taskToRemove: string | MaidTask): nil
 			self._tasks[taskId] = nil
 		end
 	end
-
-	return
 end
 
 --[=[
@@ -152,17 +149,20 @@ end
 
 	maid:clean() -- Hello world!
 	```
-
-	@return nil
 ]=]
-function Maid:clean(): nil
+function Maid:clean(): ()
 	for taskId, _task: MaidTask in pairs(self._tasks) do
 		if typeof(_task) == "function" then
 			_task() -- Run cleaning _task
 		elseif typeof(_task) == "RBXScriptConnection" and _task.Connected then
 			_task:Disconnect()
-		elseif typeof(_task) == "Instance" or (_task and _task.Destroy) then
+		elseif typeof(_task) == "Instance" then
 			_task:Destroy()
+		elseif _task and _task.Destroy then
+			-- Type workaround for non-roblox instances with Destroy methods
+			local customDestroy = _task.Destroy
+
+			customDestroy(_task)
 		elseif _task and _task.destroy then
 			_task:destroy()
 		elseif typeof(_task) == "table" then
@@ -173,8 +173,6 @@ function Maid:clean(): nil
 
 		self._tasks[taskId] = nil
 	end
-
-	return
 end
 
 --[=[
@@ -191,15 +189,11 @@ end
 
 	maid:clean() -- method no longer exists
 	```
-
-	@return nil
 ]=]
-function Maid:destroy(): nil
+function Maid:destroy(): ()
 	for key: any, _ in pairs(self) do
 		self[key] = nil
 	end
-
-	return nil
 end
 
 return Maid
