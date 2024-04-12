@@ -31,13 +31,13 @@ local cache = Cache.new()
 	@param passId number -- The game pass id to check.
 	@return boolean
 ]=]
-function GamePass.has(userId, passId)
+function GamePass.has(userId, passId): boolean
 	assert(userId, "GamePass.has - Missing user id")
 	assert(passId, "GamePass.has - Missing game pass id")
 
 	local key = `${userId}-${passId}`
 
-	local cached: boolean? = cache:get(key)
+	local cached: boolean = cache:get(key)
 
 	if cache:get(key) == nil then
 		local success, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, userId, passId)
@@ -52,7 +52,7 @@ function GamePass.has(userId, passId)
 		end
 	end
 
-	return cached
+	return cached == true
 end
 
 --[=[
@@ -88,19 +88,17 @@ end
 function GamePass.watch(): nil
 	GamePass.unwatch() -- Prevent duplicating watchers
 
-	_maid:task(MarketplaceService.PromptGamePassPurchaseFinished:Connect(
-		function(player, passId, purchased)
-			if not purchased then
-				return
-			end
+	_maid:task(MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
+		if not purchased then
+			return
+		end
 
-			cache:set(`${player.UserId}-${passId}`, true)
+		cache:set(`${player.UserId}-${passId}`, true)
 
-			for _, callback in pairs(callbacks) do
-				callback(player, passId)
-			end
-		end)
-	)
+		for _, callback in pairs(callbacks) do
+			callback(player, passId)
+		end
+	end))
 
 	_maid:task(Players.PlayerRemoving:Connect(function(player: Player)
 		for key: string, _owned: boolean in pairs(cache:keys()) do
@@ -124,22 +122,18 @@ end
 	end)
 	```
 
-	@param callback (player: Player, passId: number) -> nil -- The callback to trigger.
+	@param callback (player: Player, passId: number) -> () -- The callback to trigger.
 	@return nil
 ]=]
-function GamePass.onPurchase(callback: (player: Player, passId: number) -> nil)
+function GamePass.onPurchase(callback: (player: Player, passId: number) -> ())
 	callbacks[#callbacks + 1] = callback
 end
 
 --[=[
 	Stops watching for game pass purchases.
-
-	@return nil
 ]=]
-function GamePass.unwatch(): nil
+function GamePass.unwatch()
 	_maid:clean()
-
-	return nil
 end
 
 return GamePass

@@ -1,14 +1,14 @@
 local valueClasses = {
-	BoolValue = true;
-	BrickColorValue = true;
-	CFrameValue = true;
-	Color3Value = true;
-	IntValue = true;
-	NumberValue = true;
-	ObjectValue = true;
-	RayValue = true;
-	StringValue = true;
-	Vector3Value = true;
+	BoolValue = true,
+	BrickColorValue = true,
+	CFrameValue = true,
+	Color3Value = true,
+	IntValue = true,
+	NumberValue = true,
+	ObjectValue = true,
+	RayValue = true,
+	StringValue = true,
+	Vector3Value = true,
 }
 
 local TableUtil = {}
@@ -40,7 +40,7 @@ function TableUtil.flip(source: { [any]: any }, mergeDuplicates: boolean?): { [a
 	)
 
 	local res: { [any]: any } = {}
-	local duplicates: { [any]: {any} } = {}
+	local duplicates: { [any]: { any } } = {}
 
 	for key: any, value: any in pairs(source) do
 		if res[value] == nil then
@@ -74,7 +74,7 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to map
-	@param callbackFn (any, any, any) -> any -- The function to map the table with
+	@param callbackFn (any, any, any) -> (any, any) -- The function to map the table with
 	@return { [any]: any }
 ]=]
 function TableUtil.map(source: { [any]: any }, callbackFn: (any, any, any) -> (any, any)): { [any]: any }
@@ -83,10 +83,12 @@ function TableUtil.map(source: { [any]: any }, callbackFn: (any, any, any) -> (a
 
 	local res = {}
 
-	for key: any, value: any in pairs(
-		-- If instance, convert variable to a table of its children
-		typeof(source) == "Instance" and source:GetChildren() or source
-	) do
+	for key: any, value: any in
+		pairs(
+			-- If instance, convert variable to a table of its children
+			typeof(source) == "Instance" and source:GetChildren() or source
+		)
+	do
 		local index: any = #res + 1
 
 		if callbackFn then
@@ -122,19 +124,21 @@ end
 
 	@within Util
 	@param source { [any]: any } -- The table you want to filter
-	@param callbackFn (any, any, any) -> any -- The function to filter the table with (element, index, source)
+	@param callbackFn (any, any, any) -> (boolean?) -- The function to filter the table with (element, index, source)
 	@return { [any]: any }
 ]=]
-function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) -> boolean): { [any]: any }
+function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) -> boolean?): { [any]: any }
 	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
 	assert(callbackFn == nil or typeof(callbackFn) == "function", "callbackFn must be a function or nil")
 
 	local res = {}
 
-	for key: any, value: any in pairs(
-		-- If instance, convert variable to a table of its children
-		typeof(source) == "Instance" and source:GetChildren() or source
-	) do
+	for key: any, value: any in
+		pairs(
+			-- If instance, convert variable to a table of its children
+			typeof(source) == "Instance" and source:GetChildren() or source
+		)
+	do
 		if callbackFn(value, key, source) == true then
 			res[#res + 1] = value
 		end
@@ -275,7 +279,12 @@ end
 	@param trim boolean? -- Trim whitespace from each chunk
 	@return { string }
 ]=]
-function TableUtil.split(text: string | number?, delimiter: string?, trimTrailingDelimiter: boolean?, trim: boolean?): { string }
+function TableUtil.split(
+	text: string | number?,
+	delimiter: string?,
+	trimTrailingDelimiter: boolean?,
+	trim: boolean?
+): { string }
 	if typeof(text) == "number" then
 		text = tostring(text) :: string
 	end
@@ -286,7 +295,10 @@ function TableUtil.split(text: string | number?, delimiter: string?, trimTrailin
 
 	assert(typeof(text) == "string", "text must be a string")
 	assert(delimiter == nil or typeof(delimiter) == "string", "delimiter must be a string or nil")
-	assert(trimTrailingDelimiter == nil or typeof(trimTrailingDelimiter) == "boolean", "trimTrailingDelimiter must be a boolean or nil")
+	assert(
+		trimTrailingDelimiter == nil or typeof(trimTrailingDelimiter) == "boolean",
+		"trimTrailingDelimiter must be a boolean or nil"
+	)
 	assert(trim == nil or typeof(trim) == "boolean", "trim must be a boolean or nil")
 
 	if trimTrailingDelimiter == nil then
@@ -415,7 +427,7 @@ end
 	@param ... { [any]: any } -- The tables you want to merge into the target table
 	@return { [any]: any }
 ]=]
-function TableUtil.extend(arg1: boolean | { [any] : any }, arg2: { [any]: any }, ...): { [any]: any }
+function TableUtil.extend(arg1: boolean | { [any]: any }, arg2: { [any]: any }, ...): { [any]: any }
 	local deep: boolean = typeof(arg1) == "boolean" and arg1 or false
 	local targetTable = deep and arg2 or arg1 :: { [any]: any }
 
@@ -600,10 +612,7 @@ end
 	@return any
 ]=]
 function TableUtil.tableRandomIndex(obj: { [any]: any } | Instance): any
-	assert(
-		typeof(obj) == "table" or typeof(obj) == "Instance",
-		"Util.tableRandomIndex - Cannot index " .. typeof(obj)
-	)
+	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Util.tableRandomIndex - Cannot index " .. typeof(obj))
 
 	local collection: { [any]: any } = if typeof(obj) == "Instance" then obj:GetChildren() else obj
 
@@ -666,8 +675,7 @@ end
 ]=]
 function TableUtil.makeConfigFromValues(folder: Folder | Configuration): { [string]: any }
 	assert(
-		typeof(folder) == "Instance" and
-		(folder:IsA("Folder") or folder:IsA("Configuration")),
+		typeof(folder) == "Instance" and (folder:IsA("Folder") or folder:IsA("Configuration")),
 		"Util.makeConfigFromValues - Folder is missing"
 	)
 

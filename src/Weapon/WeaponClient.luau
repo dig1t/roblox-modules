@@ -1,34 +1,36 @@
 --[[
--- @name Weapon System Client
--- @description A weapon library for quickly building weapons.
--- @author dig1t
--- @version 1.1.2
+	@name Weapon System Client
+	@description A weapon library for quickly building weapons.
+	@author dig1t
+	@version 1.0.0
 ]]
 
 --!nocheck
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
-local Util = require(script.Parent.Util)
-local Animation = require(script.Parent.Animation)
--- local CollectionService = require(script.Parent.CollectionService)
+local Animation = require(script.Parent.Parent.Animation)
+local Util = require(script.Parent.Parent.Util)
+-- local CollectionService = require(script.Parent.Parent.CollectionService)
 local CollectionService = {
 	watch = function(_) end,
-	getAll = function() return {} end
+	getAll = function()
+		return {}
+	end,
 } -- TODO: replace when CollectionService util is fixed
 
 local DEFAULT_CONFIG = {
-	hitscan = true; -- No projectiles will be rendered
-	tracerRound = false;
+	hitscan = true, -- No projectiles will be rendered
+	tracerRound = false,
 
-	damage = 30;
-	maxRange = 2048;
-	rangeModifier = .75;
+	damage = 30,
+	maxRange = 2048,
+	rangeModifier = 0.75,
 }
 
 local passthroughObjects = CollectionService.watch("BULLET_PASSTHROUGH")
@@ -75,7 +77,8 @@ function methods:_onInputEvent(eventName, ...)
 		local conditionCheck = not inCooldown and callback(...)
 
 		if conditionCheck then -- Condition check passed (controller buttons pressed, keyboard button pressed, etc.)
-			conditionCheck = not self._inputData[inputName].condition and true or self._inputData[inputName].condition(...)
+			conditionCheck = not self._inputData[inputName].condition and true
+				or self._inputData[inputName].condition(...)
 
 			if conditionCheck then
 				inputNameChecksPassed[#inputNameChecksPassed + 1] = inputName
@@ -122,7 +125,7 @@ function methods:setInput(inputName, data)
 	end
 
 	self._inputData[inputName] = {
-		listeners = data
+		listeners = data,
 	}
 end
 
@@ -193,11 +196,13 @@ function methods:playAnimation(state, loop)
 	if self.currentTrack then
 		local equipTime = self.equipped
 
-		self.currentTrackLooper = loop and self.currentTrack.Stopped:Connect(function()
-			if self.currentTrack and self.equipped == equipTime then -- Make sure the weapon wasn't re-equipped
-				self.currentTrack:Play()
-			end
-		end) or nil
+		self.currentTrackLooper = loop
+				and self.currentTrack.Stopped:Connect(function()
+					if self.currentTrack and self.equipped == equipTime then -- Make sure the weapon wasn't re-equipped
+						self.currentTrack:Play()
+					end
+				end)
+			or nil
 
 		self.currentTrack:Play()
 
@@ -220,11 +225,8 @@ function methods:stopAnimation()
 end
 
 function methods:getTargetPosition()
-	return (
-		mouse and mouse.Hit.Position
-	) or (
-		self.localHumanoid and self.localHumanoid.Parent and self.localHumanoid.TargetPoint
-	)
+	return (mouse and mouse.Hit.Position)
+		or (self.localHumanoid and self.localHumanoid.Parent and self.localHumanoid.TargetPoint)
 end
 
 function methods:shoot()
@@ -243,8 +245,8 @@ function methods:shoot()
 		type = "WEAPON_SHOOT",
 		payload = {
 			target = target,
-			origin = origin
-		}
+			origin = origin,
+		},
 	})
 
 	-- Fire local tracer
@@ -262,15 +264,13 @@ function methods:shoot()
 				handle = self.handle,
 				projectileReference = self.config.projectileReference,
 				useModelAsProjectile = self.config.useModelAsProjectile,
-				modelParts = self.modelParts
+				modelParts = self.modelParts,
 			}),
 			projectileWeldToHit = self.config.projectileWeldToHit,
 			projectileRotation = self.config.projectileRotation,
-			distance = (
-				hit.Position and (origin.Position - hit.Position).Magnitude
-			) or self.config.maxRange or 2048,
+			distance = (hit.Position and (origin.Position - hit.Position).Magnitude) or self.config.maxRange or 2048,
 			velocity = self.config.projectileVelocity or 16,
-			localTracer = true
+			localTracer = true,
 		})
 	else
 		print("render projectile locally")
@@ -325,10 +325,7 @@ function WeaponClient.getProjectile(data)
 end
 
 function methods:fireTracer(data)
-	assert(
-		data and typeof(data) == "table",
-		"WeaponClient.fireTracer - Missing data"
-	)
+	assert(data and typeof(data) == "table", "WeaponClient.fireTracer - Missing data")
 
 	if not self.localPlayer.Character and data.localTracer then
 		return
@@ -341,13 +338,14 @@ function methods:fireTracer(data)
 		return
 	end
 
-	local newTracer = data.localTracer and data.projectile or WeaponClient.getProjectile({
-		handle = data.handle,
-		projectileReference = data.projectileReference,
-		useModelAsProjectile = data.useModelAsProjectile,
-		-- Avoid unnecessary processing by passing self.modelParts
-		modelParts = data.localTracer and self.modelParts or data.modelParts
-	})
+	local newTracer = data.localTracer and data.projectile
+		or WeaponClient.getProjectile({
+			handle = data.handle,
+			projectileReference = data.projectileReference,
+			useModelAsProjectile = data.useModelAsProjectile,
+			-- Avoid unnecessary processing by passing self.modelParts
+			modelParts = data.localTracer and self.modelParts or data.modelParts,
+		})
 
 	local tracer = newTracer
 
@@ -369,9 +367,8 @@ function methods:fireTracer(data)
 		passthroughObjects:getAll()
 	)
 
-	local originPosition = CFrame.lookAt(
-		data.origin.Position, data.origin.Position + data.direction
-	) * CFrame.new(0, 0, -tracer.Size.Z)
+	local originPosition = CFrame.lookAt(data.origin.Position, data.origin.Position + data.direction)
+		* CFrame.new(0, 0, -tracer.Size.Z)
 	local rotation = data.projectileRotation or CFrame.new()
 	local start = os.clock()
 
@@ -390,15 +387,15 @@ function methods:fireTracer(data)
 			if raycastTest.Instance then
 				hit = raycastTest
 			end
-		until hit or not tracer.Parent or not newTracer.Parent or (
-			data.origin.Position - prevCFrame.Position - Vector3.new(0, 0, -data.velocity)
-		).Magnitude > data.distance
+		until hit
+			or not tracer.Parent
+			or not newTracer.Parent
+			or (data.origin.Position - prevCFrame.Position - Vector3.new(0, 0, -data.velocity)).Magnitude
+				> data.distance
 
 		if tracer.Parent and newTracer.Parent then
 			if data.projectileWeldToHit and hit then
-				tracer.CFrame = CFrame.lookAt(
-					hit.Position, hit.Position + data.direction
-				) * rotation -- Place tracer at intersection
+				tracer.CFrame = CFrame.lookAt(hit.Position, hit.Position + data.direction) * rotation -- Place tracer at intersection
 
 				Util.weld(tracer, hit.Instance)
 
@@ -406,10 +403,7 @@ function methods:fireTracer(data)
 					part.Anchored = false
 				end
 
-				Debris:AddItem(
-					newTracer,
-					(data.projectileLife or 10) - (os.clock() - start) + .001
-				) -- TODO: Replace with a better debris collector
+				Debris:AddItem(newTracer, (data.projectileLife or 10) - (os.clock() - start) + 0.001) -- TODO: Replace with a better debris collector
 			else
 				newTracer:Destroy()
 			end
@@ -455,10 +449,7 @@ function WeaponClient.new(config)
 	self._eventHooks = {}
 	self._actionBindings = {}
 
-	self.config = Util.extend(
-		Util.extend({}, config),
-		Util.makeConfigFromValues(config.tool)
-	)
+	self.config = Util.extend(Util.extend({}, config), Util.makeConfigFromValues(config.tool))
 
 	for k, v in pairs(DEFAULT_CONFIG) do
 		if self.config[k] == nil then
@@ -466,9 +457,10 @@ function WeaponClient.new(config)
 		end
 	end
 
-	while not Players.LocalPlayer.Character or
-		not Players.LocalPlayer.Character.Parent or
-		not config.tool:FindFirstChild("Ready")
+	while
+		not Players.LocalPlayer.Character
+		or not Players.LocalPlayer.Character.Parent
+		or not config.tool:FindFirstChild("Ready")
 	do
 		RunService.RenderStepped:Wait()
 	end
@@ -556,13 +548,14 @@ function WeaponClient.new(config)
 
 	-- Load animations
 	self.animations = Util.map(config.animations, function(idList, state)
-		return state, Util.map(idList, function(id)
-			return self.localHumanoid:LoadAnimation(config.tool.Animations:WaitForChild(id))
-		end)
+		return state,
+			Util.map(idList, function(id)
+				return self.localHumanoid:LoadAnimation(config.tool.Animations:WaitForChild(id))
+			end)
 	end)
 
 	self.remote:FireServer({
-		type = "WEAPON_INIT"
+		type = "WEAPON_INIT",
 	})
 
 	self.remote.OnClientEvent:Connect(function(action)

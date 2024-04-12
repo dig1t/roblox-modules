@@ -1,43 +1,46 @@
+--[=[
+	@within Promise
+	@type Callback (...any) -> ()
+]=]
+export type Callback = (...any) -> ()
+
 type PromiseClass = {
 	__index: PromiseClass,
 	statusType: {
-		pending: "pending";
-		fulfilled: "fulfilled";
-		rejected: "rejected";
+		pending: "pending",
+		fulfilled: "fulfilled",
+		rejected: "rejected",
 	},
-	new: (fn: (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil) -> PromiseType,
-	resolve: (self: PromiseType, ...any) -> nil,
-	reject: (self: PromiseType, any) -> nil,
-	destroy: (self: PromiseType) -> nil,
-	andThen: (self: PromiseType, fn: (...any) -> nil) -> PromiseType,
-	catch: (self: PromiseType, fn: (any) -> nil) -> PromiseType,
-	finally: (self: PromiseType, fn: (...any) -> nil) -> PromiseType,
-	_run: (self: PromiseType) -> nil,
+	new: (fn: (resolve: Callback, reject: Callback) -> ()) -> PromiseType,
+	resolve: (self: PromiseType, ...any) -> (),
+	reject: (self: PromiseType, any) -> (),
+	destroy: (self: PromiseType) -> (),
+	andThen: (self: PromiseType, fn: Callback) -> PromiseType,
+	catch: (self: PromiseType, fn: Callback) -> PromiseType,
+	finally: (self: PromiseType, fn: Callback) -> PromiseType,
+	_run: (self: PromiseType) -> (),
 
-	PromiseType: PromiseType
+	PromiseType: PromiseType,
 }
 
 type PromiseInstance = {
-	_fulfillmentCallbacks: { (any) -> any },
-	_rejectionCallbacks: { (any) -> any },
-	_onFinalizedCallback: ((any) -> nil)?,
+	_fulfillmentCallbacks: { Callback },
+	_rejectionCallbacks: { Callback },
+	_onFinalizedCallback: Callback?,
 	_resultArgs: { [any]: any },
 	_executor: PromiseExecutor,
 	status: string?,
-	[any]: any
+	[any]: any,
 }
-export type PromiseType = typeof(setmetatable(
-	{} :: PromiseInstance,
-	{} :: PromiseClass
-))
+export type PromiseType = typeof(setmetatable({} :: PromiseInstance, {} :: PromiseClass))
 
 --[=[
 	@within Promise
 	@interface PromiseExecutor
-	@field resolve (any) -> nil -- Resolves the promise
-	@field reject (any) -> nil -- Rejects the promise
+	@field resolve Callback -- Resolves the promise
+	@field reject Callback -- Rejects the promise
 ]=]
-export type PromiseExecutor = (resolve: (any) -> nil?, reject: (any) -> nil?) -> nil
+export type PromiseExecutor = (resolve: Callback, reject: Callback) -> nil
 
 --[=[
 	Promise class for asynchronous operations.
@@ -75,9 +78,9 @@ Promise.__index = Promise
 	@prop statusType table -- The status types of the promise
 ]=]
 Promise.statusType = {
-	pending = "pending"; -- The promise is waiting for a result
-	fulfilled = "fulfilled"; -- The promise was fulfilled successfully
-	rejected = "rejected"; -- The promise was rejected
+	pending = "pending", -- The promise is waiting for a result
+	fulfilled = "fulfilled", -- The promise was fulfilled successfully
+	rejected = "rejected", -- The promise was rejected
 }
 
 --[=[
@@ -118,18 +121,14 @@ end
 	```
 
 	@ignore
-	@return nil
+	@return ()
 ]=]
-function Promise:_run(): nil
-	local _success, err = pcall(
-		self._executor,
-		function(...) -- resolve
-			self:resolve(...)
-		end,
-		function(...) -- reject
-			self:reject(...)
-		end
-	)
+function Promise:_run(): ()
+	local _success, err = pcall(self._executor, function(...) -- resolve
+		self:resolve(...)
+	end, function(...) -- reject
+		self:reject(...)
+	end)
 
 	if err and self.status == Promise.statusType.pending then
 		self:reject(err)
@@ -146,19 +145,21 @@ end
 	```
 
 	@param ... any -- The tuple parameters to resolve the promise with.
-	@return nil
+	@return ()
 ]=]
-function Promise:resolve(...): nil
+function Promise:resolve(...): ()
 	if self.status ~= Promise.statusType.pending then
-		warn(string.format(
-			"Cannot resolve a promise %s",
-			self.status == Promise.statusType.rejected and "after rejection" or "more than once"
-		))
+		warn(
+			string.format(
+				"Cannot resolve a promise %s",
+				self.status == Promise.statusType.rejected and "after rejection" or "more than once"
+			)
+		)
 
 		return
 	end
 
-	self._resultArgs = {...}
+	self._resultArgs = { ... }
 
 	local lastRes = self._resultArgs or {} -- Start the callbacks with the initial resolution tuple
 
@@ -169,7 +170,7 @@ function Promise:resolve(...): nil
 			self._onFinalizedCallback(unpack(lastRes))
 		end
 
-		return nil
+		return
 	end
 
 	for _key, fn in ipairs(self._fulfillmentCallbacks) do
@@ -189,8 +190,6 @@ function Promise:resolve(...): nil
 	if self._onFinalizedCallback then
 		self._onFinalizedCallback(unpack(lastRes))
 	end
-
-	return nil
 end
 
 --[=[
@@ -201,20 +200,22 @@ end
 	```
 
 	@param ... any -- The tuple parameters to reject the promise with.
-	@return nil
+	@return ())
 ]=]
-function Promise:reject(...): nil
+function Promise:reject(...): ()
 	if self.status ~= Promise.statusType.pending then
-		warn(string.format(
-			"Cannot reject a promise %s",
-			self.status == Promise.statusType.fulfilled and "after fulfillment" or "more than once"
-		))
+		warn(
+			string.format(
+				"Cannot reject a promise %s",
+				self.status == Promise.statusType.fulfilled and "after fulfillment" or "more than once"
+			)
+		)
 
 		return
 	end
 
 	self.status = Promise.statusType.rejected
-	self._resultArgs = {...}
+	self._resultArgs = { ... }
 
 	if self._rejectionCallbacks then
 		for _key, fn in ipairs(self._rejectionCallbacks) do
@@ -226,7 +227,7 @@ function Promise:reject(...): nil
 		self._onFinalizedCallback(...)
 	end
 
-	return nil
+	return
 end
 
 --[=[
@@ -247,7 +248,7 @@ end
 	@param executor function -- The function to call when the promise is fulfilled.
 	@return nil
 ]=]
-function Promise:andThen(executor: ((...any) -> nil)?): PromiseType
+function Promise:andThen(executor: Callback): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to resolve")
 
 	if self.status == Promise.statusType.fulfilled then
@@ -268,7 +269,7 @@ end
 	@param callback function -- The function to call when the Promise is rejected.
 	@return nil
 ]=]
-function Promise:catch(callback: (any) -> nil): PromiseType
+function Promise:catch(callback: Callback): PromiseType
 	assert(typeof(callback) == "function", "Must give a function to catching errors")
 
 	if self.status == Promise.statusType.rejected then
@@ -293,7 +294,7 @@ end
 	@param callback function -- The function to call when the promise is fulfilled.
 	@return nil
 ]=]
-function Promise:finally(callback:(...any) -> nil): PromiseType
+function Promise:finally(callback: Callback): PromiseType
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")
 	assert(typeof(callback) == "function", "Must give a function for the finally callback")
 
@@ -315,14 +316,12 @@ end
 	Promise:destroy()
 	```
 
-	@return nil
+	@return ()
 ]=]
-function Promise:destroy(): nil
+function Promise:destroy(): ()
 	for key: any, _ in pairs(self) do
 		self[key] = nil
 	end
-
-	return nil
 end
 
 return Promise

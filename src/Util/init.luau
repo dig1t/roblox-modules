@@ -16,9 +16,9 @@ local Util = {}
 
 setmetatable({}, {
 	__index = Util,
-	__call = function (class, ...)
+	__call = function(class, ...)
 		return class.instance(...)
-	end
+	end,
 })
 
 -- Add util modules for intellisense
@@ -135,7 +135,7 @@ Util.defaultWalkSpeed = 16 :: number
 
 function Util.instance(className: string, ...): (any) -> Instance
 	local props: { [any]: any } = {}
-	local extraProps: { [any]: any } = {...}
+	local extraProps: { [any]: any } = { ... }
 
 	for i = 1, #extraProps do
 		if typeof(extraProps[i]) == "table" then
@@ -187,18 +187,26 @@ function Util.instance(className: string, ...): (any) -> Instance
 end
 
 local valueObjects = {
-	"ObjectValue", "StringValue", "IntValue", "NumberValue", "BoolValue", "CFrameValue", "Vector3Value", "Color3Value", "BrickColorValue"
+	"ObjectValue",
+	"StringValue",
+	"IntValue",
+	"NumberValue",
+	"BoolValue",
+	"CFrameValue",
+	"Vector3Value",
+	"Color3Value",
+	"BrickColorValue",
 }
 
 local valueObjectClassNames: { [string]: string } = {
-	["table"] = "ObjectValue";
-	["string"] = "StringValue";
-	["number"] = "NumberValue";
-	["boolean"] = "BoolValue";
-	["CFrame"] = "CFrameValue";
-	["Vector3"] = "Vector3Value";
-	["Color3"] = "Color3Value";
-	["BrickColor"] = "BrickColorValue";
+	["table"] = "ObjectValue",
+	["string"] = "StringValue",
+	["number"] = "NumberValue",
+	["boolean"] = "BoolValue",
+	["CFrame"] = "CFrameValue",
+	["Vector3"] = "Vector3Value",
+	["Color3"] = "Color3Value",
+	["BrickColor"] = "BrickColorValue",
 }
 
 --[=[
@@ -237,9 +245,7 @@ function Util.get(path, parent) -- expiremental
 end
 
 -- Tool to set value instances
-function Util.set(
-	parent: Instance, name: string, value: any, customValueType: string?
-): ValueBaseType?
+function Util.set(parent: Instance, name: string, value: any, customValueType: string?): ValueBaseType?
 	return Util.try(function()
 		local valueObject: ValueBaseType | Instance? = nil
 
@@ -418,12 +424,12 @@ end
 	```
 
 	@within Util
-	@param runner () -> any
+	@param runner () -> ()
 	@param maxTries number? -- Defaults to 3
 	@param yield number?
 	@return (boolean, any, number)
 ]=]
-function Util.attempt(runner: () -> any, maxTries: number?, yield: number?): (boolean, any, number)
+function Util.attempt(runner: () -> (), maxTries: number?, yield: number?): (boolean, any, number)
 	assert(typeof(runner) == "function", "Util.attempt - runner must be a function")
 	assert(maxTries == nil or typeof(maxTries) == "number", "Util.attempt - maxTries must be a number or nil")
 	assert(yield == nil or typeof(yield) == "number", "Util.attempt - yield must be a number or nil")
@@ -476,11 +482,11 @@ end
 	```
 
 	@within Util
-	@param runner () -> any
-	@param catch (any) -> any
+	@param runner () -> ()
+	@param catch (any) -> ()
 	@return any
 ]=]
-function Util.try(runner: () -> any, catch: (any) -> any): any
+function Util.try(runner: () -> (), catch: (any) -> ()): any
 	assert(typeof(runner) == "function", "Util.try - runner argument must be a function")
 	assert(typeof(catch) == "function", "Util.try - catch argument must be a function")
 
@@ -521,11 +527,11 @@ function Util.weld(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldCon
 		part.CFrame = attachTo.CFrame * offset
 	end
 
-	return Util.instance("WeldConstraint") {
-		Part0 = part;
-		Part1 = attachTo;
-		Parent = part;
-	} :: WeldConstraint
+	return Util.instance("WeldConstraint")({
+		Part0 = part,
+		Part1 = attachTo,
+		Parent = part,
+	}) :: WeldConstraint
 end
 
 --[=[
@@ -656,8 +662,18 @@ function Util.moveModel(model: Model, to: CFrame): nil
 		local _x, _y, _z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
 
 		part.CFrame = CFrame.new(
-			newPositionInWorld.X, newPositionInWorld.Y, newPositionInWorld.Z,
-			R00, R01, R02, R10, R11, R12, R20, R21, R22
+			newPositionInWorld.X,
+			newPositionInWorld.Y,
+			newPositionInWorld.Z,
+			R00,
+			R01,
+			R02,
+			R10,
+			R11,
+			R12,
+			R20,
+			R21,
+			R22
 		)
 	end
 
@@ -712,14 +728,14 @@ end
 	@param instance Instance
 	@param listenerType string -- "Property" | "Attribute"
 	@param listenTo string -- The property or attribute to listen to
-	@param callback (any, any) -> any -- The callback to run when the property or attribute changes
+	@param callback (any, any) -> () -- The callback to run when the property or attribute changes
 	@return RBXScriptConnection
 ]=]
 function Util.addListener(
 	instance: Instance,
 	listenerType: string,
 	listenTo: string,
-	callback: (oldValue: any, newValue: any) -> any
+	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
 	assert(instance and typeof(instance) == "Instance", "Util.addListener - First argument must be an instance")
 	assert(
@@ -732,7 +748,8 @@ function Util.addListener(
 	local obj: any = instance -- Type hack
 	local oldValue: any = obj[listenTo]
 
-	local signalGetter: string = listenerType == "Property" and "GetPropertyChangedSignal" or "GetAttributeChangedSignal"
+	local signalGetter: string = listenerType == "Property" and "GetPropertyChangedSignal"
+		or "GetAttributeChangedSignal"
 
 	return obj[signalGetter](obj, listenTo):Connect(function()
 		local newValue: any = obj[listenTo]
@@ -794,7 +811,10 @@ function Util.addAttributeListener(
 	listenTo: string,
 	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
-	assert(instance and typeof(instance) == "Instance", "Util.addAttributeListener - First argument must be an instance")
+	assert(
+		instance and typeof(instance) == "Instance",
+		"Util.addAttributeListener - First argument must be an instance"
+	)
 	assert(listenTo, "Util.addAttributeListener - Missing listenTo argument")
 	assert(callback and typeof(callback) == "function", "Util.addAttributeListener - Missing callback")
 
@@ -827,9 +847,7 @@ function Util.onTouch(part: BasePart, callback: (BasePart) -> ()): RBXScriptConn
 	detector.Name = "Detector"
 	detector.Transparency = 1
 	detector.Size = Vector3.new(detector.Size.X, ON_TOUCH_OFFSET, detector.Size.Z)
-	detector.CFrame = part.CFrame:ToWorldSpace(
-		CFrame.new(0, (ON_TOUCH_OFFSET / 2) + (part.Size.Y / 2), 0)
-	) -- Place on top of the current part, then offset by half of ON_TOUCH_OFFSET
+	detector.CFrame = part.CFrame:ToWorldSpace(CFrame.new(0, (ON_TOUCH_OFFSET / 2) + (part.Size.Y / 2), 0)) -- Place on top of the current part, then offset by half of ON_TOUCH_OFFSET
 	detector.CanCollide = false
 	detector.Parent = part
 

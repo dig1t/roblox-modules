@@ -1,0 +1,6 @@
+# To save on action usage, we can use this smaller dependency file
+
+[tools]
+luau-lsp = "JohnnyMorganz/luau-lsp@1.28.1"
+rojo ="rojo-rbx/rojo@7.4.1"
+selene = "Kampfkarren/selene@0.26.1"

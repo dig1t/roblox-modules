@@ -1,41 +1,62 @@
+# dLib Modules
+
+dLib is a collection of modules and libraries for development in Roblox.
+
 [![CI](https://github.com/dig1t/dlib/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dig1t/dlib/actions/workflows/ci.yml)
 
-# dLib
-Modules and Libraries for development in Roblox.
-
-# Installing
-## Installing with wally
-Add the below line to your wally.toml file
+## Installing Modules (wally)
+**Available modules:**
 ```toml
-dlib = "dig1t/dlib@1.2.18"
-
+Animation = "dig1t/animation@1.0.0"
+Badge = "dig1t/badge@1.0.0"
+Cache = "dig1t/cache@1.0.0"
+GamePass = "dig1t/gamepass@1.0.0"
+Maid = "dig1t/maid@1.0.0"
+Palette = "dig1t/palette@1.0.0"
+Promise = "dig1t/promise@1.0.0"
+Ragdoll = "dig1t/ragdoll@1.0.0"
+Util = "dig1t/util@1.0.0"
 ```
-## Installing with Roblox Studio
-Download the rbxl file from the [releases](https://github.com/dig1t/dlib/releases) tab.
 
-Once the place file is open, you can find the package inside `ReplicatedStorage.Packages`.
+## Module Examples
 
-### Usage
+### Util
 ```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Require dLib from your installation location
--- For this example we'll use ReplicatedStorage as dLib's parent location
--- and we'll import dLib's built in Palette module
-local dLib = require(ReplicatedStorage.dlib)
-local Palette = dLib.Palette
+-- Require Util from your installation location
+-- For this example we'll use ReplicatedStorage.Packages as Util's parent location
+local Util = require(ReplicatedStorage.Packages.Util)
+
+local touchPart: BasePart = workspace:WaitForChild("Plate")
+local connection: RBXScriptConnection? -- onPlayerTouch returns RBXScriptConnection
+
+connection = Util.onPlayerTouch(touchPart, function(player: Player)
+	print(`{player.Name} touched the part!`)
+
+	-- Disconnect the connection
+	if connection then
+		connection:Disconnect()
+	end
+end)
+```
+
+### Palette
+```lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Require Palette from your installation location
+-- For this example we'll use ReplicatedStorage.Packages as Palettes's parent location
+local Palette = require(ReplicatedStorage.Packages.Palette)
 
 print(Palette.get("blue", 500))
 ```
 
-## Using built-in module types
-dLib has a few built-in types that you can use to type your variables.
-
-### Promises
+### Promise
 
 Method 1:
 ```lua
-local Promise = dLib.Promise
+local Promise = require(ReplicatedStorage.Packages.Promise)
 
 local myPromise: typeof(Promise.PromiseType) = Promise.new(function(resolve, reject)
 	resolve("Hello World!")
@@ -44,7 +65,7 @@ end)
 
 Method 2:
 ```lua
-local Promise = dLib.Promise
+local Promise = require(ReplicatedStorage.Packages.Promise)
 
 type PromiseType = typeof(Promise.PromiseType)
 
@@ -53,18 +74,18 @@ local myPromise: PromiseType = Promise.new(function(resolve, reject)
 end)
 ```
 
-### Maids
+### Maid
 
 Method 1:
 ```lua
-local Maid = dLib.Maid
+local Maid = require(ReplicatedStorage.Packages.Maid)
 
 local myMaid: typeof(Maid.MaidType) = Maid.new()
 ```
 
 Method 2:
 ```lua
-local Maid = dLib.Maid
+local Maid = require(ReplicatedStorage.Packages.Maid)
 
 type MaidType = typeof(Maid.MaidType)
 
@@ -75,18 +96,16 @@ local myMaid: MaidType = Maid.new()
 
 Method 1:
 ```lua
-local Cache = dLib.Cache
+local Cache = require(ReplicatedStorage.Packages.Cache)
 
 local myCache: typeof(Cache.CacheType) = Cache.new()
 ```
 
 Method 2:
 ```lua
-local Cache = dLib.Cache
+local Cache = require(ReplicatedStorage.Packages.Cache)
 
 type CacheType = typeof(Cache.CacheType)
 
 local myCache: CacheType = Cache.new()
 ```
-
-[Click here](https://dig1t.github.io/dlib/api/dLib) to learn how to import your first dLib module.

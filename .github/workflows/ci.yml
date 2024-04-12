@@ -16,6 +16,8 @@ jobs:
 
       - name: Install dependencies
         uses: ok-nick/setup-aftman@v0.4.2
+        with:
+          path: '.github'
 
       - name: Download type files
         run: curl -L "https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/main/scripts/globalTypes.d.luau" > globalTypes.d.luau

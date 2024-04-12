@@ -7,7 +7,7 @@ export type DateTimeComponents = {
 	Hour: number,
 	Minute: number,
 	Second: number,
-	Millisecond: number
+	Millisecond: number,
 } | any
 
 local milisecondsInSecond: number = 1000
@@ -23,13 +23,13 @@ local secondsInDay: number = secondsInHour * 24
 local secondsInMonth: number = 2629746
 local secondsInYear: number = 31556952
 
-local timeNames: {{ any }} = {
+local timeNames: { { any } } = {
 	{ secondsInYear, "year" },
 	{ secondsInMonth, "month" },
 	{ secondsInDay, "day" },
 	{ secondsInHour, "hour" },
 	{ secondsInMinute, "minute" },
-	{ 1, "second" }
+	{ 1, "second" },
 }
 
 --[=[

@@ -1,5 +1,5 @@
-local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Util = require(script.Parent.Util)
 
@@ -43,9 +43,9 @@ export type AnimationConfig = {
 	start: { [string]: any }?,
 	stop: { [string]: any }?,
 	tweenInfo: TweenInfo?,
-	frameCallback: () -> nil?,
-	stopCallback: () -> nil?,
-	async: boolean?
+	frameCallback: () -> (),
+	stopCallback: () -> (),
+	async: boolean?,
 }
 
 --[=[
@@ -75,12 +75,10 @@ end
 	@param config AnimationConfig -- The default animation configuration
 	@return nil
 ]=]
-function Animation.setDefaultConfig(config: AnimationConfig): nil
+function Animation.setDefaultConfig(config: AnimationConfig): ()
 	assert(config and typeof(config) == "table", "Table must be passed to set the default animation config")
 
 	Animation.defaultConfig = config
-
-	return nil
 end
 
 --[=[
@@ -89,7 +87,7 @@ end
 	@param config AnimationConfig -- The animation configuration
 	@return nil
 ]=]
-function Animation.animate(config: AnimationConfig): nil
+function Animation.animate(config: AnimationConfig): ()
 	assert(config and typeof(config) == "table", "Missing animation configuration")
 	assert(typeof(config.source) == "Instance" or typeof(config.source) == "table", "Missing instance to animate")
 	assert(typeof(config.start) == "table", "Missing start properties")
@@ -111,11 +109,7 @@ function Animation.animate(config: AnimationConfig): nil
 		end
 	end
 
-	local TweenBuild = TweenService:Create(
-		config.source,
-		config.tweenInfo,
-		config.stop
-	)
+	local TweenBuild = TweenService:Create(config.source, config.tweenInfo, config.stop)
 
 	TweenBuild:Play()
 
@@ -133,8 +127,6 @@ function Animation.animate(config: AnimationConfig): nil
 	if config.stopCallback then
 		config.stopCallback()
 	end
-
-	return nil
 end
 
 return Animation

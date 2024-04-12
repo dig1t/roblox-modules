@@ -1,7 +1,7 @@
-local PhysicsService = game:GetService("PhysicsService")
-local Workspace = game:GetService("Workspace")
 local Debris = game:GetService("Debris") -- TODO: Replace with a better Debris module
+local PhysicsService = game:GetService("PhysicsService")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 local Util = require(script.Parent.Util)
 
@@ -71,7 +71,7 @@ function Ragdoll.setup(character: Model): nil -- Sets up the player's collision 
 
 	local _successful, humanoid, _tries = Util.attempt(function()
 		return character:FindFirstChild("Humanoid")
-	end, 80, .1) -- 80 tries * .1 yield times = 8 second max yield
+	end, 80, 0.1) -- 80 tries * .1 yield times = 8 second max yield
 
 	if not humanoid then
 		return

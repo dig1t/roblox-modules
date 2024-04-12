@@ -31,8 +31,8 @@ function PlayerUtil.getGroupRank(player: Player, groupId: number): number
 		end)
 
 		groupRankCache[uniqueId] = {
-			rank = success and res or 0;
-			fetchedAt = os.time();
+			rank = success and res or 0,
+			fetchedAt = os.time(),
 		}
 
 		return success and res or 0
@@ -58,11 +58,8 @@ end
 	@return boolean
 ]=]
 function PlayerUtil.isCreator(player: Player): boolean
-	return (
-		game.CreatorType == Enum.CreatorType.Group and PlayerUtil.getGroupRank(player, game.CreatorId) >= 255
-	) or (
-		game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId
-	)
+	return (game.CreatorType == Enum.CreatorType.Group and PlayerUtil.getGroupRank(player, game.CreatorId) >= 255)
+		or (game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId)
 end
 
 --[=[
@@ -70,12 +67,12 @@ end
 	@prop userLevel table<number, number>
 ]=]
 PlayerUtil.userLevel = {
-	normal = 0; -- (default)
-	premium = 1; -- (requires premium)
-	VIP = 2; -- (if game is owned by group, requires rank 10)
-	moderator = 3; -- (if game is owned by group, requires rank 50)
-	superuser = 4; -- developer (if game is owned by group, requires rank 254)
-	creator = 5; -- (requires group rank 255 or if game is owned by user)
+	normal = 0, -- (default)
+	premium = 1, -- (requires premium)
+	VIP = 2, -- (if game is owned by group, requires rank 10)
+	moderator = 3, -- (if game is owned by group, requires rank 50)
+	superuser = 4, -- developer (if game is owned by group, requires rank 254)
+	creator = 5, -- (requires group rank 255 or if game is owned by user)
 }
 
 --[=[
@@ -110,11 +107,8 @@ function PlayerUtil.getUserLevel(player: Player): number
 		end
 	end
 
-	return (
-		player.MembershipType == Enum.MembershipType.Premium and PlayerUtil.userLevel.premium
-	) or (
-		PlayerUtil.userLevel.normal
-	)
+	return (player.MembershipType == Enum.MembershipType.Premium and PlayerUtil.userLevel.premium)
+		or PlayerUtil.userLevel.normal
 end
 
 --[=[

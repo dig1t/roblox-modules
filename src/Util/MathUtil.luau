@@ -105,9 +105,8 @@ function MathUtil.random(minValue: number, maxValue: number?, float: boolean?): 
 	local min: number = not maxValue and 1 or minValue -- If maxValue is not defined, use 1 as min
 	local max: number = maxValue or minValue
 
-	return float == true and
-		Random.new():NextNumber(min, max) or -- Return float
-		Random.new():NextInteger(min, max) -- Return integer
+	return float == true and Random.new():NextNumber(min, max) -- Return float
+		or Random.new():NextInteger(min, max) -- Return integer
 end
 
 local charset: string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -167,7 +166,7 @@ function MathUtil.randomObj(obj: { [any]: any } | Instance): any
 	return
 end
 
-local shortNumberSuffixes: { string } = { "K", "M" , "B", "T", "Q" }
+local shortNumberSuffixes: { string } = { "K", "M", "B", "T", "Q" }
 
 --[=[
 	Shortens a large number to a readable format.
@@ -222,12 +221,9 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?):
 
 	tier = math.floor(tier)
 
-	local tierSuffix: string? = shortNumberSuffixes[tier]
-		or shortNumberSuffixes[#shortNumberSuffixes] -- Get tier or use highest tier if # too high
+	local tierSuffix: string? = shortNumberSuffixes[tier] or shortNumberSuffixes[#shortNumberSuffixes] -- Get tier or use highest tier if # too high
 
-	local _number: number? = tonumber(
-		string.format("%.2f", number / 10 ^ (3 * tier))
-	)
+	local _number: number? = tonumber(string.format("%.2f", number / 10 ^ (3 * tier)))
 
 	if not _number or not tierSuffix then
 		return ""
@@ -252,20 +248,17 @@ end
 	@param object Vector3 | CFrame | Instance
 	@return Vector3?
 ]=]
-function MathUtil.getVector3(object: Vector3 | CFrame | Attachment | BasePart | CFrameValue | Vector3Value | Camera): Vector3?
-	return (
-		typeof(object) == "Vector3" and object
-	) or (
-		typeof(object) == "CFrame" and object.Position
-	) or (
-		typeof(object) == "Instance" and (
-			(object:IsA("Attachment") and object.WorldPosition) or
-			(object:IsA("BasePart") and object.Position) or
-			(object:IsA("CFrameValue") and object.Value and object.Value.Position) or
-			(object:IsA("Vector3Value") and object.Value) or
-			(object:IsA("Camera") and object.CFrame.Position)
-		)
-	) or nil
+function MathUtil.getVector3(
+	object: Vector3 | CFrame | Attachment | BasePart | CFrameValue | Vector3Value | Camera
+): Vector3?
+	return (typeof(object) == "Vector3" and object)
+		or (typeof(object) == "CFrame" and object.Position)
+		or (typeof(object) == "Instance" and ((object:IsA("Attachment") and object.WorldPosition) or (object:IsA(
+			"BasePart"
+		) and object.Position) or (object:IsA("CFrameValue") and object.Value and object.Value.Position) or (object:IsA(
+			"Vector3Value"
+		) and object.Value) or (object:IsA("Camera") and object.CFrame.Position)))
+		or nil
 end
 
 --[=[
