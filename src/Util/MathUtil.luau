@@ -60,7 +60,7 @@ function MathUtil.formatInt(number: number, decimals: number?): string -- 1000.0
 	local numberString: string = tostring(number)
 
 	if not numberString then
-		error("Could not convert number to string")
+		return ""
 	end
 
 	local minus: string?, int: string?, fraction: string? = numberString:match("([-]?)(%d+)([.]?%d*)")
