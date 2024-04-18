@@ -52,7 +52,6 @@ export type AnimationConfig = {
 	Prepares a model for animation by welding all descendant parts to the primary part.
 
 	@param model Model -- The model to prepare
-	@return nil
 ]=]
 function Animation.prepareAnimatedModel(model)
 	if not model.PrimaryPart then
@@ -73,7 +72,6 @@ end
 	Sets the default animation configuration.
 
 	@param config AnimationConfig -- The default animation configuration
-	@return nil
 ]=]
 function Animation.setDefaultConfig(config: AnimationConfig): ()
 	assert(config and typeof(config) == "table", "Table must be passed to set the default animation config")
@@ -85,7 +83,6 @@ end
 	Animates an instance.
 
 	@param config AnimationConfig -- The animation configuration
-	@return nil
 ]=]
 function Animation.animate(config: AnimationConfig): ()
 	assert(config and typeof(config) == "table", "Missing animation configuration")

@@ -94,7 +94,7 @@ Promise.statusType = {
 	```
 
 	@param executor function -- The function to call when the promise is created.
-	@return Promise
+	@return PromiseType
 ]=]
 function Promise.new(executor: PromiseExecutor): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to make a promise")
@@ -246,7 +246,7 @@ end
 	```
 
 	@param executor function -- The function to call when the promise is fulfilled.
-	@return nil
+	@return PromiseType
 ]=]
 function Promise:andThen(executor: Callback): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to resolve")
@@ -267,7 +267,7 @@ end
 
 
 	@param callback function -- The function to call when the Promise is rejected.
-	@return nil
+	@return PromiseType
 ]=]
 function Promise:catch(callback: Callback): PromiseType
 	assert(typeof(callback) == "function", "Must give a function to catching errors")
@@ -292,7 +292,7 @@ end
 	```
 
 	@param callback function -- The function to call when the promise is fulfilled.
-	@return nil
+	@return PromiseType
 ]=]
 function Promise:finally(callback: Callback): PromiseType
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")

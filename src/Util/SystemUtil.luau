@@ -16,7 +16,6 @@ local SystemUtil = {}
 	@within Util
 	@param delay number
 	@param callback function
-	@return nil
 ]=]
 function SystemUtil.timeout(delay: number, callback: (number) -> boolean?)
 	assert(typeof(delay) == "number", "Util.timeout - delay must be a number")

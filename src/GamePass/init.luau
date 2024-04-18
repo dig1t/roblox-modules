@@ -64,15 +64,12 @@ end
 
 	@param player Player -- The player to prompt.
 	@param gamePassId number -- The game pass id.
-	@return nil
 ]=]
-function GamePass.prompt(player: Player, gamePassId: number): nil
+function GamePass.prompt(player: Player, gamePassId: number): ()
 	assert(typeof(player) == "Player", "GamePass.prompt - Missing player")
 	assert(typeof(gamePassId) == "number", "GamePass.prompt - Missing game pass id")
 
 	MarketplaceService:PromptGamePassPurchase(player, gamePassId)
-
-	return nil
 end
 
 -- This function fixes the caching issue with UserOwnsGamePassAsync
@@ -82,35 +79,35 @@ end
 --[=[
 	Watches for game pass purchases.
 	This allows the player to continue playing without having to re-join.
-
-	@return nil
 ]=]
-function GamePass.watch(): nil
+function GamePass.watch()
 	GamePass.unwatch() -- Prevent duplicating watchers
 
-	_maid:task(MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, passId, purchased)
-		if not purchased then
-			return
-		end
+	_maid:task(
+		MarketplaceService.PromptGamePassPurchaseFinished:Connect(
+			function(player: Player, passId: number, purchased: boolean)
+				if not purchased then
+					return
+				end
 
-		cache:set(`${player.UserId}-${passId}`, true)
+				cache:set(`${player.UserId}-${passId}`, true)
 
-		for _, callback in pairs(callbacks) do
-			callback(player, passId)
-		end
-	end))
+				for _, callback in pairs(callbacks) do
+					callback(player, passId)
+				end
+			end
+		)
+	)
 
 	_maid:task(Players.PlayerRemoving:Connect(function(player: Player)
 		for key: string, _owned: boolean in pairs(cache:keys()) do
 			if string.sub(key, 1, #tostring(player.UserId) + 1) == `{player.UserId}-` then
 				-- Remove cache record in case the ownership changed
-				-- while they were away and then re-join the game.
+				-- while they were away and then re-joined the game.
 				cache:delete(key)
 			end
 		end
 	end))
-
-	return nil
 end
 
 --[=[
@@ -123,7 +120,6 @@ end
 	```
 
 	@param callback (player: Player, passId: number) -> () -- The callback to trigger.
-	@return nil
 ]=]
 function GamePass.onPurchase(callback: (player: Player, passId: number) -> ())
 	callbacks[#callbacks + 1] = callback

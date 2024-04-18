@@ -289,14 +289,11 @@ end
 
 	@within Util
 	@param source { [any]: any }
-	@return nil
 ]=]
-function Util.printTable(source: { [any]: any }): nil
+function Util.printTable(source: { [any]: any })
 	assert(source and typeof(source) == "table", "Util.printTable - Missing source table")
 
 	print(source and HttpService:JSONEncode(source))
-
-	return nil
 end
 
 --[=[
@@ -315,7 +312,7 @@ end
 
 	@within Util
 	@param data { any }
-	@return nil
+	@return NumberSequence
 ]=]
 function Util.numberSequence(data: { { number } }): NumberSequence
 	assert(data and typeof(data) == "table", "Util.numberSequence - Missing data table")
@@ -544,13 +541,13 @@ end
 
 	@within Util
 	@param model Model
-	@return nil
+	@return Model?
 ]=]
 function Util.weldModel(model: Model): Model?
 	assert(typeof(model) == "Instance", "Util.weldModel - First argument must be an instance")
 
 	if not model.PrimaryPart then
-		return
+		return nil
 	end
 
 	for _, part: BasePart | Instance in pairs(model:GetDescendants()) do
@@ -572,9 +569,8 @@ end
 
 	@within Util
 	@param instance Instance
-	@return nil
 ]=]
-function Util.clearWelds(instance: Instance): nil
+function Util.clearWelds(instance: Instance)
 	assert(typeof(instance) == "Instance", "Util.clearWelds - First argument must be an instance")
 
 	for _, obj: WeldConstraint | Weld | Instance in pairs(instance:GetDescendants()) do
@@ -582,8 +578,6 @@ function Util.clearWelds(instance: Instance): nil
 			obj:Destroy()
 		end
 	end
-
-	return nil
 end
 
 --[=[
@@ -596,9 +590,8 @@ end
 
 	@within Util
 	@param instance Instance
-	@return nil
 ]=]
-function Util.breakJoints(instance: Instance): nil
+function Util.breakJoints(instance: Instance)
 	assert(typeof(instance) == "Instance", "Util.breakJoints - instance argument must be an instance")
 
 	for _, child: Instance in pairs(instance:GetDescendants()) do
@@ -606,8 +599,6 @@ function Util.breakJoints(instance: Instance): nil
 			child:Destroy()
 		end
 	end
-
-	return nil
 end
 
 -- Models

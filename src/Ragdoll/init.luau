@@ -37,9 +37,8 @@ Ragdoll.destroyTime = 5 -- Roblox default for characters
 	This should be run when the player's character is created or loaded.
 
 	@param character Model -- The player's character
-	@return nil
 ]=]
-function Ragdoll.setup(character: Model): nil -- Sets up the player's collision group
+function Ragdoll.setup(character: Model) -- Sets up the player's collision group
 	-- Insert collision groups if missing or if isCollidable changed
 	if not Ragdoll.isReady and not Ragdoll.isCollidable and RunService:IsServer() then
 		local playerGroupExists
@@ -88,8 +87,6 @@ function Ragdoll.setup(character: Model): nil -- Sets up the player's collision 
 	end
 
 	character:SetAttribute("RagdollReady", true)
-
-	return nil
 end
 
 -- Convert the player's character into a ragdoll
@@ -152,9 +149,8 @@ end
 	@param parent Instance? -- The parent of the ragdoll
 	@param destroyTime number? -- The time in seconds before the ragdoll is destroyed
 	@param keepRagdollInWorld boolean? -- Whether or not to keep the ragdoll in the world
-	@return nil
 ]=]
-function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: number?, keepRagdollInWorld: boolean?): nil
+function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: number?, keepRagdollInWorld: boolean?)
 	if not player.Character or not player.Character:GetAttribute("RagdollReady") then
 		return
 	end
@@ -206,8 +202,6 @@ function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: numb
 			end
 		end
 	end
-
-	return nil
 end
 
 return Ragdoll

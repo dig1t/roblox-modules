@@ -529,9 +529,8 @@ end
 	@param target { [any]: any } -- The table you want to insert the value into
 	@param value any -- The value you want to insert
 	@param condition nil | boolean | () -> boolean? -- The test condition
-	@return nil
 ]=]
-function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | (() -> boolean?)): nil
+function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | (() -> boolean?))
 	assert(typeof(target) == "table", "Target is missing")
 	assert(typeof(value) ~= "nil", "Value is missing")
 	assert(
@@ -544,8 +543,6 @@ function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil |
 	if canInsert == true then
 		target[#target + 1] = value
 	end
-
-	return nil
 end
 
 --[=[
@@ -709,11 +706,10 @@ end
 	@within Util
 	@param obj { [any]: any } | Instance -- The table or instance you want to remove the value from
 	@param removeTest number | { any } | (any, number, number) -> boolean -- The value or test function to remove
-	@return nil
 ]=]
-function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }): nil
+function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any })
 	-- Convert to a test function if the test value is a number or table
-	local test: (any, number, number) -> boolean
+	local test: (any, number, number) -> boolean?
 
 	if typeof(removeTest) == "number" then
 		test = function(_value, _newIndex, i)
@@ -727,6 +723,10 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 
 			return false
 		end
+	end
+
+	if not test then
+		return
 	end
 
 	local newIndex = 1
@@ -743,8 +743,6 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 			obj[i] = nil
 		end
 	end
-
-	return nil
 end
 
 return TableUtil
