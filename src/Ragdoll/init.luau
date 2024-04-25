@@ -90,7 +90,7 @@ function Ragdoll.setup(character: Model) -- Sets up the player's collision group
 end
 
 -- Convert the player's character into a ragdoll
-local function createRagdoll(character: Model): nil
+local function createRagdoll(character: Model)
 	if not character or not character.Parent then
 		return
 	end
@@ -136,8 +136,6 @@ local function createRagdoll(character: Model): nil
 			obj:Destroy()
 		end
 	end
-
-	return nil
 end
 
 --[=[

@@ -623,7 +623,7 @@ function Util.getMass(model: Model): number?
 	return mass
 end
 
-function Util.rotateModel(model: Model, angle: number): nil
+function Util.rotateModel(model: Model, angle: number)
 	local rotate: CFrame = CFrame.fromEulerAnglesXYZ(0, angle, 0)
 
 	for _, object: BasePart | Instance in pairs(model:GetChildren()) do
@@ -631,11 +631,9 @@ function Util.rotateModel(model: Model, angle: number): nil
 			object.CFrame = rotate * object.CFrame
 		end
 	end
-
-	return nil
 end
 
-function Util.moveModel(model: Model, to: CFrame): nil
+function Util.moveModel(model: Model, to: CFrame)
 	local firstPart: BasePart? = Util.getFirstPart(model)
 
 	if not firstPart then
@@ -668,7 +666,7 @@ function Util.moveModel(model: Model, to: CFrame): nil
 		)
 	end
 
-	return nil
+	return
 end
 
 -- Events
