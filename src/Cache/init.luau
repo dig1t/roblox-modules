@@ -109,7 +109,7 @@ function Cache.new(options: CacheOptions?): CacheType
 			end
 		end
 
-		return nil
+		return
 	end))
 
 	return self
@@ -202,7 +202,7 @@ function Cache:get(key: string): CacheEntry?
 		return cacheEntry.value
 	end
 
-	return nil
+	return
 end
 
 --[=[
@@ -233,7 +233,7 @@ function Cache:take(key: string): CacheEntry?
 		return cacheEntry.value
 	end
 
-	return nil
+	return
 end
 
 --[=[
@@ -347,7 +347,7 @@ function Cache:getTTL(key: string): number?
 		return cacheEntry.expires - Util.unix()
 	end
 
-	return nil
+	return
 end
 
 --[=[

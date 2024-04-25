@@ -134,7 +134,7 @@ function Promise:_run(): ()
 		self:reject(err)
 	end
 
-	return nil
+	return
 end
 
 --[=[
