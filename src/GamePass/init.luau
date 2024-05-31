@@ -27,20 +27,20 @@ local cache = Cache.new()
 	local hasPass = GamePass.has(player.UserId, 123456)
 	```
 
-	@param userId number -- The userId to check.
-	@param passId number -- The game pass id to check.
+	@param player Player -- The Player to check.
+	@param gamePassId number -- The game pass id to check.
 	@return boolean
 ]=]
-function GamePass.has(userId, passId): boolean
-	assert(userId, "GamePass.has - Missing user id")
-	assert(passId, "GamePass.has - Missing game pass id")
+function GamePass.has(player: Player, gamePassId: number): boolean
+	assert(typeof(player) == "Instance" and player:IsA("Player"), "GamePass.has - Missing Player object")
+	assert(typeof(gamePassId) == "number", "GamePass.has - Missing GamePass id")
 
-	local key = `${userId}-${passId}`
+	local key = `${player.UserId}-${gamePassId}`
 
 	local cached: boolean = cache:get(key)
 
 	if cache:get(key) == nil then
-		local success, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, userId, passId)
+		local success, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, gamePassId)
 
 		if success then
 			cache:set(key, res)
@@ -85,15 +85,15 @@ function GamePass.watch()
 
 	_maid:task(
 		MarketplaceService.PromptGamePassPurchaseFinished:Connect(
-			function(player: Player, passId: number, purchased: boolean)
+			function(player: Player, gamePassId: number, purchased: boolean)
 				if not purchased then
 					return
 				end
 
-				cache:set(`${player.UserId}-${passId}`, true)
+				cache:set(`${player.UserId}-${gamePassId}`, true)
 
 				for _, callback in pairs(callbacks) do
-					callback(player, passId)
+					callback(player, gamePassId)
 				end
 			end
 		)
@@ -114,14 +114,14 @@ end
 	Triggers a callback when a player purchases a game pass.
 
 	```lua
-	GamePass.onPurchase(function(player: Player, passId: number)
-		print(player.Name .. " purchased game pass " .. passId)
+	GamePass.onPurchase(function(player: Player, gamePassId: number)
+		print(player.Name .. " purchased game pass " .. gamePassId)
 	end)
 	```
 
-	@param callback (player: Player, passId: number) -> () -- The callback to trigger.
+	@param callback (player: Player, gamePassId: number) -> () -- The callback to trigger.
 ]=]
-function GamePass.onPurchase(callback: (player: Player, passId: number) -> ())
+function GamePass.onPurchase(callback: (player: Player, gamePassId: number) -> ())
 	callbacks[#callbacks + 1] = callback
 end
 
