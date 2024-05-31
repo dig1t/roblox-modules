@@ -9,11 +9,11 @@ dLib is a collection of modules and libraries for development in Roblox.
 ```toml
 Animation = "dig1t/animation@1.0.0"
 Badge = "dig1t/badge@1.0.0"
-Cache = "dig1t/cache@1.0.0"
+Cache = "dig1t/cache@1.0.2"
 GamePass = "dig1t/gamepass@1.0.1"
-Maid = "dig1t/maid@1.0.0"
+Maid = "dig1t/maid@1.0.1"
 Palette = "dig1t/palette@1.0.0"
-Promise = "dig1t/promise@1.0.0"
+Promise = "dig1t/promise@1.0.1"
 Ragdoll = "dig1t/ragdoll@1.0.1"
 Util = "dig1t/util@1.0.1"
 ```
