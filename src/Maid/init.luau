@@ -1,24 +1,21 @@
 local Util = require(script.Parent.Util)
 
-type MaidClass = {
-	__index: MaidClass,
-	new: () -> MaidType,
-	task: (self: MaidType, task: any, cleaner: () -> ()) -> string,
-	removeTask: (self: MaidType, taskToRemove: MaidTask) -> (),
-	clean: (self: MaidType) -> (),
-	destroy: (self: MaidType) -> (),
+--[=[
+	Task management class for cleaning up things for garbage collection.
 
-	MaidType: MaidType,
-}
+	@class Maid
+]=]
+local Maid = {}
+Maid.__index = Maid
 
-type MaidInstance = {
-	_tasks: { [string]: MaidTask },
-	[any]: any,
-}
+export type MaidType = typeof(setmetatable(
+	{} :: {
+		_tasks: { [string]: MaidTask },
+	},
+	Maid
+))
 
-export type MaidType = typeof(setmetatable({} :: MaidInstance, {} :: MaidClass))
-
-type MaidTask = {
+export type MaidTask = {
 	Connected: boolean?,
 	Disconnect: () -> (),
 	Destroy: (any) -> (),
@@ -26,14 +23,6 @@ type MaidTask = {
 	destructor: (task: any) -> (),
 	[any]: any,
 }? | () -> ()? | Instance
-
---[=[
-	Task management class for cleaning up things for garbage collection.
-
-	@class Maid
-]=]
-local Maid: MaidClass = {} :: MaidClass
-Maid.__index = Maid
 
 --[=[
 	Creates a new Maid instance.
@@ -45,7 +34,7 @@ Maid.__index = Maid
 	@return Maid
 ]=]
 function Maid.new(): MaidType
-	local self = setmetatable({}, Maid)
+	local self = setmetatable({}, Maid) :: MaidType
 
 	self._tasks = {}
 

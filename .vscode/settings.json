@@ -4,27 +4,24 @@
   "luau-lsp.sourcemap.autogenerate": true,
   "luau-lsp.sourcemap.enabled": true,
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
-  "luau-lsp.types.definitionFiles": ["testez.d.lua"],
+  "luau-lsp.types.definitionFiles": [
+    "testez.d.lua"
+  ],
   "luau-lsp.ignoreGlobs": [
     "**/_Index/**",
     "*.d.lua"
   ],
-
   // "testez-companion.runTestsOnSave": true,
-
   "editor.defaultFormatter": "EditorConfig.EditorConfig",
   "editor.formatOnSave": true,
-
   "[lua]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true
   },
-
   "[luau]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true
   },
-
   "files.exclude": {
     //"Packages": true,
     "build": true,
@@ -32,22 +29,17 @@
     "node_modules": true,
     "test-build.rbxl": true,
     "dev-build.rbxl": true,
-    "modules/*/*": true // only show that the submodules folder exists
   },
-
   // Ensure enough terminal history is preserved when running tests.
   "terminal.integrated.scrollback": 10000,
   "git.autoRepositoryDetection": "openEditors",
-
   "todo-tree.regex.regex": "--\\[\\[[\\s|\\n|\\r]*($TAGS)[\\s|\\n|\\r]*\\]\\]|--\\s*($TAGS)",
-
   "todo-tree.filtering.excludeGlobs": [
     "**/Packages/**",
     "placeAssets",
     "**/node_modules/**",
     "**/modules/**"
   ],
-
   "todo-tree.highlights.defaultHighlight": {
     "foreground": "#fff",
     "background": "#f00",

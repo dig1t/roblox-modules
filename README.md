@@ -58,7 +58,7 @@ Method 1:
 ```lua
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
-local myPromise: typeof(Promise.PromiseType) = Promise.new(function(resolve, reject)
+local myPromise: Promise.PromiseType = Promise.new(function(resolve, reject)
 	resolve("Hello World!")
 end)
 ```
@@ -67,7 +67,7 @@ Method 2:
 ```lua
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
-type PromiseType = typeof(Promise.PromiseType)
+type PromiseType = Promise.PromiseType
 
 local myPromise: PromiseType = Promise.new(function(resolve, reject)
 	resolve("Hello World!")
@@ -80,14 +80,14 @@ Method 1:
 ```lua
 local Maid = require(ReplicatedStorage.Packages.Maid)
 
-local myMaid: typeof(Maid.MaidType) = Maid.new()
+local myMaid: Maid.MaidType = Maid.new()
 ```
 
 Method 2:
 ```lua
 local Maid = require(ReplicatedStorage.Packages.Maid)
 
-type MaidType = typeof(Maid.MaidType)
+type MaidType = Maid.MaidType
 
 local myMaid: MaidType = Maid.new()
 ```
@@ -98,14 +98,14 @@ Method 1:
 ```lua
 local Cache = require(ReplicatedStorage.Packages.Cache)
 
-local myCache: typeof(Cache.CacheType) = Cache.new()
+local myCache: Cache.CacheType = Cache.new()
 ```
 
 Method 2:
 ```lua
 local Cache = require(ReplicatedStorage.Packages.Cache)
 
-type CacheType = typeof(Cache.CacheType)
+type CacheType = Cache.CacheType
 
 local myCache: CacheType = Cache.new()
 ```

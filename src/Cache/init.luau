@@ -1,9 +1,17 @@
 local Maid = require(script.Parent.Maid)
 local Util = require(script.Parent.Util)
 
-type CacheSet = (self: CacheType, key: string, value: any, ttl: number?) -> boolean?
+--[=[
+	Cache class for storing data in a cache instance.
 
-type CacheObject = {
+	Based off [node-cache](https://npmjs.com/package/node-cache).
+
+	@class Cache
+]=]
+local Cache = {}
+Cache.__index = Cache
+
+export type CacheObject = {
 	key: string,
 	value: any,
 	ttl: number?,
@@ -16,38 +24,26 @@ type CacheObject = {
 	.checkInterval? number -- The interval in seconds to check for expired cache entries. Defaults to 600.
 	.maxKeys? number -- The maximum amount of keys to store in the cache. 0 for unlimited. Defaults to 0.
 ]=]
-type CacheOptions = {
+export type CacheOptions = {
 	defaultTTL: number?,
 	checkInterval: number?,
 	maxKeys: number?,
 }
 
-type CachedClass = {
-	__index: CachedClass,
-	new: (options: CacheOptions?) -> CacheType,
-	set: (self: CacheType, key: string, value: any, ttl: number?) -> boolean?,
-	setMultiple: (self: CacheType, { CacheObject }) -> boolean?,
-	get: (self: CacheType, key: string) -> CacheEntry?,
-	take: (self: CacheType, key: string) -> CacheEntry?,
-	getMultiple: (self: CacheType, { string }) -> { [string]: any },
-	delete: (self: CacheType, key: string) -> number,
-	multipleDelete: (self: CacheType, { string }) -> number,
-	ttl: (self: CacheType, key: string, ttl: number) -> boolean?,
-	getTTL: (self: CacheType, key: string) -> number?,
-	keys: (self: CacheType) -> { string },
-	has: (self: CacheType, key: string) -> boolean,
-	destroy: (self: CacheType) -> (),
-
-	CacheType: CacheType,
+type CacheTypeOptions = {
+	defaultTTL: number,
+	checkInterval: number,
+	maxKeys: number,
 }
 
-type CachedInstance = {
-	_cache: { [string]: CacheEntry },
-	options: CacheOptions,
-	[any]: any,
-}
-
-export type CacheType = typeof(setmetatable({} :: CachedInstance, {} :: CachedClass))
+export type CacheType = typeof(setmetatable(
+	{} :: {
+		_cache: { [string]: CacheEntry },
+		options: CacheTypeOptions,
+		[any]: any,
+	},
+	Cache
+))
 
 --[=[
 	@within Cache
@@ -62,17 +58,7 @@ type CacheEntry = {
 	expires: number,
 }
 
---[=[
-	Cache class for storing data in a cache instance.
-
-	Based off [node-cache](https://npmjs.com/package/node-cache).
-
-	@class Cache
-]=]
-local Cache: CachedClass = {} :: CachedClass
-Cache.__index = Cache
-
-local defaultOptions = {
+local defaultOptions: CacheTypeOptions = {
 	defaultTTL = 6000,
 	checkInterval = 600,
 	maxKeys = 0,
@@ -93,7 +79,7 @@ function Cache.new(options: CacheOptions?): CacheType
 		)
 	end
 
-	local self = setmetatable({}, Cache)
+	local self = setmetatable({}, Cache) :: CacheType
 
 	self._cache = {}
 	self.options = options and Util.extend(options, defaultOptions) or defaultOptions

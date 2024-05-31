@@ -1,48 +1,4 @@
 --[=[
-	@within Promise
-	@type Callback (...any) -> ()
-]=]
-export type Callback = (...any) -> ()
-
-type PromiseClass = {
-	__index: PromiseClass,
-	statusType: {
-		pending: "pending",
-		fulfilled: "fulfilled",
-		rejected: "rejected",
-	},
-	new: (fn: (resolve: Callback, reject: Callback) -> ()) -> PromiseType,
-	resolve: (self: PromiseType, ...any) -> (),
-	reject: (self: PromiseType, any) -> (),
-	destroy: (self: PromiseType) -> (),
-	andThen: (self: PromiseType, fn: Callback) -> PromiseType,
-	catch: (self: PromiseType, fn: Callback) -> PromiseType,
-	finally: (self: PromiseType, fn: Callback) -> PromiseType,
-	_run: (self: PromiseType) -> (),
-
-	PromiseType: PromiseType,
-}
-
-type PromiseInstance = {
-	_fulfillmentCallbacks: { Callback },
-	_rejectionCallbacks: { Callback },
-	_onFinalizedCallback: Callback?,
-	_resultArgs: { [any]: any },
-	_executor: PromiseExecutor,
-	status: string?,
-	[any]: any,
-}
-export type PromiseType = typeof(setmetatable({} :: PromiseInstance, {} :: PromiseClass))
-
---[=[
-	@within Promise
-	@interface PromiseExecutor
-	@field resolve Callback -- Resolves the promise
-	@field reject Callback -- Rejects the promise
-]=]
-export type PromiseExecutor = (resolve: Callback, reject: Callback) -> nil
-
---[=[
 	Promise class for asynchronous operations.
 
 	```lua
@@ -68,8 +24,34 @@ export type PromiseExecutor = (resolve: Callback, reject: Callback) -> nil
 
 	@class Promise
 ]=]
-local Promise: PromiseClass = {} :: PromiseClass
+local Promise = {}
 Promise.__index = Promise
+
+--[=[
+	@within Promise
+	@type Callback (...any) -> ()
+]=]
+export type Callback = (...any) -> ()
+
+export type PromiseType = typeof(setmetatable(
+	{} :: {
+		_fulfillmentCallbacks: { Callback },
+		_rejectionCallbacks: { Callback },
+		_onFinalizedCallback: Callback?,
+		_resultArgs: { [any]: any },
+		_executor: PromiseExecutor,
+		status: string?,
+	},
+	Promise
+))
+
+--[=[
+	@within Promise
+	@interface PromiseExecutor
+	@field resolve Callback -- Resolves the promise
+	@field reject Callback -- Rejects the promise
+]=]
+export type PromiseExecutor = (resolve: Callback, reject: Callback) -> nil
 
 --[=[
 	Current status of the promise
@@ -99,7 +81,7 @@ Promise.statusType = {
 function Promise.new(executor: PromiseExecutor): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to make a promise")
 
-	local self = setmetatable({}, Promise)
+	local self = setmetatable({}, Promise) :: PromiseType
 
 	self._fulfillmentCallbacks = {}
 	self._rejectionCallbacks = {}
