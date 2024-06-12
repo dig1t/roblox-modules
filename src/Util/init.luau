@@ -34,7 +34,7 @@ Util.unix = DateUtil.unix
 Util.unixToClockFormat = DateUtil.unixToClockFormat
 
 -- MathUtil
-Util.formatInt = MathUtil.formatInt
+Util.formatNumber = MathUtil.formatNumber
 Util.getDistance = MathUtil.getDistance
 Util.getPartBottomSurface = MathUtil.getPartBottomSurface
 Util.getVector3 = MathUtil.getVector3

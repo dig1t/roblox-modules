@@ -45,8 +45,8 @@ end
 
 	#### Example:
 	```lua
-	Util.formatInt(1000) -- 1,000
-	Util.formatInt(1000.01) -- 1,000.01
+	Util.formatNumber(1000) -- 1,000
+	Util.formatNumber(1000.01) -- 1,000.01
 	```
 
 	@within Util
@@ -54,7 +54,7 @@ end
 	@param decimals number? -- The number of decimal places to round to. Defaults to 2.
 	@return string
 ]=]
-function MathUtil.formatInt(number: number, decimals: number?): string -- 1000.01 to 1,000.01
+function MathUtil.formatNumber(number: number, decimals: number?): string -- 1000.01 to 1,000.01
 	assert(typeof(number) == "number", "Number argument must be a number")
 
 	local numberString: string = tostring(number)
@@ -218,7 +218,7 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, 
 
 	-- Not necessary to shorten
 	if number < 1000 then
-		return MathUtil.formatInt(number, decimals or 3)
+		return MathUtil.formatNumber(number, decimals or 3)
 	end
 
 	number = math.floor(number)
@@ -229,7 +229,7 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, 
 	local tier: number = math.log10(number) / 3
 
 	if tier < (minimumTiers or 1) then -- If tier is less than minimumTiers, return the number
-		return MathUtil.formatInt(number * negative, decimals or 3)
+		return MathUtil.formatNumber(number * negative, decimals or 3)
 	end
 
 	tier = math.floor(tier)
@@ -257,7 +257,7 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, 
 		end
 	end
 
-	return `{MathUtil.formatInt(_number, 0)}{decimalText}{tierSuffix}`
+	return `{MathUtil.formatNumber(_number, 0)}{decimalText}{tierSuffix}`
 end
 
 --[=[
