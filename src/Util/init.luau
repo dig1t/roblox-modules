@@ -34,16 +34,17 @@ Util.unix = DateUtil.unix
 Util.unixToClockFormat = DateUtil.unixToClockFormat
 
 -- MathUtil
+Util.lerp = MathUtil.lerp
+Util.round = MathUtil.round
 Util.formatNumber = MathUtil.formatNumber
+Util.random = MathUtil.random
+Util.randomString = MathUtil.randomString
+Util.randomObj = MathUtil.randomObj
+Util.coinFlip = MathUtil.coinFlip
+Util.shortenNumber = MathUtil.shortenNumber
+Util.getVector3 = MathUtil.getVector3
 Util.getDistance = MathUtil.getDistance
 Util.getPartBottomSurface = MathUtil.getPartBottomSurface
-Util.getVector3 = MathUtil.getVector3
-Util.lerp = MathUtil.lerp
-Util.random = MathUtil.random
-Util.randomObj = MathUtil.randomObj
-Util.randomString = MathUtil.randomString
-Util.round = MathUtil.round
-Util.shortenNumber = MathUtil.shortenNumber
 
 -- PlayerUtil
 Util.getGroupRank = PlayerUtil.getGroupRank
@@ -65,9 +66,10 @@ Util.getFirstPart = SearchUtil.getFirstPart
 Util.getPartCount = SearchUtil.getPartCount
 
 -- SystemUtil
-Util.inTable = SystemUtil.inTable
-Util.interval = SystemUtil.interval
+Util.generateUUID = SystemUtil.generateUUID
 Util.timeout = SystemUtil.timeout
+Util.interval = SystemUtil.interval
+Util.inTable = SystemUtil.inTable
 
 -- TableUtil
 Util.assign = TableUtil.assign

@@ -133,8 +133,12 @@ function MathUtil.randomString(length: number?): string
 
 	local res: string = ""
 
+	if length < 1 then
+		return res
+	end
+
 	for _ = 1, (length or 18) do
-		local random: number = MathUtil.random(charsetLength)
+		local random: number = Random.new():NextInteger(1, charsetLength)
 		res = res .. charset:sub(random, random)
 	end
 
@@ -163,10 +167,26 @@ function MathUtil.randomObj(obj: { [any]: any } | Instance): any
 	end
 
 	if typeof(obj) == "table" then
-		return obj[MathUtil.random(1, #obj)]
+		return obj[Random.new():NextInteger(1, #obj)]
 	end
 
 	return
+end
+
+--[=[
+	Returns a random boolean.
+
+	#### Example:
+	```lua
+	Util.coinFlip() -- true
+	Util.coinFlip() -- false
+	```
+
+	@within Util
+	@return boolean
+]=]
+function MathUtil.coinFlip(): boolean
+	return Random.new():NextNumber() > 0.5
 end
 
 local shortNumberSuffixes: { string } =
