@@ -1,6 +1,17 @@
+local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
 local SystemUtil = {}
+
+--[=[
+	Generates a UUID/GUID (Universally Unique Identifier) random string using HttpService:GenerateGUID.
+
+	@within Util
+	@return string
+]=]
+function SystemUtil.generateUUID(): string
+	return HttpService:GenerateGUID(false)
+end
 
 --[=[
 	Runs a function after `delay` seconds.
