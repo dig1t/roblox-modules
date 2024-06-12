@@ -63,22 +63,25 @@ function MathUtil.formatInt(number: number, decimals: number?): string -- 1000.0
 		return ""
 	end
 
-	local minus: string?, int: string?, fraction: string? = numberString:match("([-]?)(%d+)([.]?%d*)")
+	local negative: string?, int: string?, _decimals: string? = numberString:match("([-]?)(%d+)([.]?%d*)")
 
-	if not minus or not int or not fraction then
+	if not negative or not int or not _decimals then
 		return ""
 	end
 
-	if #fraction > 0 then
-		fraction = fraction:sub(1, (decimals or 2) + 1)
-		if #fraction == 1 then
-			fraction = ""
+	-- Add decimal places
+	if decimals and #_decimals > 0 then
+		_decimals = _decimals:sub(1, decimals + 1)
+
+		-- If the only result is ".", remove it
+		if #_decimals == 1 then
+			_decimals = ""
 		end
 	end
 
 	int = string.gsub(int:reverse(), "(%d%d%d)", "%1,"):reverse():gsub("^,", "")
 
-	return `{minus}{int}{fraction}`
+	return `{negative}{int}{_decimals}`
 end
 
 --[=[
@@ -166,7 +169,8 @@ function MathUtil.randomObj(obj: { [any]: any } | Instance): any
 	return
 end
 
-local shortNumberSuffixes: { string } = { "K", "M", "B", "T", "Q" }
+local shortNumberSuffixes: { string } =
+	{ "K", "M", "B", "T", "Q", "QQ", "S", "SS", "O", "N", "D", "UN", "DD", "TD", "QD" }
 
 --[=[
 	Shortens a large number to a readable format.
@@ -200,15 +204,24 @@ local shortNumberSuffixes: { string } = { "K", "M", "B", "T", "Q" }
 	@within Util
 	@param number number | string
 	@param minimumTiers number? -- The minimum number of tiers to shorten. Defaults to 1.
+	@param decimals number? -- The number of decimal places to round to. Defaults to 1.
 	@return string
 ]=]
-function MathUtil.shortenNumber(number: number | string, minimumTiers: number?): string
+function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, decimals: number?): string
 	assert(typeof(number) == "number" or typeof(number) == "string", "Number argument must be a number or string")
 	assert(typeof(minimumTiers) == "number" or minimumTiers == nil, "MinimumTiers argument must be a number or nil")
+	assert(typeof(decimals) == "number" or decimals == nil, "Decimals argument must be a number or nil")
 
 	number = typeof(number) == "string" and tonumber(number) or number
 
 	assert(typeof(number) == "number", "Number argument be a number or string that can be converted to a number")
+
+	-- Not necessary to shorten
+	if number < 1000 then
+		return MathUtil.formatInt(number, decimals or 3)
+	end
+
+	number = math.floor(number)
 
 	local negative: number = math.abs(number) == number and 1 or -1
 	number = math.abs(number)
@@ -216,7 +229,7 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?):
 	local tier: number = math.log10(number) / 3
 
 	if tier < (minimumTiers or 1) then -- If tier is less than minimumTiers, return the number
-		return MathUtil.formatInt(number * negative, 0)
+		return MathUtil.formatInt(number * negative, decimals or 3)
 	end
 
 	tier = math.floor(tier)
@@ -229,7 +242,22 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?):
 		return ""
 	end
 
-	return (MathUtil.formatInt(_number, 0)) .. tierSuffix
+	local decimalText: string = ""
+
+	if not decimals then
+		decimals = 2
+	end
+
+	if decimals then
+		local formattedNumber = tostring(_number)
+		local decimalIndex = formattedNumber:find("%.")
+
+		if decimalIndex then
+			decimalText = "." .. formattedNumber:sub(decimalIndex + 1, decimalIndex + decimals)
+		end
+	end
+
+	return `{MathUtil.formatInt(_number, 0)}{decimalText}{tierSuffix}`
 end
 
 --[=[
