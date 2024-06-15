@@ -125,7 +125,7 @@ local charsetLength: number = #charset
 	```
 
 	@within Util
-	@param length number? -- The length of the string. Defaults to 18.
+	@param length number? -- Length of the string (defaults to 18)
 	@return string
 ]=]
 function MathUtil.randomString(length: number?): string
@@ -133,7 +133,7 @@ function MathUtil.randomString(length: number?): string
 
 	local res: string = ""
 
-	if length < 1 then
+	if length and length < 1 then
 		return res
 	end
 
