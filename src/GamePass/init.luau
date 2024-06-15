@@ -84,7 +84,7 @@ end
 function GamePass.watch()
 	GamePass.unwatch() -- Prevent duplicating watchers
 
-	_maid:task(
+	_maid:Task(
 		MarketplaceService.PromptGamePassPurchaseFinished:Connect(
 			function(player: Player, gamePassId: number, purchased: boolean)
 				if not purchased then
@@ -100,7 +100,7 @@ function GamePass.watch()
 		)
 	)
 
-	_maid:task(Players.PlayerRemoving:Connect(function(player: Player)
+	_maid:Task(Players.PlayerRemoving:Connect(function(player: Player)
 		for key: Cache.Key, _owned: boolean in pairs(cache:Keys()) do
 			if string.sub(key, 1, #tostring(player.UserId) + 1) == `{player.UserId}-` then
 				-- Remove cache record in case the ownership changed
