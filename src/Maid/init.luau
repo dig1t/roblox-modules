@@ -19,9 +19,7 @@ export type MaidTask = {
 	Connected: boolean?,
 	Disconnect: () -> (),
 	Destroy: (any) -> (),
-	destroy: (any) -> (),
-	destructor: (task: any) -> (),
-	[any]: any,
+	Destructor: (task: any) -> (),
 }? | () -> ()? | Instance
 
 --[=[
@@ -31,7 +29,7 @@ export type MaidTask = {
 	local maid = Maid.new()
 	```
 
-	@return Maid
+	@return MaidType
 ]=]
 function Maid.new(): MaidType
 	local self = setmetatable({}, Maid) :: MaidType
@@ -47,7 +45,7 @@ end
 	```lua
 	local maid = Maid.new()
 
-	maid:task(function()
+	maid:Task(function()
 		print("Hello world!")
 	end)
 	```
@@ -55,20 +53,20 @@ end
 	Multiple types of tasks can be added to the Maid instance.
 
 	```lua
-	local maid = Maid.new()
+	local maid: Maid.MaidType = Maid.new()
 
 	-- Functions
-	maid:task(function()
+	maid:Task(function()
 		print("Hello world!")
 	end)
 
 	-- RBXScriptConnections
-	maid:task(workspace.ChildAdded:Connect(function()
+	maid:Task(workspace.ChildAdded:Connect(function()
 		print("Hello world!")
 	end))
 
 	-- Instances with "Destroy" methods
-	maid:task(Instance.new("Part"))
+	maid:Task(Instance.new("Part"))
 
 	-- Packages with "Destroy", "destroy", or "destructor" methods
 	local instance = Class.new({
@@ -78,13 +76,13 @@ end
 		end
 	})
 
-	maid:task(instance)
+	maid:Task(instance)
 	```
 
 	@param _task any -- The task to add.
 	@return string -- The task id.
 ]=]
-function Maid:task(_task: MaidTask): string
+function Maid.Task(self: MaidType, _task: MaidTask): string
 	local taskId = Util.randomString(14)
 
 	self._tasks[taskId] = _task
@@ -92,22 +90,27 @@ function Maid:task(_task: MaidTask): string
 	return taskId
 end
 
+--- Alias for Maid.Task
+function Maid.AddTask(self: MaidType, _task: MaidTask): string
+	return self:Task(_task)
+end
+
 --[=[
 	Removes a task from the Maid instance.
 
 	```lua
-	local maid = Maid.new()
+	local maid: Maid.MaidType = Maid.new()
 
-	local taskId = maid:task(function()
+	local taskId = maid:Task(function()
 		print("Hello world!")
 	end)
 
-	maid:removeTask(taskId)
+	maid:RemoveTask(taskId)
 	```
 
 	@param taskToRemove any -- The task item to remove.
 ]=]
-function Maid:removeTask(taskToRemove: string | MaidTask): ()
+function Maid.RemoveTask(self: MaidType, taskToRemove: string | MaidTask): ()
 	-- Remove by task id
 	if typeof(taskToRemove) == "string" then
 		self._tasks[taskToRemove] = nil
@@ -116,7 +119,7 @@ function Maid:removeTask(taskToRemove: string | MaidTask): ()
 	end
 
 	-- Remove by task
-	for taskId, _task: MaidTask in pairs(self._tasks) do
+	for taskId: string, _task: MaidTask in pairs(self._tasks) do
 		if _task == taskToRemove then
 			self._tasks[taskId] = nil
 		end
@@ -127,16 +130,16 @@ end
 	Cleans up all tasks in the Maid instance.
 
 	```lua
-	local maid: typeof(Maid.MaidType) = Maid.new()
+	local maid: Maid.MaidType = Maid.new()
 
-	maid:task(function()
+	maid:Task(function()
 		print("Hello world!")
 	end)
 
-	maid:clean() -- Hello world!
+	maid:Clean() -- Hello world!
 	```
 ]=]
-function Maid:clean(): ()
+function Maid.Clean(self: MaidType)
 	for taskId, _task: MaidTask in pairs(self._tasks) do
 		if typeof(_task) == "function" then
 			_task() -- Run cleaning _task
@@ -144,21 +147,22 @@ function Maid:clean(): ()
 			_task:Disconnect()
 		elseif typeof(_task) == "Instance" then
 			_task:Destroy()
-		elseif _task and _task.Destroy then
-			-- Type workaround for non-roblox instances with Destroy methods
-			local customDestroy = _task.Destroy
-
-			customDestroy(_task)
-		elseif _task and _task.destroy then
-			_task:destroy()
 		elseif typeof(_task) == "table" then
-			if _task.destructor then
-				_task.destructor(_task.task)
+			-- Type workaround for non-roblox instances with Destroy methods
+			if _task.Destroy then
+				_task:Destroy()
+			elseif _task.Destructor then
+				_task:Destructor()
 			end
 		end
 
 		self._tasks[taskId] = nil
 	end
+end
+
+--- Alias for Maid.Clean
+function Maid.Cleanup(self: MaidType)
+	self:Clean()
 end
 
 --[=[
@@ -167,16 +171,16 @@ end
 	```lua
 	local maid = Maid.new()
 
-	maid:task(function()
+	maid:Task(function()
 		print("Hello world!")
 	end)
 
-	maid:destroy()
+	maid:Destroy()
 
-	maid:clean() -- method no longer exists
+	maid:Clean() -- method no longer exists
 	```
 ]=]
-function Maid:destroy(): ()
+function Maid.Destroy(self: MaidType)
 	for key: any, _ in pairs(self) do
 		self[key] = nil
 	end

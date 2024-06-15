@@ -37,13 +37,14 @@ function GamePass.has(player: Player, gamePassId: number): boolean
 
 	local key = `${player.UserId}-${gamePassId}`
 
-	local cached: boolean = cache:get(key)
+	local cached: boolean = cache:Get(key)
 
-	if cache:get(key) == nil then
-		local success, res = pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, gamePassId)
+	if cache:Get(key) == nil then
+		local success, res =
+			pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, gamePassId)
 
 		if success then
-			cache:set(key, res)
+			cache:Set(key, res)
 
 			return res
 		else
@@ -90,7 +91,7 @@ function GamePass.watch()
 					return
 				end
 
-				cache:set(`${player.UserId}-${gamePassId}`, true)
+				cache:Set(`${player.UserId}-${gamePassId}`, true)
 
 				for _, callback in pairs(callbacks) do
 					callback(player, gamePassId)
@@ -100,11 +101,11 @@ function GamePass.watch()
 	)
 
 	_maid:task(Players.PlayerRemoving:Connect(function(player: Player)
-		for key: string, _owned: boolean in pairs(cache:keys()) do
+		for key: Cache.Key, _owned: boolean in pairs(cache:Keys()) do
 			if string.sub(key, 1, #tostring(player.UserId) + 1) == `{player.UserId}-` then
 				-- Remove cache record in case the ownership changed
 				-- while they were away and then re-joined the game.
-				cache:delete(key)
+				cache:Delete(key)
 			end
 		end
 	end))
@@ -129,7 +130,7 @@ end
 	Stops watching for game pass purchases.
 ]=]
 function GamePass.unwatch()
-	_maid:clean()
+	_maid:Clean()
 end
 
 return GamePass

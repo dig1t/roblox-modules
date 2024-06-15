@@ -69,11 +69,11 @@ function Badge.has(player: Player | number, badgeName: string): boolean?
 	local userId: number = _player.UserId
 
 	local cacheKey: string = `${userId}-${badgeName}`
-	local cachedResult: boolean? = cache:get(cacheKey)
+	local cachedResult: boolean? = cache:Get(cacheKey)
 
 	if cachedResult == nil then
 		cachedResult = BadgeService:UserHasBadgeAsync(userId, badges[badgeName])
-		cache:set(cacheKey, cachedResult)
+		cache:Set(cacheKey, cachedResult)
 	end
 
 	return cachedResult
@@ -110,7 +110,7 @@ function Badge.award(player: Player | number, badgeName: string): boolean
 	local success = pcall(BadgeService.AwardBadge, BadgeService, userId, badges[badgeName])
 
 	if success then
-		cache:set(`${userId}-${badgeName}`, true)
+		cache:Set(`${userId}-${badgeName}`, true)
 
 		return true
 	end
