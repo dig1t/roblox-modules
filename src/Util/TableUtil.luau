@@ -14,6 +14,33 @@ local valueClasses = {
 local TableUtil = {}
 
 --[=[
+	Unsafely sets a key in a table or Instance without erroring.
+
+	Returns a boolean indicating if the operation was successful.
+
+	#### Example:
+	```lua
+	Util.unsafeSet(Workspace.Player1.Humanoid, "Health", 100)
+	```
+
+	@within Util
+	@param object Instance | { [any]: any }
+	@param key any
+	@param value any
+	@return boolean -- Whether the operation was successful
+]=]
+function TableUtil.unsafeSet(object: Instance | { [any]: any }, key: any, value: any): boolean
+	assert(
+		typeof(object) == "Instance" or typeof(object) == "table",
+		"Util.unsafeSet - object must be an Instance or table"
+	)
+
+	return pcall(function()
+		(object :: any)[key] = value
+	end)
+end
+
+--[=[
 	Flips the table's keys with its values.
 	If `mergeDuplicates` is `true`, All values will be stored in a table at the key's index, instead of overwriting them.
 
