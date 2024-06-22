@@ -25,7 +25,7 @@ export type MaidTask = {
 --[=[
 	Creates a new Maid instance.
 
-	```lua
+	```luau
 	local maid = Maid.new()
 	```
 
@@ -42,7 +42,7 @@ end
 --[=[
 	Adds a task to the Maid instance.
 
-	```lua
+	```luau
 	local maid = Maid.new()
 
 	maid:Task(function()
@@ -52,7 +52,7 @@ end
 
 	Multiple types of tasks can be added to the Maid instance.
 
-	```lua
+	```luau
 	local maid: Maid.MaidType = Maid.new()
 
 	-- Functions
@@ -98,7 +98,7 @@ end
 --[=[
 	Removes a task from the Maid instance.
 
-	```lua
+	```luau
 	local maid: Maid.MaidType = Maid.new()
 
 	local taskId = maid:Task(function()
@@ -129,7 +129,7 @@ end
 --[=[
 	Cleans up all tasks in the Maid instance.
 
-	```lua
+	```luau
 	local maid: Maid.MaidType = Maid.new()
 
 	maid:Task(function()
@@ -168,7 +168,7 @@ end
 --[=[
 	Destroys the Maid instance.
 
-	```lua
+	```luau
 	local maid = Maid.new()
 
 	maid:Task(function()

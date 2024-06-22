@@ -4,7 +4,7 @@ local SearchUtil = {}
 	Gets the number of parts in the given instance
 
 	Example:
-	```lua
+	```luau
 	Util.getPartCount(game.Workspace.NPC) -- 5
 	```
 
@@ -35,7 +35,7 @@ end
 	Gets all parts in the given instance
 
 	Example:
-	```lua
+	```luau
 	Util.getDescendantParts(game.Workspace.LightPost) -- { [1] = Light, [2] = PostMeshPart }
 	```
 
@@ -63,7 +63,7 @@ end
 	It will stop  if no ancestor is found.
 
 	Example 1:
-	```lua
+	```luau
 	detector.Touched:Connect(function(part: BasePart)
 		local humanoid = Util.getAncestor(part, "Humanoid")
 
@@ -74,7 +74,7 @@ end
 	```
 
 	Example 2:
-	```lua
+	```luau
 	detector.Touched:Connect(function(part: BasePart)
 		local bot: Model? = Util.getAncestor(part, function(instance: Instance)
 			return instance:HasTag("NPC")
@@ -131,19 +131,19 @@ end
 	By default `maxDepth` is 1. Only the children of the given node will be searched.
 
 	Function condition example:
-	```lua
+	```luau
 	local player: Player? = Util.find(game.Players, function(player: Player)
 		return player.Name == "Player1"
 	end)
 	```
 
 	Instance example:
-	```lua
+	```luau
 	local player: Player? = Util.find(game.Players, "Player1")
 	```
 
 	Filtering example:
-	```lua
+	```luau
 	local NPCs = {
 		{ Name = "NPC1" },
 		{ Name = "NPC1" },
@@ -156,7 +156,7 @@ end
 	```
 
 	Advanced example:
-	```lua
+	```luau
 	local NPCs = {
 		{ Name = "NPC1", Health = 0 },
 		{ Name = "NPC1", Health = 20 },
@@ -249,7 +249,7 @@ end
 	A single child name can be passed as a string, or multiple child names can be passed as a table.
 
 	Table of children example:
-	```lua
+	```luau
 	Util.exists(
 		game.Workspace.Player1,
 		{ "Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" }
@@ -257,12 +257,12 @@ end
 	```
 
 	String child example:
-	```lua
+	```luau
 	Util.exists(game.Workspace.Player1, "Head") -- true
 	```
 
 	Table of children in a table node example:
-	```lua
+	```luau
 	Util.exists(
 		game.Workspace.Player1:GetChildren(), -- table
 		{ "Head", "Torso" }
@@ -270,7 +270,7 @@ end
 	```
 
 	Table node and string child example:
-	```lua
+	```luau
 	Util.exists(
 		game.Workspace.Player1:GetChildren(), -- table
 		"HumanoidRootPart"
@@ -330,7 +330,7 @@ end
 	Returns the first part in the given instance
 
 	Example:
-	```lua
+	```luau
 	Util.getFirstPart(game.Workspace.Player1) -- Head
 	```
 

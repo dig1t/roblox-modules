@@ -19,7 +19,7 @@ local TableUtil = {}
 	Returns a boolean indicating if the operation was successful.
 
 	#### Example:
-	```lua
+	```luau
 	Util.unsafeSet(Workspace.Player1.Humanoid, "Health", 100)
 	```
 
@@ -45,7 +45,7 @@ end
 	If `mergeDuplicates` is `true`, All values will be stored in a table at the key's index, instead of overwriting them.
 
 	#### Example:
-	```lua
+	```luau
 	Util.flip({ a = 1, b = 2 }) -- { [1] = "a", [2] = "b" }
 	Util.flip({ a = 1, b = 2 }, true) -- { [1] = { "a" }, [2] = { "b" } }
 
@@ -89,7 +89,7 @@ end
 	Maps a table or instance to a new table.
 
 	#### Example:
-	```lua
+	```luau
 	Util.map({ 1, 2, 3 }, function(v)
 		return v * 2
 	end) -- { 2, 4, 6 }
@@ -139,7 +139,7 @@ end
 	Filter a table or instance to a new table.
 
 	#### Example:
-	```lua
+	```luau
 	local noTwo = Util.filter({ 1, 2, 3 }, function(value)
 		return value ~= 2
 	end) -- { 1, 3 }
@@ -182,7 +182,7 @@ end
 	Includes a second argument as a function to filter the table with.
 
 	#### Example:
-	```lua
+	```luau
 	Util.mapIndex({ 1, 2, 3 }) -- { [1] = 1, [2] = 2, [3] = 3 }
 
 	Util.mapIndex({ 1, 2, 3 }, function(v)
@@ -230,7 +230,7 @@ end
 	Trims leading and trailing whitespace from a string.
 
 	#### Example:
-	```lua
+	```luau
 	Util.trimWhitespace("  Hello, world!  ") -- "Hello, world!"
 	```
 
@@ -248,7 +248,7 @@ end
 	Trims leading whitespace from a string.
 
 	#### Example:
-	```lua
+	```luau
 	Util.trimLeadingWhitespace("  Hello, world!") -- "Hello, world!"
 	```
 
@@ -266,7 +266,7 @@ end
 	Trims trailing whitespace from a string.
 
 	#### Example:
-	```lua
+	```luau
 	Util.trimTrailingWhitespace("Hello, world!  ") -- "Hello, world!"
 	```
 
@@ -289,7 +289,7 @@ end
 	Setting `trim` to `false` will result in whitespace not being trimmed from each chunk
 
 	#### Example:
-	```lua
+	```luau
 	Util.split("Hello, world!") -- { "Hello,", "world!" }
 	Util.split("Hello, world!", ", ") -- { "Hello", "world!" }
 	Util.split("Hello, world!", ",", nil, false) -- { "Hello", " world!" } -- no whitespace is trimmed
@@ -385,7 +385,7 @@ end]]
 	The string is joined using a separator, which defaults to a comma.
 
 	#### Example:
-	```lua
+	```luau
 	Util.join({"Hello", "world!"}) -- "Hello,world!"
 	Util.join({"Hello", "world!"}, ", ") -- "Hello, world!"
 	```
@@ -425,14 +425,14 @@ end
 	Extends a table with one or more tables.
 
 	#### Example:
-	```lua
+	```luau
 	Util.extend({ a = 1 }, { b = 2 }, { c = 3 }) -- { a = 1, b = 2, c = 3 }
 	Util.extend({ a = 1 }, { a = 2 }, { a = 3 }) -- { a = 3 } -- Last argument overwrites previous arguments
 	Util.extend({ a = 1 }, { a = 2 }, { a = 3 }, true) -- Error: 4th argument must be a table
 	```
 
 	#### Config override example:
-	```lua
+	```luau
 	local function getDefaultConfig()
 		return {
 			health = 100
@@ -495,7 +495,7 @@ end
 	Gets a value from a table or Instance using a path.
 
 	#### Example:
-	```lua
+	```luau
 	Util.treePath({ a = { b = { c = 1 } } }, "a.b.c") -- 1
 	Util.treePath({ a = { b = { c = 1 } } }, "a.b") -- { c = 1 }
 	Util.treePath(game.Workspace, "House.Door") -- Door instance
@@ -544,7 +544,7 @@ end
 	Inserts a value into a table if the test condition is true.
 
 	#### Example:
-	```lua
+	```luau
 	Util.insertIf({ 1, 2, 3 }, 4, true) -- { 1, 2, 3, 4 }
 	Util.insertIf({ 1, 2, 3 }, 4, false) -- { 1, 2, 3 }
 	Util.insertIf({ 1, 2, 3 }, 4, function()
@@ -576,7 +576,7 @@ end
 	Collects all children of an instance into a table.
 
 	#### Example:
-	```lua
+	```luau
 	Util.instanceChildrenToTable(game.Workspace) -- { Part = Instance, Part2 = Instance }
 	Util.instanceChildrenToTable(game.ReplicatedStorage.Config) -- { Config1 = CFrameValue, Config2 = StringValue }
 	```
@@ -601,7 +601,7 @@ end
 	Returns the total amount of values in a table.
 
 	#### Example:
-	```lua
+	```luau
 	Util.tableLength({ 1, 2, 3 }) -- 3
 	Util.tableLength({ a = 1, b = 2, c = 3 }) -- 3
 	```
@@ -626,7 +626,7 @@ end
 	Returns a random index from a table or instance.
 
 	#### Example:
-	```lua
+	```luau
 	Util.tableRandomIndex({ 1, 2, 3 }) -- 2
 	Util.tableRandomIndex({ a = 1, b = 2, c = 3 }) -- "b"
 	```
@@ -681,12 +681,12 @@ end
 	  - Origin (CFrameValue), Value = CFrame.new(0, 1, 0)
 	  - WelcomeMessage (StringValue), Value = "Hello, world!"
 
-	```lua
+	```luau
 	Util.makeConfigFromValues(game.ReplicatedStorage.Config)
 	```
 
 	Result:
-	```lua
+	```luau
 	{
 		Origin = CFrame.new(0, 1, 0),
 		WelcomeMessage = "Hello, world!"
@@ -722,7 +722,7 @@ end
 	Removes a value from a table or instance.
 
 	#### Example:
-	```lua
+	```luau
 	Util.tableRemove({ 1, 2, 3 }, 2) -- { 1, 3 }
 	Util.tableRemove({ 1, 2, 3 }, { 2, 3 }) -- { 1 }
 	Util.tableRemove({ 1, 2, 3 }, function(value, newIndex, i)

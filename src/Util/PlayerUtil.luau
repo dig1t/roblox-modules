@@ -9,7 +9,7 @@ local PlayerUtil = {}
 	Gets the group rank of a player.
 
 	#### Example:
-	```lua
+	```luau
 	Util.getGroupRank(game.Players.LocalPlayer, 1) -- 255
 	```
 
@@ -49,7 +49,7 @@ end
 	Checks if a player is the creator of the game.
 
 	#### Example:
-	```lua
+	```luau
 	Util.isCreator(game.Players.LocalPlayer) -- true
 	```
 
@@ -79,7 +79,7 @@ PlayerUtil.userLevel = {
 	Gets the user level of a player.
 
 	#### Example:
-	```lua
+	```luau
 	Util.getUserLevel(game.Players.LocalPlayer) -- 0
 	Util.getUserLevel(game.Players.GameDeveloper) -- 4
 	Util.getUserLevel(game.Players.PremiumPlayer) -- 4
@@ -115,7 +115,7 @@ end
 	Gets the humanoid object from a player's character part, character model, player object, or humanoid.
 
 	#### Example:
-	```lua
+	```luau
 	Util.getHumanoid(game.Players.LocalPlayer) -- Humanoid
 	```
 
@@ -142,7 +142,7 @@ end
 	If no humanoid is found, it will return nil
 
 	#### Example:
-	```lua
+	```luau
 	Util.isAlive(game.Players.LocalPlayer) -- true
 	Util.isAlive(game.Workspace.Zombie) -- false
 	Util.isAlive(game.Workspace.Part) -- nil, but will throw a warning
@@ -162,7 +162,7 @@ end
 	Checks if an object has a humanoid.
 
 	#### Example:
-	```lua
+	```luau
 	Util.hasHumanoid(game.Players.LocalPlayer) -- true
 	Util.hasHumanoid(game.Workspace.Zombie) -- true
 	```
@@ -179,7 +179,7 @@ end
 	Gets the player object from a BasePart.
 
 	#### Example:
-	```lua
+	```luau
 	Util.getPlayerFromInstance(game.Workspace.Part) -- Player
 	```
 

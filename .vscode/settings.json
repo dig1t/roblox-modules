@@ -5,19 +5,15 @@
   "luau-lsp.sourcemap.enabled": true,
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
   "luau-lsp.types.definitionFiles": [
-    "testez.d.lua"
+    "testez.d.luau"
   ],
   "luau-lsp.ignoreGlobs": [
     "**/_Index/**",
-    "*.d.lua"
+    "*.d.luau"
   ],
   // "testez-companion.runTestsOnSave": true,
   "editor.defaultFormatter": "EditorConfig.EditorConfig",
   "editor.formatOnSave": true,
-  "[lua]": {
-    "editor.defaultFormatter": "JohnnyMorganz.stylua",
-    "editor.formatOnSave": true
-  },
   "[luau]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true

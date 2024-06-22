@@ -97,7 +97,7 @@ Util.trimWhitespace = TableUtil.trimWhitespace
 	Injects a module into the Util module.
 
 	Example:
-	```lua
+	```luau
 	-- Before
 	Util.requiredFunction() -- error: "Function not found"
 
@@ -217,7 +217,7 @@ local valueObjectClassNames: { [string]: string } = {
 	Roblox has a built-in [ValueBase](https://create.roblox.com/docs/reference/engine/classes/ValueBase) type, but it does not have a `Value` property.
 
 	#### Example:
-	```lua
+	```luau
 	local value: ValueBaseType = Instance.new("BoolValue")
 	```
 
@@ -282,7 +282,7 @@ end
 	Prints a JSON string to the console using HttpService.
 
 	Example:
-	```lua
+	```luau
 	Util.printTable({
 		foo = "bar";
 		bar = "foo";
@@ -302,7 +302,7 @@ end
 	Create a new NumberSequence from a table of keypoints.
 
 	Example:
-	```lua
+	```luau
 	local gradient: ColorSequence = Util.colorSequence({
 		{ 0, Color3.fromRGB(255, 0, 0) };
 		{ 1, Color3.fromRGB(0, 255, 0) };
@@ -369,7 +369,7 @@ end
 	Returns an asset URI.
 
 	Example:
-	```lua
+	```luau
 	Util.getAssetURI("rbxassetid://1234567890") -- rbxassetid://1234567890
 	Util.getAssetURI(1234567890) -- rbxassetid://1234567890
 
@@ -413,7 +413,7 @@ end
 	It will return a tuple of (success: boolean, result: any, tries: number).
 
 	Example:
-	```lua
+	```luau
 	local success: boolean, result: any, tries: number = Util.attempt(function()
 		return game:GetService("HttpService"):GetAsync("https://example.com")
 	end)
@@ -459,7 +459,7 @@ end
 	Simple try catch function.
 
 	Example:
-	```lua
+	```luau
 	local result: any = Util.try(function()
 		return "Hello world!"
 	end, function(err)
@@ -470,7 +470,7 @@ end
 	```
 
 	Example:
-	```lua
+	```luau
 	local result: any = Util.try(function()
 		error("Something went wrong")
 	end, function(err)
@@ -504,7 +504,7 @@ end
 	Welds 2 parts together.
 
 	Example:
-	```lua
+	```luau
 	local weld: WeldConstraint = Util.weld(game.Workspace.Car.Wheel, game.Workspace.Car)
 	```
 
@@ -537,7 +537,7 @@ end
 	Welds all parts in a model to the PrimaryPart if it is set.
 
 	Example:
-	```lua
+	```luau
 	Util.weldModel(game.Workspace.Car)
 	```
 
@@ -565,7 +565,7 @@ end
 	Clears all welds from an instance.
 
 	Example:
-	```lua
+	```luau
 	Util.clearWelds(game.Workspace.House)
 	```
 
@@ -586,7 +586,7 @@ end
 	Clears all joints from an instance.
 
 	Example:
-	```lua
+	```luau
 	Util.breakJoints(game.Workspace.House)
 	```
 
@@ -704,7 +704,7 @@ end
 	The callback will be called with the previous value and the new value.
 
 	Example:
-	```lua
+	```luau
 	local connection = Util.addListener(
 		game.Workspace.NPC,
 		"Health",
@@ -755,7 +755,7 @@ end
 	Shortcut for Util.addListener
 
 	Example:
-	```lua
+	```luau
 	local connection = Util.addPropertyListener(game.Workspace.NPC, "Name", function(oldValue, newValue)
 			print("Name changed from " .. oldValue .. " to " .. newValue)
 		end
@@ -784,7 +784,7 @@ end
 	Shortcut for Util.addListener
 
 	Example:
-	```lua
+	```luau
 	local connection = Util.addAttributeListener(game.Workspace.NPC, "Health", function(oldValue, newValue)
 			print("Health changed from " .. oldValue .. " to " .. newValue)
 		end
@@ -822,7 +822,7 @@ local ON_TOUCH_OFFSET: number = 4
 	Listens to when a part is touched by another part and runs a callback.
 
 	Example:
-	```lua
+	```luau
 	local connection = Util.onTouch(game.Workspace.NPC, function(part)
 		print(part.Name .. " was touched")
 	end)
@@ -853,7 +853,7 @@ end
 	Similar to onTouch, but will only run the callback if the part is touched by a player that is alive.
 
 	Example:
-	```lua
+	```luau
 	local connection = Util.onPlayerTouch(game.Workspace.NPC, function(player, part)
 		print(player.Name .. " touched " .. part.Name)
 	end)

@@ -97,7 +97,7 @@ end
 	Use the [DateTime](https://create.roblox.com/docs/reference/engine/datatypes/DateTime) API for formatting options.
 
 	#### Example
-	```lua
+	```luau
 	local secondsLeft: number = 80
 
 	Util.formatUnix(secondsLeft, "mm:ss") -- 01:20
@@ -124,7 +124,7 @@ end
 	Converts a unix timestamp to a `mm:ss` format (e.g. 00:02).
 
 	#### Example
-	```lua
+	```luau
 	local secondsLeft: number = 80
 
 	Util.unixToClockFormat(secondsLeft) -- 01:20
@@ -145,13 +145,13 @@ end
 	Converts a unix timestamp to a readable time ago format (e.g. 1 minute ago, 1 minute 20 seconds ago).
 
 	#### Example
-	```lua
+	```luau
 	local secondsLeft: number = 80
 
 	Util.timeAgo(secondsLeft) -- 1 minute ago
 	```
 
-	```lua
+	```luau
 	local secondsLeft: number = 80
 
 	Util.timeAgo(secondsLeft, 80 + 60) -- just now
@@ -204,7 +204,7 @@ end
 	Convert a unix timestamp to a readable format (1 days, 1 hours, 1 minutes, 1 seconds).
 
 	#### Example
-	```lua
+	```luau
 	local secondsLeft: number = 80
 
 	Util.totalTime(secondsLeft) -- 1 minute 20 seconds

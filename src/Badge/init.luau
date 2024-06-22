@@ -11,7 +11,7 @@ local badges = {}
 	Use the `Badge.add` method to add badges to the cache.
 
 	Example:
-	```lua
+	```luau
 	-- Setup
 	local Badge = dLib.Badge
 
@@ -35,7 +35,7 @@ local cache = Cache.new()
 --[=[
 	Adds a badge to the cache.
 
-	```lua
+	```luau
 	Badge.add("BadgeName", 999999999)
 	```
 
@@ -52,7 +52,7 @@ end
 --[=[
 	Checks if a player has a badge.
 
-	```lua
+	```luau
 	local hasBadge = Badge.has(player, "BadgeName")
 	```
 
@@ -82,7 +82,7 @@ end
 --[=[
 	Awards a badge to a player.
 
-	```lua
+	```luau
 	local awarded: boolean = Badge.award(player, "BadgeName")
 
 	if not awarded then

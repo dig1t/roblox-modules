@@ -1,7 +1,7 @@
 --[=[
 	Promise class for asynchronous operations.
 
-	```lua
+	```luau
 	local promise: typeof(Promise.PromiseType)? -- Blank variable to allow rejection during a waterfall
 
 	promise = Promise.new(function(resolve, reject)
@@ -68,7 +68,7 @@ Promise.statusType = {
 --[=[
 	Constructs a new Promise instance.
 
-	```lua
+	```luau
 	Promise.new(function(resolve, reject)
 		task.wait(1)
 		resolve(0)
@@ -98,7 +98,7 @@ end
 --[=[
 	Runs the Promise executor.
 
-	```lua
+	```luau
 	Promise:_run()
 	```
 
@@ -122,7 +122,7 @@ end
 --[=[
 	Resolves a promise with tuple parameters.
 
-	```lua
+	```luau
 	Promise:resolve(...)
 	```
 
@@ -177,7 +177,7 @@ end
 --[=[
 	Rejects a promise with tuple parameters.
 
-	```lua
+	```luau
 	Promise:reject(errorMessage)
 	```
 
@@ -223,7 +223,7 @@ end
 
 	The promise can be rejected until the last fulfillment callback is called.
 
-	```lua
+	```luau
 	Promise:resolve(...)
 	```
 
@@ -269,7 +269,7 @@ end
 	Similar to andThen, finally will always be called at the end of the Promise
 	and can only be set once, if the Promise is rejected then the callback run with return no parameters
 
-	```lua
+	```luau
 	Promise:resolve(...)
 	```
 
@@ -294,7 +294,7 @@ end
 --[=[
 	Destroys the Promise instance.
 
-	```lua
+	```luau
 	Promise:destroy()
 	```
 
