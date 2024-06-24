@@ -1,7 +1,7 @@
 local DateUtil = require(script.Parent.DateUtil)
 
 return function()
-	describe("Date Util", function()
+	describe("Clock Formatters", function()
 		it("should format a unix timestamp to clock format", function()
 			local secondsLeft: number = 80
 			local clockTime: string = DateUtil.unixToClockFormat(secondsLeft)

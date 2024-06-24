@@ -449,27 +449,48 @@ end
 	```
 
 	@within Util
-	@param arg1 boolean? -- Whether to perform a deep merge
-	@param arg2 { [any]: any } -- The target table you want to extend
+	@param targetTable { [any]: any } -- The target table you want to extend
 	@param ... { [any]: any } -- The tables you want to merge into the target table
 	@return { [any]: any }
 ]=]
-function TableUtil.extend(arg1: boolean | { [any]: any }, arg2: { [any]: any }, ...): { [any]: any }
-	local deep: boolean = typeof(arg1) == "boolean" and arg1 or false
-	local targetTable = deep and arg2 or arg1 :: { [any]: any }
-
-	assert(typeof(targetTable) == "table", "targetTable must be a table")
-
-	local args: { [any]: any } = deep and { ... } or { arg2, ... }
+function TableUtil.extend(targetTable: { [any]: any }, ...: { [any]: any }): { [any]: any }
+	local args: { [any]: any } = { targetTable, ... }
 
 	for argIndex: number, sourceTable in pairs(args) do
 		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)
 
 		for key, value in pairs(sourceTable) do
 			targetTable[key] = value
+		end
+	end
 
-			if deep and typeof(value) == "table" then
-				targetTable[key] = TableUtil.extend(targetTable[key], value)
+	return targetTable
+end
+
+--[=[
+	Recursively merges two or more tables into one.
+
+	#### Example:
+	```luau
+	Util.deepMerge({ a = { b = { c = 1 } } }, { a = { b = { d = 2 } } }) -- { a = { b = { c = 1, d = 2 } } }
+	```
+
+	@within Util
+	@param targetTable { [any]: any } -- The target table you want to merge into
+	@param ... { [any]: any } -- The tables you want to merge into the target table
+	@return { [any]: any }
+]=]
+function TableUtil.deepMerge(targetTable: { [any]: any }, ...: { [any]: any }): { [any]: any }
+	targetTable = table.clone(targetTable)
+
+	local args: { [any]: any } = { targetTable, ... }
+
+	for _, sourceTable in pairs(args) do
+		for key, value in pairs(sourceTable) do
+			if typeof(value) == "table" then
+				targetTable[key] = TableUtil.deepMerge(targetTable[key], value)
+			else
+				targetTable[key] = value
 			end
 		end
 	end
