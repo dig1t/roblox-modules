@@ -95,4 +95,36 @@ return function()
 			expect(result.foo.bar).to.equal("qux")
 		end)
 	end)
+
+	describe("Waterfall", function()
+		it("should waterfall", function(_context)
+			local testCase = {
+				function(callback: any)
+					callback("foo")
+				end,
+				function(res: any, callback: any)
+					callback(res .. "baz")
+				end,
+			}
+
+			TableUtil.waterfall(testCase, function(_err, result: string)
+				expect(result).to.equal("foobaz")
+			end)
+		end)
+
+		it("should error", function(_context)
+			local testCase = {
+				function(callback: any)
+					callback("foo")
+				end,
+				function(_callback)
+					error("bar")
+				end,
+			}
+
+			TableUtil.waterfall(testCase, function(err: string)
+				expect(err).to.be.ok()
+			end)
+		end)
+	end)
 end

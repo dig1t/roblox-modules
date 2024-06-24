@@ -753,7 +753,7 @@ end
 
 	@within Util
 	@param obj { [any]: any } | Instance -- The table or instance you want to remove the value from
-	@param removeTest number | { any } | (any, number, number) -> boolean -- The value or test function to remove
+	@param removeTest number | { any } | (any, number, number) -> boolean -- The value to remove or reducing function to use
 ]=]
 function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any })
 	-- Convert to a test function if the test value is a number or table
@@ -791,6 +791,31 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 			obj[i] = nil
 		end
 	end
+end
+
+function TableUtil.waterfall(tasks: { (...any) -> ...any }, finalCallback: (err: any, ...any) -> ())
+	local function runNextTask(index: number, ...: any)
+		local args = { ... }
+		local task = tasks[index]
+
+		if task then
+			local function stepCallback(...)
+				runNextTask(index + 1, ...)
+			end
+
+			table.insert(args, stepCallback)
+
+			local success, res = pcall(task, unpack(args))
+
+			if not success then
+				finalCallback(res)
+			end
+		else
+			finalCallback(nil, ...)
+		end
+	end
+
+	runNextTask(1)
 end
 
 return TableUtil
