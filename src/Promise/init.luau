@@ -1,5 +1,5 @@
 --[=[
-	Promise class for asynchronous operations.
+	Lightweight Promise class for asynchronous operations.
 
 	```luau
 	local promise: typeof(Promise.PromiseType)? -- Blank variable to allow rejection during a waterfall
@@ -19,7 +19,7 @@
 		if promise.status ~= "rejected" then
 			print(num)
 		end
-	end) :: typeof(Promise.PromiseType)
+	end) :: Promise.PromiseType
 	```
 
 	@class Promise
@@ -41,6 +41,7 @@ export type PromiseType = typeof(setmetatable(
 		_resultArgs: { [any]: any },
 		_executor: PromiseExecutor,
 		status: string?,
+		promise: boolean,
 	},
 	Promise
 ))
@@ -51,7 +52,7 @@ export type PromiseType = typeof(setmetatable(
 	@field resolve Callback -- Resolves the promise
 	@field reject Callback -- Rejects the promise
 ]=]
-export type PromiseExecutor = (resolve: Callback, reject: Callback) -> nil
+export type PromiseExecutor = (resolve: Callback, reject: Callback) -> ()
 
 --[=[
 	Current status of the promise
@@ -86,13 +87,58 @@ function Promise.new(executor: PromiseExecutor): PromiseType
 	self._fulfillmentCallbacks = {}
 	self._rejectionCallbacks = {}
 	self._resultArgs = {}
+	self.promise = true
 
 	self._executor = executor
 	self.status = Promise.statusType.pending
 
-	self:_run()
-
 	return self
+end
+
+--- Creates a new promise that resolves when all of the promises in the iterable argument have resolved.
+function Promise.all(promises: { PromiseType }): PromiseType
+	return Promise.new(function(resolve: Callback, reject: Callback)
+		local results = {}
+
+		for index: number, promise: PromiseType in promises do
+			local success: boolean, res: string = promise:await()
+
+			results[index] = res
+
+			if not success then
+				return reject(res)
+			end
+		end
+
+		resolve(results)
+	end)
+end
+
+--- Creates a new promise that is resolved.
+function Promise.resolve(result: any): PromiseType
+	return Promise.new(function(resolve: Callback)
+		resolve(result)
+	end)
+end
+
+--- Creates a new promise that is rejected.
+function Promise.reject(result: any): PromiseType
+	return Promise.new(function(_, reject: Callback)
+		reject(result)
+	end)
+end
+
+--- Returns a new promise and the resolvers for the promise.
+function Promise.withResolvers(): (PromiseType, Callback, Callback)
+	local promise: PromiseType = Promise.new(function() end)
+
+	return promise,
+		function(resolve: Callback)
+			return promise:_resolve(resolve)
+		end,
+		function(reject: Callback)
+			return promise:_reject(reject)
+		end
 end
 
 --[=[
@@ -102,18 +148,40 @@ end
 	Promise:_run()
 	```
 
+	@within Promise
+	@method _run
 	@ignore
-	@return ()
 ]=]
-function Promise:_run(): ()
-	local _success, err = pcall(self._executor, function(...) -- resolve
-		self:resolve(...)
-	end, function(...) -- reject
-		self:reject(...)
-	end)
+function Promise._run(self: PromiseType)
+	if self.status ~= Promise.statusType.pending then
+		return
+	end
 
-	if err and self.status == Promise.statusType.pending then
-		self:reject(err)
+	-- Results
+	local resolveResult: any
+	local rejectionResult: any
+
+	-- Resolvers
+	local resolve = function(...)
+		resolveResult = self:_resolve(...)
+	end
+
+	local reject = function(...)
+		rejectionResult = self:_reject(...)
+	end
+
+	local success: boolean, err: any = pcall(self._executor, resolve, reject)
+
+	if not success and self.status == Promise.statusType.pending then
+		self:_reject(err)
+	end
+
+	if resolveResult then
+		self:_resolve(resolveResult)
+	end
+
+	if rejectionResult then
+		self:_reject(rejectionResult)
 	end
 
 	return
@@ -126,10 +194,12 @@ end
 	Promise:resolve(...)
 	```
 
+	@ignore
+	@within Promise
+	@method _resolve
 	@param ... any -- The tuple parameters to resolve the promise with.
-	@return ()
 ]=]
-function Promise:resolve(...): ()
+function Promise._resolve(self: PromiseType, ...)
 	if self.status ~= Promise.statusType.pending then
 		warn(
 			string.format(
@@ -155,7 +225,7 @@ function Promise:resolve(...): ()
 		return
 	end
 
-	for _key, fn in ipairs(self._fulfillmentCallbacks) do
+	for _, fn in self._fulfillmentCallbacks do
 		-- Set lastRes to the returned argument from the last callback.
 		lastRes = { fn(unpack(lastRes)) }
 
@@ -181,10 +251,12 @@ end
 	Promise:reject(errorMessage)
 	```
 
+	@ignore
+	@within Promise
+	@method _reject
 	@param ... any -- The tuple parameters to reject the promise with.
-	@return ())
 ]=]
-function Promise:reject(...): ()
+function Promise._reject(self: PromiseType, ...)
 	if self.status ~= Promise.statusType.pending then
 		warn(
 			string.format(
@@ -200,7 +272,7 @@ function Promise:reject(...): ()
 	self._resultArgs = { ... }
 
 	if self._rejectionCallbacks then
-		for _key, fn in ipairs(self._rejectionCallbacks) do
+		for _, fn in self._rejectionCallbacks do
 			fn(...)
 		end
 	end
@@ -227,10 +299,12 @@ end
 	Promise:resolve(...)
 	```
 
+	@within Promise
+	@method andThen
 	@param executor function -- The function to call when the promise is fulfilled.
 	@return PromiseType
 ]=]
-function Promise:andThen(executor: Callback): PromiseType
+function Promise.andThen(self: PromiseType, executor: Callback): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to resolve")
 
 	if self.status == Promise.statusType.fulfilled then
@@ -248,10 +322,12 @@ end
 	Called when the Promise is rejected.
 
 
+	@within Promise
+	@method catch
 	@param callback function -- The function to call when the Promise is rejected.
 	@return PromiseType
 ]=]
-function Promise:catch(callback: Callback): PromiseType
+function Promise.catch(self: PromiseType, callback: Callback): PromiseType
 	assert(typeof(callback) == "function", "Must give a function to catching errors")
 
 	if self.status == Promise.statusType.rejected then
@@ -273,10 +349,13 @@ end
 	Promise:resolve(...)
 	```
 
+
+	@within Promise
+	@method finally
 	@param callback function -- The function to call when the promise is fulfilled.
 	@return PromiseType
 ]=]
-function Promise:finally(callback: Callback): PromiseType
+function Promise.finally(self: PromiseType, callback: Callback): PromiseType
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")
 	assert(typeof(callback) == "function", "Must give a function for the finally callback")
 
@@ -292,18 +371,49 @@ function Promise:finally(callback: Callback): PromiseType
 end
 
 --[=[
+	Awaits the promise and returns the result.
+
+	```luau
+	local success: boolean, result: any = Promise:await()
+	```
+
+	@within Promise
+	@method await
+	@return boolean -- Whether the promise was fulfilled or not.
+	@return any -- The result of the promise.
+]=]
+function Promise.await(self: PromiseType): (boolean, any)
+	if self.status == Promise.statusType.pending then
+		self:_run()
+	end
+
+	return self.status == Promise.statusType.fulfilled, unpack(self._resultArgs)
+end
+
+--[=[
 	Destroys the Promise instance.
 
 	```luau
 	Promise:destroy()
 	```
 
-	@return ()
+	@within Promise
+	@method destroy
 ]=]
-function Promise:destroy(): ()
+function Promise.destroy(self: PromiseType)
 	for key: any, _ in pairs(self) do
 		self[key] = nil
 	end
+end
+
+--[=[
+	Alias for promise:destroy()
+
+	@within Promise
+	@method Destroy
+]=]
+function Promise.Destroy(self: PromiseType)
+	self:destroy()
 end
 
 return Promise
