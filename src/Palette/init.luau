@@ -141,7 +141,7 @@ local Palette = {}
 	Creates a Color3 object from the given color and shade.
 
 	#### Example:
-	```luau
+	```lua
 	local button: TextButton = Instance.new("TextButton")
 	local btnColor: Color3 = Palette("blue", 500)
 	local btnHover: Color3 = Palette("blue", 300)

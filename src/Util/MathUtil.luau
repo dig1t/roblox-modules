@@ -4,7 +4,7 @@ local MathUtil = {}
 	Interpolates between two numbers.
 
 	#### Example:
-	```luau
+	```lua
 	Util.lerp(0, 10, .5) -- 5
 	Util.lerp(0, 10, 1) -- 10
 	```
@@ -23,7 +23,7 @@ end
 	Rounds a number to the nearest integer.
 
 	#### Example:
-	```luau
+	```lua
 	Util.round(1.5) -- 2
 	Util.round(1.4) -- 1
 	```
@@ -44,7 +44,7 @@ end
 	Formats a number to have commas.
 
 	#### Example:
-	```luau
+	```lua
 	Util.formatNumber(1000) -- 1,000
 	Util.formatNumber(1000.01) -- 1,000.01
 	```
@@ -88,7 +88,7 @@ end
 	Returns a random number between two numbers.
 
 	#### Example:
-	```luau
+	```lua
 	Util.random(1, 10) -- 5
 	Util.random(1, 10, true) -- 5.5
 	Util.random(10) -- 5 (min defaults to 1)
@@ -119,7 +119,7 @@ local charsetLength: number = #charset
 	Returns a random string.
 
 	#### Example:
-	```luau
+	```lua
 	Util.randomString() -- "aBcDeFgHiJkLmNoPqRsTuVwXyZ"
 	Util.randomString(10) -- "aBcDeFgHiJ"
 	```
@@ -149,7 +149,7 @@ end
 	Returns a random object from a table or instance.
 
 	#### Example:
-	```luau
+	```lua
 	Util.randomObj({ "a", "b", "c" }) -- "b"
 	Util.randomObj(Workspace.Player) -- Head
 	```
@@ -177,7 +177,7 @@ end
 	Returns a random boolean.
 
 	#### Example:
-	```luau
+	```lua
 	Util.coinFlip() -- true
 	Util.coinFlip() -- false
 	```
@@ -198,7 +198,7 @@ local shortNumberSuffixes: { string } =
 	Common use cases are for displaying XP, money in leaderboards, damage etc.
 
 	#### Example:
-	```luau
+	```lua
 	Util.shortenNumber(1000) -- 1K
 	Util.shortenNumber(1000000) -- 1M
 	Util.shortenNumber(1000000000) -- 1B
@@ -208,7 +208,7 @@ local shortNumberSuffixes: { string } =
 
 	minimumTiers is useful for when you want to shorten a number but only if it's above a certain tier.
 	For example, if you want to shorten a number but only if it's above 1,000,000, you would do:
-	```luau
+	```lua
 	Util.shortenNumber(1000000, 2) -- 1,000,000
 	```
 

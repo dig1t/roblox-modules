@@ -18,7 +18,7 @@ end
 	Returns the time elapsed in seconds.
 
 	#### Example:
-	```luau
+	```lua
 	Util.timeout(1, function(elapsedTime: number)
 		print("Hello, world!")
 	end)
@@ -55,7 +55,7 @@ end
 	This function returns an `RBXScriptConnection` that can be disconnected to stop the interval.
 
 	#### Example:
-	```luau
+	```lua
 	Util.interval(1, function(elapsedTime: number, deltaTime: number)
 		print(elapsedTime)
 	end)
@@ -98,7 +98,7 @@ end
 	Checks if a value is in a table.
 
 	#### Example:
-	```luau
+	```lua
 	Util.inTable({ 1, 2, 3 }, 2) -- true
 	Util.inTable({ 1, 2, 3 }, 4) -- false
 	Util.inTable({ Part, 2, 3, Part2 = true }, Part) -- true

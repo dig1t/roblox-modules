@@ -21,7 +21,7 @@ Util = "dig1t/util@1.0.6"
 ## Module Examples
 
 ### Util
-```luau
+```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Require Util from your installation location
@@ -42,7 +42,7 @@ end)
 ```
 
 ### Palette
-```luau
+```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- Require Palette from your installation location
@@ -55,7 +55,7 @@ print(Palette.get("blue", 500))
 ### Promise
 
 Method 1:
-```luau
+```lua
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
 local myPromise: Promise.PromiseType = Promise.new(function(resolve, reject)
@@ -64,7 +64,7 @@ end)
 ```
 
 Method 2:
-```luau
+```lua
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
 type PromiseType = Promise.PromiseType
@@ -77,14 +77,14 @@ end)
 ### Maid
 
 Method 1:
-```luau
+```lua
 local Maid = require(ReplicatedStorage.Packages.Maid)
 
 local myMaid: Maid.MaidType = Maid.new()
 ```
 
 Method 2:
-```luau
+```lua
 local Maid = require(ReplicatedStorage.Packages.Maid)
 
 type MaidType = Maid.MaidType
@@ -95,14 +95,14 @@ local myMaid: MaidType = Maid.new()
 ### Cache
 
 Method 1:
-```luau
+```lua
 local Cache = require(ReplicatedStorage.Packages.Cache)
 
 local myCache: Cache.CacheType = Cache.new()
 ```
 
 Method 2:
-```luau
+```lua
 local Cache = require(ReplicatedStorage.Packages.Cache)
 
 type CacheType = Cache.CacheType

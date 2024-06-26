@@ -14,7 +14,7 @@ local Animation = {}
 	The default animation configuration.
 
 	Example:
-	```luau
+	```lua
 	Animation.setDefaultConfig({
 		tweenInfo = TweenInfo.new(1),
 		start = {

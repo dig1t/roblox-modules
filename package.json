@@ -21,6 +21,6 @@
   },
   "homepage": "https://dig1t.github.io/dlib",
   "dependencies": {
-    "moonwave": "^1.1.2"
+    "moonwave": "^1.1.3"
   }
 }

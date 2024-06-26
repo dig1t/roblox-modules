@@ -108,7 +108,7 @@ end
 
 	Sets a `key` `value` pair. It is possible to define a ttl (in seconds). Returns `true` on success.
 
-	```luau
+	```lua
 	local obj = { my = "Special", variable = 42 }
 
 	local success = myCache:Set( "myKey", obj, 10000 )
@@ -145,7 +145,7 @@ end
 
 	Sets multiple `key` `value` pairs. It is possible to define a `ttl` (in seconds). Returns `true` on success.
 
-	```luau
+	```lua
 	local obj = { my = "Special", variable = 42 }
 	local obj2 = { my = "other special", variable = 1337 }
 
@@ -178,7 +178,7 @@ end
 
 	Gets a saved `value` from the cache. Returns `nil` if not found or expired. If the `value` was found it returns the `value`.
 
-	```luau
+	```lua
 	local value = myCache:get("myKey")
 	```
 
@@ -206,7 +206,7 @@ end
 	Equivalent to calling `get(key)` + `delete(key)`.
 	Useful for implementing `single use` mechanism, where once a value is read it will become obsolete.
 
-	```luau
+	```lua
 	myCache:Set("myKey", "myValue", 10000)
 	myCache:Has("myKey") -- true
 	local value = myCache:Take("myKey") -- "myValue"
@@ -239,7 +239,7 @@ end
 
 	If the values were found it returns a table with the `key` `value` pair(s).
 
-	```luau
+	```lua
 	local values = myCache:GetMultiple({ "myKey", "myKey2" })
 	```
 
@@ -261,7 +261,7 @@ end
 --[=[
 	Deletes a key. Returns the number of deleted entries. A delete will not fail if the key is not existing.
 
-	```luau
+	```lua
 	local deleted: number = myCache:Delete("myKey")
 	```
 
@@ -285,7 +285,7 @@ end
 --[=[
 	Deletes multiple keys. Returns the number of deleted entries. This will not fail if a key is not existing.
 
-	```luau
+	```lua
 	local deleted: number = myCache:MultipleDelete({ "myKey", "myKey2" })
 	```
 
@@ -307,7 +307,7 @@ end
 --[=[
 	Updates the `ttl` of a key. Returns `true` on success.
 
-	```luau
+	```lua
 	local success = myCache:TTL("myKey", 10000)
 	```
 
@@ -335,7 +335,7 @@ end
 --[=[
 	Returns the `ttl` of a key. Returns `nil` if not found or expired.
 
-	```luau
+	```lua
 	local ttl = myCache:GetTTL("myKey")
 	```
 
@@ -359,7 +359,7 @@ end
 --[=[
 	Returns all keys in the cache.
 
-	```luau
+	```lua
 	local keys = myCache:Keys()
 	```
 
@@ -380,7 +380,7 @@ end
 --[=[
 	Returns a boolean indicating whether an element with the specified key exists or not.
 
-	```luau
+	```lua
 	myCache:Has("myKey") -- true
 	```
 
@@ -400,7 +400,7 @@ end
 
 	Used for cleanup.
 
-	```luau
+	```lua
 	myCache:Destroy()
 	```
 

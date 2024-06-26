@@ -7,7 +7,7 @@ local Maid = require(script.Parent.Maid)
 --[=[
 	Game pass library that caches game pass ownership results and watches for pass purchases.
 
-	```luau
+	```lua
 	local hasPass = GamePass.has(player.UserId, 123456)
 	```
 
@@ -23,7 +23,7 @@ local cache = Cache.new()
 --[=[
 	Checks if a player has a game pass.
 
-	```luau
+	```lua
 	local hasPass = GamePass.has(player.UserId, 123456)
 	```
 
@@ -59,7 +59,7 @@ end
 --[=[
 	Prompts the player to purchase a game pass.
 
-	```luau
+	```lua
 	GamePass.prompt(player, 123456)
 	```
 
@@ -114,7 +114,7 @@ end
 --[=[
 	Triggers a callback when a player purchases a game pass.
 
-	```luau
+	```lua
 	GamePass.onPurchase(function(player: Player, gamePassId: number)
 		print(player.Name .. " purchased game pass " .. gamePassId)
 	end)
