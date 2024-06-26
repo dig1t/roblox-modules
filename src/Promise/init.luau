@@ -307,6 +307,10 @@ end
 function Promise.andThen(self: PromiseType, executor: Callback): PromiseType
 	assert(typeof(executor) == "function", "Must give a function to resolve")
 
+	if self.status == Promise.statusType.pending then
+		self:_run()
+	end
+
 	if self.status == Promise.statusType.fulfilled then
 		executor(unpack(self._resultArgs))
 
@@ -329,6 +333,10 @@ end
 ]=]
 function Promise.catch(self: PromiseType, callback: Callback): PromiseType
 	assert(typeof(callback) == "function", "Must give a function to catching errors")
+
+	if self.status == Promise.statusType.pending then
+		self:_run()
+	end
 
 	if self.status == Promise.statusType.rejected then
 		callback(unpack(self._resultArgs))
@@ -358,6 +366,10 @@ end
 function Promise.finally(self: PromiseType, callback: Callback): PromiseType
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")
 	assert(typeof(callback) == "function", "Must give a function for the finally callback")
+
+	if self.status == Promise.statusType.pending then
+		self:_run()
+	end
 
 	if self.status == Promise.statusType.fulfilled or self.status == Promise.statusType.rejected then
 		callback(unpack(self._resultArgs))
