@@ -66,8 +66,8 @@ end
 	@param player Player -- The player to prompt.
 	@param gamePassId number -- The game pass id.
 ]=]
-function GamePass.prompt(player: Player, gamePassId: number): ()
-	assert(typeof(player) == "Player", "GamePass.prompt - Missing player")
+function GamePass.prompt(player: Player, gamePassId: number)
+	assert(typeof(player) == "Instance" and player:IsA("Player"), "GamePass.prompt - Missing Player object")
 	assert(typeof(gamePassId) == "number", "GamePass.prompt - Missing game pass id")
 
 	MarketplaceService:PromptGamePassPurchase(player, gamePassId)
