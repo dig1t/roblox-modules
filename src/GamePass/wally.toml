@@ -1,6 +1,6 @@
 [package]
 name = "dig1t/gamepass"
-version = "1.0.3"
+version = "1.0.4"
 description = "Module part of the dig1t/dLib repository"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
@@ -8,5 +8,5 @@ realm = "shared"
 exclude = ["*.spec.luau"]
 
 [dependencies]
-Cache = "dig1t/cache@1.0.3"
-Maid = "dig1t/maid@1.0.2"
+Cache = "dig1t/cache@1.0.4"
+Maid = "dig1t/maid@1.0.3"
