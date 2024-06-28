@@ -1,6 +1,6 @@
 [package]
 name = "dig1t/util"
-version = "1.0.6"
+version = "1.0.7"
 description = "Utility module part of the dig1t/dLib repository"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"

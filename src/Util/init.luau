@@ -673,6 +673,7 @@ end
 
 -- Events
 
+--- Wait for a child to be added to an instance. WARNING: This function will forever wait until the child is added.
 function Util.waitForChild(parent: Instance, name: string): Instance?
 	assert(parent and typeof(parent) == "Instance", "Util.waitForChild - Parent must be an instance")
 	assert(name, "Util.waitForChild - Missing child name")
@@ -691,6 +692,31 @@ function Util.waitForChild(parent: Instance, name: string): Instance?
 			return current
 		end
 	end
+end
+
+local RunService = game:GetService("RunService")
+
+--[=[
+	Wait for the primary part of a model to be set.
+
+	@within Util
+	@param model Model
+	@param timeout number? -- Defaults to 15 seconds
+	@return BasePart?
+]=]
+function Util.waitForPrimaryPart(model: Model, timeout: number?): BasePart?
+	assert(model and typeof(model) == "Instance", "Util.waitForPrimaryPart - First argument must be an instance")
+	assert(model:IsA("Model"), "Util.waitForPrimaryPart - First argument must be a model")
+	assert(timeout == nil or typeof(timeout) == "number", "Util.waitForPrimaryPart - Timeout argument must be a number")
+
+	local startedAt: number = os.clock()
+	local _timeout = timeout or 15
+
+	while not model.PrimaryPart or os.clock() - startedAt > _timeout do
+		RunService.Stepped:Wait()
+	end
+
+	return model.PrimaryPart
 end
 
 --[=[
