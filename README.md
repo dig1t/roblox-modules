@@ -15,7 +15,7 @@ Maid = "dig1t/maid@1.0.3"
 Palette = "dig1t/palette@1.0.0"
 Promise = "dig1t/promise@1.1.1"
 Ragdoll = "dig1t/ragdoll@1.0.3"
-Util = "dig1t/util@1.0.6"
+Util = "dig1t/util@1.0.7"
 ```
 
 ## Module Examples
