@@ -7,6 +7,10 @@ local Maid = require(script.Parent.Maid)
 --[=[
 	Game pass library that caches game pass ownership results and watches for pass purchases.
 
+	This module fixes the caching issue with UserOwnsGamePassAsync
+	by saving purchases made in the server. This allows the user to
+	continue playing without having to re-join.
+
 	```lua
 	local hasPass = GamePass.has(player.UserId, 123456)
 	```
@@ -15,7 +19,12 @@ local Maid = require(script.Parent.Maid)
 ]=]
 local GamePass = {}
 
-local callbacks = {}
+--- @type Callback (player: Player, gamePassId: number) -> ()
+--- @within GamePass
+export type Callback = (player: Player, gamePassId: number) -> ()
+
+local callbacks: { Callback } = {}
+local watching: boolean = false
 
 local _maid = Maid.new()
 local cache = Cache.new()
@@ -73,16 +82,24 @@ function GamePass.prompt(player: Player, gamePassId: number)
 	MarketplaceService:PromptGamePassPurchase(player, gamePassId)
 end
 
--- This function fixes the caching issue with UserOwnsGamePassAsync
--- by saving purchases made in the server. This allows the user to
--- continue playing without having to re-join.
-
 --[=[
 	Watches for game pass purchases.
 	This allows the player to continue playing without having to re-join.
+
+	This is automatically called when using `GamePass.onPurchase`.
 ]=]
 function GamePass.watch()
-	GamePass.unwatch() -- Prevent duplicating watchers
+	if watching then
+		-- Prevent duplicating watchers
+		return
+	end
+
+	_maid:Task(function()
+		watching = false
+		callbacks = {}
+	end)
+
+	watching = true
 
 	_maid:Task(
 		MarketplaceService.PromptGamePassPurchaseFinished:Connect(
@@ -114,15 +131,23 @@ end
 --[=[
 	Triggers a callback when a player purchases a game pass.
 
+	This calls `GamePass.watch` to start watching for game pass purchases.
+
+	To stop watching for game pass purchases, use `GamePass.unwatch`.
+
 	```lua
 	GamePass.onPurchase(function(player: Player, gamePassId: number)
 		print(player.Name .. " purchased game pass " .. gamePassId)
 	end)
 	```
 
-	@param callback (player: Player, gamePassId: number) -> () -- The callback to trigger.
+	@param callback Callback -- The callback to trigger.
 ]=]
-function GamePass.onPurchase(callback: (player: Player, gamePassId: number) -> ())
+function GamePass.onPurchase(callback: Callback)
+	if not watching then
+		GamePass.watch()
+	end
+
 	callbacks[#callbacks + 1] = callback
 end
 
