@@ -395,6 +395,11 @@ function Cache.Has(self: CacheType, key: Key): boolean
 	return self._cache[key] ~= nil
 end
 
+--- Clears the cache.
+function Cache:Clear()
+	self._cache = {}
+end
+
 --[=[
 	Deletes all keys and values from the cache.
 
