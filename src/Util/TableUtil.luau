@@ -450,13 +450,13 @@ end
 
 	@within Util
 	@param targetTable { [any]: any } -- The target table you want to extend
-	@param ... { [any]: any } -- The tables you want to merge into the target table
+	@param ... { [any]: any }? -- The tables you want to merge into the target table
 	@return { [any]: any }
 ]=]
-function TableUtil.extend(targetTable: { [any]: any }, ...: { [any]: any }): { [any]: any }
-	local args: { [any]: any } = { targetTable, ... }
+function TableUtil.extend(targetTable: { [any]: any }, ...: { [any]: any }?): { [any]: any }
+	local args: { { [any]: any } } = { targetTable, ... :: { [any]: any } }
 
-	for argIndex: number, sourceTable in pairs(args) do
+	for argIndex: number, sourceTable: { [any]: any } in pairs(args) do
 		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)
 
 		for key, value in pairs(sourceTable) do
