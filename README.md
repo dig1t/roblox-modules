@@ -1,8 +1,8 @@
-# dLib Modules
+# roblox-modules Modules
 
-dLib is a collection of modules and libraries for development in Roblox.
+roblox-modules is a collection of modules and libraries for development in Roblox.
 
-[![CI](https://github.com/dig1t/dlib/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dig1t/dlib/actions/workflows/ci.yml)
+[![CI](https://github.com/dig1t/roblox-modules/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dig1t/roblox-modules/actions/workflows/ci.yml)
 
 ## Installing Modules (wally)
 **Available modules:**

@@ -1,5 +1,5 @@
 {
-  "name": "dLib Dev",
+  "name": "roblox-modules Dev",
   "tree": {
     "$className": "DataModel",
 
@@ -9,7 +9,7 @@
       "Packages": {
         "$className": "Folder",
 
-        "dLib": {
+        "RobloxModules": {
           "$path": "src"
         }
       }

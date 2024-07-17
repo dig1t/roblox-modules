@@ -13,12 +13,11 @@ local badges = {}
 	Example:
 	```lua
 	-- Setup
-	local Badge = dLib.Badge
+	local Badge = require(game.ReplicatedStorage.Packages.Badge)
 
 	Badge.add("BadgeName", 999999999)
 
-	--
-
+	-- Server
 	local hasBadge = Badge.has(player, "BadgeName")
 
 	print(`Player has badge: {hasBadge}!`)
