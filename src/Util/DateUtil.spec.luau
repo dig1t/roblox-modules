@@ -4,7 +4,7 @@ return function()
 	describe("Clock Formatters", function()
 		it("should format a unix timestamp to clock format", function()
 			local secondsLeft: number = 80
-			local clockTime: string = DateUtil.unixToClockFormat(secondsLeft)
+			local clockTime: string = DateUtil.elapsedTimeClockFormat(secondsLeft)
 
 			expect(clockTime).to.equal("01:20")
 		end)
