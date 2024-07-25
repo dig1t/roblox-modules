@@ -13,7 +13,7 @@
     "**/_Index/**",
     "*.d.luau"
   ],
-  "testez-companion.runTestsOnSave": true,
+  // "testez-companion.runTestsOnSave": true,
   "editor.defaultFormatter": "EditorConfig.EditorConfig",
   "editor.formatOnSave": true,
   "[luau]": {
