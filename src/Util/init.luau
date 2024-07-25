@@ -31,7 +31,7 @@ Util.timeAgo = DateUtil.timeAgo
 Util.timeAgoUnix = DateUtil.timeAgoUnix
 Util.totalTime = DateUtil.totalTime
 Util.unix = DateUtil.unix
-Util.unixToClockFormat = DateUtil.unixToClockFormat
+Util.elapsedTimeClockFormat = DateUtil.elapsedTimeClockFormat
 
 -- MathUtil
 Util.lerp = MathUtil.lerp

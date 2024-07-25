@@ -100,24 +100,25 @@ end
 	```lua
 	local secondsLeft: number = 80
 
-	Util.formatUnix(secondsLeft, "mm:ss") -- 01:20
-	Util.formatUnix(secondsLeft, "HH:mm:ss") -- 00:01:20
+	Util.formatUnix(secondsLeft, "mm:ss", nil, true) -- 01:20
+	Util.formatUnix(secondsLeft, "HH:mm:ss", nil, true) -- 00:01:20
 	```
 
 	@within Util
 	@param timestamp number
 	@param format string -- The format to use.
 	@param locale string? -- The locale to use. Defaults to `en-us`.
+	@param useUTC boolean? -- Whether to use UTC time. Defaults to local time.
 	@return string -- The formatted time in local time.
 ]=]
-function DateUtil.formatUnix(timestamp: number, format: string, locale: string?): string
+function DateUtil.formatUnix(timestamp: number, format: string, locale: string?, useUTC: boolean): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(typeof(format) == "string", "format must be a string")
 	assert(typeof(locale) == "string" or locale == nil, "locale must be a string or nil")
 
 	local dateTime = DateTime.fromUnixTimestamp(math.floor(timestamp))
 
-	return dateTime:FormatLocalTime(format, locale or "en-us")
+	return (dateTime :: any)[useUTC and "FormatUniversalTime" or "FormatLocalTime"](dateTime, format, locale or "en-us")
 end
 
 --[=[
@@ -125,22 +126,21 @@ end
 
 	#### Example
 	```lua
-	local secondsLeft: number = 80
-
-	Util.unixToClockFormat(secondsLeft) -- 01:20
-	Util.unixToClockFormat(secondsLeft, "HH:mm:ss") -- 00:01:20
+	Util.elapsedTimeClockFormat(80) -- 01:20
+	Util.elapsedTimeClockFormat(3661) -- 01:01:01
 	```
 
 	@within Util
 	@param timestamp number
-	@param format string? -- The format to use. Defaults to `mm:ss`.
-	@param locale string? -- The locale to use. Defaults to `en-us`.
 	@return string -- The formatted time in local time.
 ]=]
-function DateUtil.unixToClockFormat(timestamp: number, format: string?, locale: string?): string
-	return DateUtil.formatUnix(timestamp, format or "mm:ss", locale)
-end
+function DateUtil.elapsedTimeClockFormat(timestamp: number): string
+	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 
+	local isOverAnHour: boolean = timestamp >= 3600
+
+	return DateUtil.formatUnix(timestamp, isOverAnHour and "HH:mm:ss" or "mm:ss", "en-us", true)
+end
 --[=[
 	Converts a unix timestamp to a readable time ago format (e.g. 1 minute ago, 1 minute 20 seconds ago).
 
