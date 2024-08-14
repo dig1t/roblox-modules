@@ -6,7 +6,8 @@ Utility functions for working with React.
 
 --!native
 
-local ApiDumpStatic = require(script.Parent.ApiDumpStatic)
+local ApiDumpStatic =
+	require(script.Parent.ApiDumpStatic) :: { Classes: { [string]: any } }
 
 export type ReactElement<P = { [string]: any }, T = any> = {
 	["$$typeof"]: number,
@@ -122,7 +123,7 @@ local ReactUtil = require(game.ReplicatedStorage.Packages.ReactUtil)
 local template = game.ReplicatedStorage.TextBox
 
 local component(props: { [any]: any })
-	return ReactUtil.Hydrate(React, template, {
+	return ReactUtil.Hydrate(React, {
 		Text = "Hello World!",
 		TextScaled = true,
 	}, {
