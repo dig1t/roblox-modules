@@ -123,7 +123,7 @@ local ReactUtil = require(game.ReplicatedStorage.Packages.ReactUtil)
 local template = game.ReplicatedStorage.TextBox
 
 local component(props: { [any]: any })
-	return ReactUtil.Hydrate(React, {
+	return ReactUtil.Hydrate(React, template, {
 		Text = "Hello World!",
 		TextScaled = true,
 	}, {
