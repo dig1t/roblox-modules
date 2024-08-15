@@ -1,3 +1,5 @@
+--!native
+
 local valueClasses = {
 	BoolValue = true,
 	BrickColorValue = true,
@@ -29,7 +31,11 @@ local TableUtil = {}
 	@param value any
 	@return boolean -- Whether the operation was successful
 ]=]
-function TableUtil.unsafeSet(object: Instance | { [any]: any }, key: any, value: any): boolean
+function TableUtil.unsafeSet(
+	object: Instance | { [any]: any },
+	key: any,
+	value: any
+): boolean
 	assert(
 		typeof(object) == "Instance" or typeof(object) == "table",
 		"Util.unsafeSet - object must be an Instance or table"
@@ -104,9 +110,18 @@ end
 	@param callbackFn (any, any, any) -> (any, any) -- The function to map the table with
 	@return { [any]: any }
 ]=]
-function TableUtil.map(source: { [any]: any }, callbackFn: (any, any, any) -> (any, any)): { [any]: any }
-	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
-	assert(callbackFn == nil or typeof(callbackFn) == "function", "callbackFn must be a function or nil")
+function TableUtil.map(
+	source: { [any]: any },
+	callbackFn: (any, any, any) -> (any, any)
+): { [any]: any }
+	assert(
+		typeof(source) == "table" or typeof(source) == "Instance",
+		"source must be a table or instance"
+	)
+	assert(
+		callbackFn == nil or typeof(callbackFn) == "function",
+		"callbackFn must be a function or nil"
+	)
 
 	local res = {}
 
@@ -154,9 +169,18 @@ end
 	@param callbackFn (any, any, any) -> (boolean?) -- The function to filter the table with (element, index, source)
 	@return { [any]: any }
 ]=]
-function TableUtil.filter(source: { [any]: any }, callbackFn: (any, any, any) -> boolean?): { [any]: any }
-	assert(typeof(source) == "table" or typeof(source) == "Instance", "source must be a table or instance")
-	assert(callbackFn == nil or typeof(callbackFn) == "function", "callbackFn must be a function or nil")
+function TableUtil.filter(
+	source: { [any]: any },
+	callbackFn: (any, any, any) -> boolean?
+): { [any]: any }
+	assert(
+		typeof(source) == "table" or typeof(source) == "Instance",
+		"source must be a table or instance"
+	)
+	assert(
+		callbackFn == nil or typeof(callbackFn) == "function",
+		"callbackFn must be a function or nil"
+	)
 
 	local res = {}
 
@@ -199,13 +223,19 @@ end
 	@param filterFn (key: any, value: any, source: any) -> (value: any, key: any) -- The function to filter the table with
 	@return { [any]: any }
 ]=]
-function TableUtil.mapIndex(source: { [any]: any }, filterFn: (any, any, any) -> (any, any)): { [any]: any }
+function TableUtil.mapIndex(
+	source: { [any]: any },
+	filterFn: (any, any, any) -> (any, any)
+): { [any]: any }
 	assert(typeof(source) == "table", "source must be a table")
-	assert(filterFn == nil or typeof(filterFn) == "function", "filterFn must be a function or nil")
+	assert(
+		filterFn == nil or typeof(filterFn) == "function",
+		"filterFn must be a function or nil"
+	)
 
 	local res = {}
 
-	for key: any, value: any in ipairs(source) do
+	for key: any, value: any in source do
 		local index = #res + 1
 
 		if filterFn then
@@ -321,7 +351,10 @@ function TableUtil.split(
 	end
 
 	assert(typeof(text) == "string", "text must be a string")
-	assert(delimiter == nil or typeof(delimiter) == "string", "delimiter must be a string or nil")
+	assert(
+		delimiter == nil or typeof(delimiter) == "string",
+		"delimiter must be a string or nil"
+	)
 	assert(
 		trimTrailingDelimiter == nil or typeof(trimTrailingDelimiter) == "boolean",
 		"trimTrailingDelimiter must be a boolean or nil"
@@ -395,9 +428,15 @@ end]]
 	@param separator string? -- The separator to use when joining the table (defaults to ",")
 	@return string
 ]=]
-function TableUtil.join(stringTable: { [any]: string | number }, separator: string): string
+function TableUtil.join(
+	stringTable: { [any]: string | number },
+	separator: string
+): string
 	assert(stringTable, "Util.join - Missing object")
-	assert(typeof(stringTable) == "table", "Util.join - Cannot index " .. typeof(stringTable))
+	assert(
+		typeof(stringTable) == "table",
+		"Util.join - Cannot index " .. typeof(stringTable)
+	)
 	assert(typeof(separator) == "string", "Util.join - Separator must be a string or nil")
 
 	if not separator then
@@ -406,7 +445,7 @@ function TableUtil.join(stringTable: { [any]: string | number }, separator: stri
 
 	local res: string = ""
 
-	for index: number, value: string | number in ipairs(stringTable) do
+	for index: number, value: string | number in stringTable do
 		local _value: string | number? = value
 
 		if typeof(_value) == "number" then
@@ -453,7 +492,10 @@ end
 	@param ... { [any]: any }? -- The tables you want to merge into the target table
 	@return { [any]: any }
 ]=]
-function TableUtil.extend(targetTable: { [any]: any }, ...: { [any]: any }?): { [any]: any }
+function TableUtil.extend(
+	targetTable: { [any]: any },
+	...: { [any]: any }?
+): { [any]: any }
 	local args: { { [any]: any } } = { targetTable, ... :: { [any]: any } }
 
 	for argIndex: number, sourceTable: { [any]: any } in pairs(args) do
@@ -480,7 +522,10 @@ end
 	@param ... { [any]: any } -- The tables you want to merge into the target table
 	@return { [any]: any }
 ]=]
-function TableUtil.deepMerge(targetTable: { [any]: any }, ...: { [any]: any }): { [any]: any }
+function TableUtil.deepMerge(
+	targetTable: { [any]: any },
+	...: { [any]: any }
+): { [any]: any }
 	targetTable = table.clone(targetTable)
 
 	local args: { [any]: any } = { targetTable, ... }
@@ -529,8 +574,15 @@ end
 	@param delimiter string? -- The delimiter to use when splitting the path
 	@return any
 ]=]
-function TableUtil.treePath(tree: { [any]: any } | Instance, path: string, delimiter: string?): any
-	assert(typeof(tree) == "table" or typeof(tree) == "Instance", "Tree must be a table or instance")
+function TableUtil.treePath(
+	tree: { [any]: any } | Instance,
+	path: string,
+	delimiter: string?
+): any
+	assert(
+		typeof(tree) == "table" or typeof(tree) == "Instance",
+		"Tree must be a table or instance"
+	)
 	assert(typeof(path) == "string", "path must be a string")
 
 	local node = tree
@@ -578,15 +630,23 @@ end
 	@param value any -- The value you want to insert
 	@param condition nil | boolean | () -> boolean? -- The test condition
 ]=]
-function TableUtil.insertIf(target: { [any]: any }, value: any, condition: nil | boolean | (() -> boolean?))
+function TableUtil.insertIf(
+	target: { [any]: any },
+	value: any,
+	condition: nil | boolean | (() -> boolean?)
+)
 	assert(typeof(target) == "table", "Target is missing")
 	assert(typeof(value) ~= "nil", "Value is missing")
 	assert(
-		condition == nil or typeof(condition) == "function" or typeof(condition) == "boolean",
+		condition == nil
+			or typeof(condition) == "function"
+			or typeof(condition) == "boolean",
 		"Test must be a function, boolean, or nil"
 	)
 
-	local canInsert: boolean? = if typeof(condition) ~= "function" then condition else condition()
+	local canInsert: boolean? = if typeof(condition) ~= "function"
+		then condition
+		else condition()
 
 	if canInsert == true then
 		target[#target + 1] = value
@@ -657,9 +717,14 @@ end
 	@return any
 ]=]
 function TableUtil.tableRandomIndex(obj: { [any]: any } | Instance): any
-	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Util.tableRandomIndex - Cannot index " .. typeof(obj))
+	assert(
+		typeof(obj) == "table" or typeof(obj) == "Instance",
+		"Util.tableRandomIndex - Cannot index " .. typeof(obj)
+	)
 
-	local collection: { [any]: any } = if typeof(obj) == "Instance" then obj:GetChildren() else obj
+	local collection: { [any]: any } = if typeof(obj) == "Instance"
+		then obj:GetChildren()
+		else obj
 
 	local indexes = {}
 
@@ -686,9 +751,14 @@ end
 
 function TableUtil.tableRandom(obj: { [any]: any } | Instance): any
 	assert(obj, "Util.tableRandom - Missing object")
-	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Util.tableRandomIndex - Cannot index " .. typeof(obj))
+	assert(
+		typeof(obj) == "table" or typeof(obj) == "Instance",
+		"Util.tableRandomIndex - Cannot index " .. typeof(obj)
+	)
 
-	local collection: { [any]: any } = if typeof(obj) == "Instance" then obj:GetChildren() else obj
+	local collection: { [any]: any } = if typeof(obj) == "Instance"
+		then obj:GetChildren()
+		else obj
 
 	return collection[TableUtil.tableRandomIndex(collection)]
 end
@@ -720,7 +790,8 @@ end
 ]=]
 function TableUtil.makeConfigFromValues(folder: Folder | Configuration): { [string]: any }
 	assert(
-		typeof(folder) == "Instance" and (folder:IsA("Folder") or folder:IsA("Configuration")),
+		typeof(folder) == "Instance"
+			and (folder:IsA("Folder") or folder:IsA("Configuration")),
 		"Util.makeConfigFromValues - Folder is missing"
 	)
 
@@ -765,7 +836,7 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 		end
 	elseif typeof(removeTest) == "table" then
 		test = function(value, _newIndex, _i)
-			for _, v in ipairs(removeTest) do
+			for _, v in removeTest do
 				return value == v
 			end
 
@@ -779,7 +850,7 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 
 	local newIndex = 1
 
-	for i, value in ipairs(obj) do
+	for i, value in obj do
 		if not test(value, newIndex, i) then
 			if i ~= newIndex then
 				obj[newIndex] = obj[i] -- Move to new index
@@ -793,7 +864,10 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 	end
 end
 
-function TableUtil.waterfall(tasks: { (...any) -> ...any }, finalCallback: (err: any, ...any) -> ())
+function TableUtil.waterfall(
+	tasks: { (...any) -> ...any },
+	finalCallback: (err: any, ...any) -> ()
+)
 	local function runNextTask(index: number, ...: any)
 		local args = { ... }
 		local task = tasks[index]
