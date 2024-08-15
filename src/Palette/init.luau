@@ -168,7 +168,10 @@ function Palette.get(color: string, shade: number?): Color3
 	local _shade = shade or 500 :: number -- Default shade
 
 	assert(paletteColors[color] ~= nil, `{color} is not a valid color`)
-	assert(paletteColors[color][shadeIndex[_shade]], `{_shade} is not a valid shade for color: {color}`)
+	assert(
+		paletteColors[color][shadeIndex[_shade]],
+		`{_shade} is not a valid shade for color: {color}`
+	)
 
 	return Color3.fromRGB(unpack(paletteColors[color][shadeIndex[_shade]]))
 end

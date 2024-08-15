@@ -62,8 +62,12 @@ weapon:unsetInputCondition("canUse") -- get rid of this condition check
 ]]
 
 function methods:inCooldown(inputName): boolean
-	if self._inputData[inputName].cooldownTime and self._inputData[inputName].lastEventTime then
-		return os.clock() - self._inputData[inputName].lastEventTime <= self._inputData[inputName].cooldownTime
+	if
+		self._inputData[inputName].cooldownTime
+		and self._inputData[inputName].lastEventTime
+	then
+		return os.clock() - self._inputData[inputName].lastEventTime
+			<= self._inputData[inputName].cooldownTime
 	end
 
 	return false
@@ -105,16 +109,24 @@ function methods:setInput(inputName, data)
 	assert(inputName, "Missing input name")
 	assert(typeof(data) == "table", "Missing data table")
 	assert(Util.tableLength(data) > 0, "No events to watch")
-	assert(not self._inputData[inputName], string.format("Input %s already exists", inputName))
+	assert(
+		not self._inputData[inputName],
+		string.format("Input %s already exists", inputName)
+	)
 
 	for eventName, condition in pairs(data) do
-		assert(UserInputService[eventName], string.format("%s is not a valid UserInputType", eventName))
+		assert(
+			UserInputService[eventName],
+			string.format("%s is not a valid UserInputType", eventName)
+		)
 
 		-- Start listing to eventName (InputBegan, InputEnded, etc.)
 		if self.equipped and not self._connections[eventName] then
-			self._connections[eventName] = UserInputService[eventName]:Connect(function(...)
-				self:_onInputEvent(eventName, ...)
-			end)
+			self._connections[eventName] = UserInputService[eventName]:Connect(
+				function(...)
+					self:_onInputEvent(eventName, ...)
+				end
+			)
 		end
 
 		if not self._eventHooks[eventName] then
@@ -162,7 +174,10 @@ function methods:unwatchInput(inputName)
 end
 
 function methods:setInputCooldown(inputName, cooldownTime)
-	assert(self._inputData[inputName], string.format("Input %s does not exist", inputName))
+	assert(
+		self._inputData[inputName],
+		string.format("Input %s does not exist", inputName)
+	)
 
 	self._inputData[inputName].cooldownTime = cooldownTime
 end
@@ -226,7 +241,11 @@ end
 
 function methods:getTargetPosition()
 	return (mouse and mouse.Hit.Position)
-		or (self.localHumanoid and self.localHumanoid.Parent and self.localHumanoid.TargetPoint)
+		or (
+			self.localHumanoid
+			and self.localHumanoid.Parent
+			and self.localHumanoid.TargetPoint
+		)
 end
 
 function methods:shoot()
@@ -268,7 +287,9 @@ function methods:shoot()
 			}),
 			projectileWeldToHit = self.config.projectileWeldToHit,
 			projectileRotation = self.config.projectileRotation,
-			distance = (hit.Position and (origin.Position - hit.Position).Magnitude) or self.config.maxRange or 2048,
+			distance = (hit.Position and (origin.Position - hit.Position).Magnitude)
+				or self.config.maxRange
+				or 2048,
 			velocity = self.config.projectileVelocity or 16,
 			localTracer = true,
 		})
@@ -293,14 +314,22 @@ function WeaponClient.getModelParts(tool)
 end
 
 function WeaponClient.getProjectile(data)
-	assert(data and typeof(data) == "table", "WeaponClient.getProjectile - Missing data table")
+	assert(
+		data and typeof(data) == "table",
+		"WeaponClient.getProjectile - Missing data table"
+	)
 	assert(data.handle, "WeaponClient.getProjectile - Missing weapon handle")
 
-	local modelParts = data.modelParts or (data.tool and WeaponClient.getModelParts(data.tool)) or {}
+	local modelParts = data.modelParts
+		or (data.tool and WeaponClient.getModelParts(data.tool))
+		or {}
 	local projectile
 
 	if not data.useModelAsProjectile then
-		assert(data.projectileReference, "WeaponClient.fireTracer - Missing projectile reference")
+		assert(
+			data.projectileReference,
+			"WeaponClient.fireTracer - Missing projectile reference"
+		)
 
 		projectile = data.projectileReference:Clone()
 	elseif #modelParts == 0 then
@@ -351,7 +380,9 @@ function methods:fireTracer(data)
 
 	if newTracer:IsA("Model") then
 		if not newTracer.PrimaryPart then
-			warn("WeaponClient.fireTracer - Projectile model must have a PrimaryPart defined")
+			warn(
+				"WeaponClient.fireTracer - Projectile model must have a PrimaryPart defined"
+			)
 			return
 		end
 
@@ -367,8 +398,10 @@ function methods:fireTracer(data)
 		passthroughObjects:getAll()
 	)
 
-	local originPosition = CFrame.lookAt(data.origin.Position, data.origin.Position + data.direction)
-		* CFrame.new(0, 0, -tracer.Size.Z)
+	local originPosition = CFrame.lookAt(
+		data.origin.Position,
+		data.origin.Position + data.direction
+	) * CFrame.new(0, 0, -tracer.Size.Z)
 	local rotation = data.projectileRotation or CFrame.new()
 	local start = os.clock()
 
@@ -390,20 +423,33 @@ function methods:fireTracer(data)
 		until hit
 			or not tracer.Parent
 			or not newTracer.Parent
-			or (data.origin.Position - prevCFrame.Position - Vector3.new(0, 0, -data.velocity)).Magnitude
+			or (data.origin.Position - prevCFrame.Position - Vector3.new(
+					0,
+					0,
+					-data.velocity
+				)).Magnitude
 				> data.distance
 
 		if tracer.Parent and newTracer.Parent then
 			if data.projectileWeldToHit and hit then
-				tracer.CFrame = CFrame.lookAt(hit.Position, hit.Position + data.direction) * rotation -- Place tracer at intersection
+				tracer.CFrame = CFrame.lookAt(hit.Position, hit.Position + data.direction)
+					* rotation -- Place tracer at intersection
 
 				Util.weld(tracer, hit.Instance)
 
-				for _, part in pairs(newTracer:IsA("Model") and newTracer:GetChildren() or { newTracer }) do
+				for _, part in
+					pairs(
+						newTracer:IsA("Model") and newTracer:GetChildren()
+							or { newTracer }
+					)
+				do
 					part.Anchored = false
 				end
 
-				Debris:AddItem(newTracer, (data.projectileLife or 10) - (os.clock() - start) + 0.001) -- TODO: Replace with a better debris collector
+				Debris:AddItem(
+					newTracer,
+					(data.projectileLife or 10) - (os.clock() - start) + 0.001
+				) -- TODO: Replace with a better debris collector
 			else
 				newTracer:Destroy()
 			end
@@ -428,7 +474,10 @@ function WeaponClient.watch()
 	self.remote = Util.waitForChild(ReplicatedStorage, "WeaponRemote")
 
 	self.remote.OnClientEvent:Connect(function(action)
-		assert(action and typeof(action) == "table", "WeaponClient.watch - Missing action")
+		assert(
+			action and typeof(action) == "table",
+			"WeaponClient.watch - Missing action"
+		)
 		assert(action.type, "WeaponClient.watch - Missing action type")
 		assert(action.payload, "WeaponClient.watch - Missing action payload")
 
@@ -449,7 +498,8 @@ function WeaponClient.new(config)
 	self._eventHooks = {}
 	self._actionBindings = {}
 
-	self.config = Util.extend(Util.extend({}, config), Util.makeConfigFromValues(config.tool))
+	self.config =
+		Util.extend(Util.extend({}, config), Util.makeConfigFromValues(config.tool))
 
 	for k, v in pairs(DEFAULT_CONFIG) do
 		if self.config[k] == nil then
@@ -466,7 +516,8 @@ function WeaponClient.new(config)
 	end
 
 	self.localPlayer = Players.LocalPlayer
-	self.localCharacter = self.localPlayer.Character or self.localPlayer.CharacterAdded:Wait()
+	self.localCharacter = self.localPlayer.Character
+		or self.localPlayer.CharacterAdded:Wait()
 	self.localHumanoid = self.localCharacter:WaitForChild("Humanoid")
 	self.remote = config.tool:WaitForChild("Remote")
 	self.handle = config.tool.Handle
@@ -503,9 +554,11 @@ function WeaponClient.new(config)
 			for eventName, _condition in pairs(data.listeners) do
 				-- Start listing to eventName (InputBegan, InputEnded, etc.)
 				if not self._connections[eventName] then
-					self._connections[eventName] = UserInputService[eventName]:Connect(function(...)
-						self:_onInputEvent(eventName, ...)
-					end)
+					self._connections[eventName] = UserInputService[eventName]:Connect(
+						function(...)
+							self:_onInputEvent(eventName, ...)
+						end
+					)
 				end
 			end
 		end
@@ -550,7 +603,9 @@ function WeaponClient.new(config)
 	self.animations = Util.map(config.animations, function(idList, state)
 		return state,
 			Util.map(idList, function(id)
-				return self.localHumanoid:LoadAnimation(config.tool.Animations:WaitForChild(id))
+				return self.localHumanoid:LoadAnimation(
+					config.tool.Animations:WaitForChild(id)
+				)
 			end)
 	end)
 

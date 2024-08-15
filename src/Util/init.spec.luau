@@ -11,7 +11,9 @@ return function()
 			return
 		end
 
-		context.character = Players:CreateHumanoidModelFromUserId(context.localPlayer.CharacterAppearanceId)
+		context.character = Players:CreateHumanoidModelFromUserId(
+			context.localPlayer.CharacterAppearanceId
+		)
 		context.character.Parent = Workspace
 		context.localPlayer.Character = context.character
 	end)

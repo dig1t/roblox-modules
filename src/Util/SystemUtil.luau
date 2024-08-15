@@ -66,7 +66,10 @@ end
 	@param callback function
 	@return RBXScriptConnection
 ]=]
-function SystemUtil.interval(interval: number, callback: (number, number) -> boolean?): RBXScriptConnection
+function SystemUtil.interval(
+	interval: number,
+	callback: (number, number) -> boolean?
+): RBXScriptConnection
 	assert(typeof(interval) == "number", "Util.interval - interval must be a number")
 	assert(typeof(callback) == "function", "Util.interval - callback must be a function")
 

@@ -119,7 +119,9 @@ function Util.use(moduleName: string | ModuleScript)
 		else
 			error("Could not load module: " .. moduleName)
 		end
-	elseif typeof(moduleName) == "Instance" and moduleName.ClassName == "ModuleScript" then
+	elseif
+		typeof(moduleName) == "Instance" and moduleName.ClassName == "ModuleScript"
+	then
 		module = require(moduleName) :: { [any]: any }
 	else
 		error("Could not load module: " .. moduleName.Name)
@@ -243,18 +245,28 @@ function Util.get(path, parent) -- expiremental
 
 	table.remove(chunks, 1)
 
-	return res ~= nil and Util.indexOf(valueObjects, res.ClassName) > 0 and res.Value or res -- success and res
+	return res ~= nil and Util.indexOf(valueObjects, res.ClassName) > 0 and res.Value
+		or res -- success and res
 end
 
 -- Tool to set value instances
-function Util.set(parent: Instance, name: string, value: any, customValueType: string?): ValueBaseType?
+function Util.set(
+	parent: Instance,
+	name: string,
+	value: any,
+	customValueType: string?
+): ValueBaseType?
 	return Util.try(function()
 		local valueObject: ValueBaseType | Instance? = nil
 
 		if not parent:FindFirstChild(name) then
-			local valueType: string = customValueType or valueObjectClassNames[typeof(value)]
+			local valueType: string = customValueType
+				or valueObjectClassNames[typeof(value)]
 
-			assert(table.find(valueObjects, valueType), "Util.set - Invalid value type: " .. valueType)
+			assert(
+				table.find(valueObjects, valueType),
+				"Util.set - Invalid value type: " .. valueType
+			)
 
 			local newObject = Instance.new(valueType) :: ValueBaseType
 			valueObject = newObject
@@ -320,13 +332,16 @@ function Util.numberSequence(data: { { number } }): NumberSequence
 	assert(data and typeof(data) == "table", "Util.numberSequence - Missing data table")
 	assert(#data > 1, "Util.numberSequence - Must have at least 2 keypoints")
 
-	local keypoints: { [any]: any } = Util.map(data, function(keypoint: { number }): NumberSequenceKeypoint?
-		if #keypoint == 2 then
-			return NumberSequenceKeypoint.new(keypoint[1], keypoint[2])
-		end
+	local keypoints: { [any]: any } = Util.map(
+		data,
+		function(keypoint: { number }): NumberSequenceKeypoint?
+			if #keypoint == 2 then
+				return NumberSequenceKeypoint.new(keypoint[1], keypoint[2])
+			end
 
-		return nil
-	end)
+			return nil
+		end
+	)
 
 	assert(#keypoints > 1, "Util.numberSequence - Must have at least 2 keypoints")
 
@@ -346,8 +361,14 @@ function Util.getProductInfo(productId: number, infoType: Enum.InfoType?): { [an
 		infoType = Enum.InfoType.Asset -- Roblox default
 	end
 
-	assert(typeof(productId) == "number", "Util.getProductInfo - Missing productId argument")
-	assert(typeof(infoType) == "EnumItem", "Util.getProductInfo - Invalid infoType argument")
+	assert(
+		typeof(productId) == "number",
+		"Util.getProductInfo - Missing productId argument"
+	)
+	assert(
+		typeof(infoType) == "EnumItem",
+		"Util.getProductInfo - Invalid infoType argument"
+	)
 
 	local cacheIndex: string = `{infoType.Name}-{productId}`
 
@@ -356,7 +377,8 @@ function Util.getProductInfo(productId: number, infoType: Enum.InfoType?): { [an
 	end
 
 	local success: boolean, result: any = Util.attempt(function()
-		local productInfo: { [any]: any } = MarketplaceService:GetProductInfo(productId, infoType)
+		local productInfo: { [any]: any } =
+			MarketplaceService:GetProductInfo(productId, infoType)
 		_cache[cacheIndex] = productInfo
 
 		return productInfo
@@ -383,13 +405,18 @@ end
 	@param fallbackAssetId (number | string)?
 	@return string
 ]=]
-function Util.getAssetURI(assetId: (number | string)?, fallbackAssetId: (number | string)?): string
+function Util.getAssetURI(
+	assetId: (number | string)?,
+	fallbackAssetId: (number | string)?
+): string
 	assert(
 		assetId == nil or typeof(assetId) == "number" or typeof(assetId) == "string",
 		"Util.getAssetURI - assetId must be a number or string or nil"
 	)
 	assert(
-		fallbackAssetId == nil or typeof(fallbackAssetId) == "number" or typeof(fallbackAssetId) == "string",
+		fallbackAssetId == nil
+			or typeof(fallbackAssetId) == "number"
+			or typeof(fallbackAssetId) == "string",
 		"Util.getAssetURI - fallbackAssetId must be a number or string or nil"
 	)
 
@@ -428,10 +455,20 @@ end
 	@param yield number?
 	@return (boolean, any, number)
 ]=]
-function Util.attempt(runner: () -> (), maxTries: number?, yield: number?): (boolean, any, number)
+function Util.attempt(
+	runner: () -> (),
+	maxTries: number?,
+	yield: number?
+): (boolean, any, number)
 	assert(typeof(runner) == "function", "Util.attempt - runner must be a function")
-	assert(maxTries == nil or typeof(maxTries) == "number", "Util.attempt - maxTries must be a number or nil")
-	assert(yield == nil or typeof(yield) == "number", "Util.attempt - yield must be a number or nil")
+	assert(
+		maxTries == nil or typeof(maxTries) == "number",
+		"Util.attempt - maxTries must be a number or nil"
+	)
+	assert(
+		yield == nil or typeof(yield) == "number",
+		"Util.attempt - yield must be a number or nil"
+	)
 
 	local res: any
 	local successful: boolean = false
@@ -516,11 +553,17 @@ end
 ]=]
 function Util.weld(part: BasePart, attachTo: BasePart, offset: CFrame?): WeldConstraint
 	assert(typeof(part) == "Instance", "Util.weld - First argument must be an instance")
-	assert(typeof(attachTo) == "Instance", "Util.weld - Second argument must be an instance")
+	assert(
+		typeof(attachTo) == "Instance",
+		"Util.weld - Second argument must be an instance"
+	)
 	assert(part:IsA("BasePart"), "Util.weld - First argument must be a base part")
 	assert(attachTo:IsA("BasePart"), "Util.weld - Second argument must be a base part")
 	assert(part ~= attachTo, "Util.weld - Cannot weld part to itself")
-	assert(offset == nil or typeof(offset) == "CFrame", "Util.weld - Third argument must be a CFrame or nil")
+	assert(
+		offset == nil or typeof(offset) == "CFrame",
+		"Util.weld - Third argument must be a CFrame or nil"
+	)
 
 	if offset then
 		part.CFrame = attachTo.CFrame * offset
@@ -546,7 +589,10 @@ end
 	@return Model?
 ]=]
 function Util.weldModel(model: Model): Model?
-	assert(typeof(model) == "Instance", "Util.weldModel - First argument must be an instance")
+	assert(
+		typeof(model) == "Instance",
+		"Util.weldModel - First argument must be an instance"
+	)
 
 	if not model.PrimaryPart then
 		return nil
@@ -573,7 +619,10 @@ end
 	@param instance Instance
 ]=]
 function Util.clearWelds(instance: Instance)
-	assert(typeof(instance) == "Instance", "Util.clearWelds - First argument must be an instance")
+	assert(
+		typeof(instance) == "Instance",
+		"Util.clearWelds - First argument must be an instance"
+	)
 
 	for _, obj: WeldConstraint | Weld | Instance in pairs(instance:GetDescendants()) do
 		if obj:IsA("WeldConstraint") or obj:IsA("Weld") then
@@ -594,7 +643,10 @@ end
 	@param instance Instance
 ]=]
 function Util.breakJoints(instance: Instance)
-	assert(typeof(instance) == "Instance", "Util.breakJoints - instance argument must be an instance")
+	assert(
+		typeof(instance) == "Instance",
+		"Util.breakJoints - instance argument must be an instance"
+	)
 
 	for _, child: Instance in pairs(instance:GetDescendants()) do
 		if child:IsA("WeldConstraint") or child:IsA("Weld") or child:IsA("Motor6D") then
@@ -613,7 +665,10 @@ end
 	@return number
 ]=]
 function Util.getMass(model: Model): number?
-	assert(typeof(model) == "Instance", "Util.getMass - First argument must be an instance")
+	assert(
+		typeof(model) == "Instance",
+		"Util.getMass - First argument must be an instance"
+	)
 	assert(model:IsA("Model"), "Util.getMass - First argument must be a model")
 
 	local mass: number = 0
@@ -650,7 +705,8 @@ function Util.moveModel(model: Model, to: CFrame)
 		end
 
 		local newPositionInWorld: Vector3 = part.Position - origin + to.Position
-		local _x, _y, _z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = part.CFrame:GetComponents()
+		local _x, _y, _z, R00, R01, R02, R10, R11, R12, R20, R21, R22 =
+			part.CFrame:GetComponents()
 
 		part.CFrame = CFrame.new(
 			newPositionInWorld.X,
@@ -675,7 +731,10 @@ end
 
 --- Wait for a child to be added to an instance. WARNING: This function will forever wait until the child is added.
 function Util.waitForChild(parent: Instance, name: string): Instance?
-	assert(parent and typeof(parent) == "Instance", "Util.waitForChild - Parent must be an instance")
+	assert(
+		parent and typeof(parent) == "Instance",
+		"Util.waitForChild - Parent must be an instance"
+	)
 	assert(name, "Util.waitForChild - Missing child name")
 
 	local current: Instance? = parent:FindFirstChild(name)
@@ -705,9 +764,15 @@ local RunService = game:GetService("RunService")
 	@return BasePart?
 ]=]
 function Util.waitForPrimaryPart(model: Model, timeout: number?): BasePart?
-	assert(model and typeof(model) == "Instance", "Util.waitForPrimaryPart - First argument must be an instance")
+	assert(
+		model and typeof(model) == "Instance",
+		"Util.waitForPrimaryPart - First argument must be an instance"
+	)
 	assert(model:IsA("Model"), "Util.waitForPrimaryPart - First argument must be a model")
-	assert(timeout == nil or typeof(timeout) == "number", "Util.waitForPrimaryPart - Timeout argument must be a number")
+	assert(
+		timeout == nil or typeof(timeout) == "number",
+		"Util.waitForPrimaryPart - Timeout argument must be a number"
+	)
 
 	local startedAt: number = os.clock()
 	local _timeout = timeout or 15
@@ -754,13 +819,19 @@ function Util.addListener(
 	listenTo: string,
 	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
-	assert(instance and typeof(instance) == "Instance", "Util.addListener - First argument must be an instance")
+	assert(
+		instance and typeof(instance) == "Instance",
+		"Util.addListener - First argument must be an instance"
+	)
 	assert(
 		listenerType == "Property" or listenerType == "Attribute",
 		"Util.addListener - Invalid listener type, must be 'Property' or 'Attribute'"
 	)
 	assert(listenTo, "Util.addListener - Missing listenTo argument")
-	assert(callback and typeof(callback) == "function", "Util.addListener - Missing callback")
+	assert(
+		callback and typeof(callback) == "function",
+		"Util.addListener - Missing callback"
+	)
 
 	local obj: any = instance -- Type hack
 	local oldValue: any = obj[listenTo]
@@ -799,9 +870,15 @@ function Util.addPropertyListener(
 	listenTo: string,
 	callback: (oldValue: any, newValue: any) -> ()
 ): RBXScriptConnection
-	assert(instance and typeof(instance) == "Instance", "Util.addPropertyListener - First argument must be an instance")
+	assert(
+		instance and typeof(instance) == "Instance",
+		"Util.addPropertyListener - First argument must be an instance"
+	)
 	assert(listenTo, "Util.addPropertyListener - Missing listenTo argument")
-	assert(callback and typeof(callback) == "function", "Util.addPropertyListener - Missing callback")
+	assert(
+		callback and typeof(callback) == "function",
+		"Util.addPropertyListener - Missing callback"
+	)
 
 	return Util.addListener(instance, "Property", listenTo, callback)
 end
@@ -833,7 +910,10 @@ function Util.addAttributeListener(
 		"Util.addAttributeListener - First argument must be an instance"
 	)
 	assert(listenTo, "Util.addAttributeListener - Missing listenTo argument")
-	assert(callback and typeof(callback) == "function", "Util.addAttributeListener - Missing callback")
+	assert(
+		callback and typeof(callback) == "function",
+		"Util.addAttributeListener - Missing callback"
+	)
 
 	return Util.addListener(instance, "Attribute", listenTo, callback)
 end
@@ -864,7 +944,9 @@ function Util.onTouch(part: BasePart, callback: (BasePart) -> ()): RBXScriptConn
 	detector.Name = "Detector"
 	detector.Transparency = 1
 	detector.Size = Vector3.new(detector.Size.X, ON_TOUCH_OFFSET, detector.Size.Z)
-	detector.CFrame = part.CFrame:ToWorldSpace(CFrame.new(0, (ON_TOUCH_OFFSET / 2) + (part.Size.Y / 2), 0)) -- Place on top of the current part, then offset by half of ON_TOUCH_OFFSET
+	detector.CFrame = part.CFrame:ToWorldSpace(
+		CFrame.new(0, (ON_TOUCH_OFFSET / 2) + (part.Size.Y / 2), 0)
+	) -- Place on top of the current part, then offset by half of ON_TOUCH_OFFSET
 	detector.CanCollide = false
 	detector.Parent = part
 

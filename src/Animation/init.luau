@@ -74,7 +74,10 @@ end
 	@param config AnimationConfig -- The default animation configuration
 ]=]
 function Animation.setDefaultConfig(config: AnimationConfig): ()
-	assert(config and typeof(config) == "table", "Table must be passed to set the default animation config")
+	assert(
+		config and typeof(config) == "table",
+		"Table must be passed to set the default animation config"
+	)
 
 	Animation.defaultConfig = config
 end
@@ -86,7 +89,10 @@ end
 ]=]
 function Animation.animate(config: AnimationConfig): ()
 	assert(config and typeof(config) == "table", "Missing animation configuration")
-	assert(typeof(config.source) == "Instance" or typeof(config.source) == "table", "Missing instance to animate")
+	assert(
+		typeof(config.source) == "Instance" or typeof(config.source) == "table",
+		"Missing instance to animate"
+	)
 	assert(typeof(config.start) == "table", "Missing start properties")
 	assert(typeof(config.stop) == "table", "Missing stop properties")
 	assert(config.tweenInfo, "Missing TweenInfo")

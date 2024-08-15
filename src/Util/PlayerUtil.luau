@@ -58,7 +58,10 @@ end
 	@return boolean
 ]=]
 function PlayerUtil.isCreator(player: Player): boolean
-	return (game.CreatorType == Enum.CreatorType.Group and PlayerUtil.getGroupRank(player, game.CreatorId) >= 255)
+	return (
+		game.CreatorType == Enum.CreatorType.Group
+		and PlayerUtil.getGroupRank(player, game.CreatorId) >= 255
+	)
 		or (game.CreatorType == Enum.CreatorType.User and player.UserId == game.CreatorId)
 end
 
@@ -107,8 +110,10 @@ function PlayerUtil.getUserLevel(player: Player): number
 		end
 	end
 
-	return (player.MembershipType == Enum.MembershipType.Premium and PlayerUtil.userLevel.premium)
-		or PlayerUtil.userLevel.normal
+	return (
+		player.MembershipType == Enum.MembershipType.Premium
+		and PlayerUtil.userLevel.premium
+	) or PlayerUtil.userLevel.normal
 end
 
 --[=[

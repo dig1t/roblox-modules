@@ -204,7 +204,8 @@ function Promise._resolve(self: PromiseType, ...)
 		warn(
 			string.format(
 				"Cannot resolve a promise %s",
-				self.status == Promise.statusType.rejected and "after rejection" or "more than once"
+				self.status == Promise.statusType.rejected and "after rejection"
+					or "more than once"
 			)
 		)
 
@@ -261,7 +262,8 @@ function Promise._reject(self: PromiseType, ...)
 		warn(
 			string.format(
 				"Cannot reject a promise %s",
-				self.status == Promise.statusType.fulfilled and "after fulfillment" or "more than once"
+				self.status == Promise.statusType.fulfilled and "after fulfillment"
+					or "more than once"
 			)
 		)
 
@@ -365,13 +367,19 @@ end
 ]=]
 function Promise.finally(self: PromiseType, callback: Callback): PromiseType
 	assert(not self._onFinalizedCallback, "Only one finally callback can be used")
-	assert(typeof(callback) == "function", "Must give a function for the finally callback")
+	assert(
+		typeof(callback) == "function",
+		"Must give a function for the finally callback"
+	)
 
 	if self.status == Promise.statusType.pending then
 		self:_run()
 	end
 
-	if self.status == Promise.statusType.fulfilled or self.status == Promise.statusType.rejected then
+	if
+		self.status == Promise.statusType.fulfilled
+		or self.status == Promise.statusType.rejected
+	then
 		callback(unpack(self._resultArgs))
 
 		return self

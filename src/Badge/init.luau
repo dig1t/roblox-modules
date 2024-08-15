@@ -60,11 +60,16 @@ end
 	@return boolean -- Whether the player has the badge or not.
 ]=]
 function Badge.has(player: Player | number, badgeName: string): boolean?
-	assert(typeof(player) == "number" or player:IsA("Player"), "Badge.has - Invalid player")
+	assert(
+		typeof(player) == "number" or player:IsA("Player"),
+		"Badge.has - Invalid player"
+	)
 	assert(typeof(badgeName) == "string", "Badge.has - Invalid badge name")
 	assert(badges[badgeName], `Badge.has - {badgeName} badge does not exist`)
 
-	local _player: Player = typeof(player) == "number" and Players:GetPlayerByUserId(player) or player
+	local _player: Player = typeof(player) == "number"
+			and Players:GetPlayerByUserId(player)
+		or player
 	local userId: number = _player.UserId
 
 	local cacheKey: string = `${userId}-${badgeName}`
@@ -96,17 +101,23 @@ end
 	@return boolean -- Whether the badge was awarded or not. If the badge was already awarded, this will return true.
 ]=]
 function Badge.award(player: Player | number, badgeName: string): boolean
-	assert(typeof(player) == "number" or player:IsA("Player"), "Badge.award - Invalid player")
+	assert(
+		typeof(player) == "number" or player:IsA("Player"),
+		"Badge.award - Invalid player"
+	)
 	assert(typeof(badgeName) == "string", "Badge.award - Invalid badge name")
 
-	local _player: Player = typeof(player) == "number" and Players:GetPlayerByUserId(player) or player
+	local _player: Player = typeof(player) == "number"
+			and Players:GetPlayerByUserId(player)
+		or player
 	local userId: number = _player.UserId
 
 	if Badge.has(userId, badgeName) then
 		return true
 	end
 
-	local success = pcall(BadgeService.AwardBadge, BadgeService, userId, badges[badgeName])
+	local success =
+		pcall(BadgeService.AwardBadge, BadgeService, userId, badges[badgeName])
 
 	if success then
 		cache:Set(`${userId}-${badgeName}`, true)
