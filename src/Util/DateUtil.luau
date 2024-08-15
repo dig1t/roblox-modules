@@ -47,7 +47,10 @@ function DateUtil.dateTimeComponentsToTimestamp(components: DateTimeComponents):
 	assert(typeof(components.Hour) == "number", "Components.Hour must be a number")
 	assert(typeof(components.Minute) == "number", "Components.Minute must be a number")
 	assert(typeof(components.Second) == "number", "Components.Second must be a number")
-	assert(typeof(components.Millisecond) == "number", "Components.Millisecond must be a number")
+	assert(
+		typeof(components.Millisecond) == "number",
+		"Components.Millisecond must be a number"
+	)
 
 	local timestamp: number = 0
 
@@ -85,7 +88,10 @@ end
 ]=]
 function DateUtil.timeAgoUnix(timestamp: number, endTimestamp: number?): number
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
-	assert(typeof(endTimestamp) == "number" or endTimestamp == nil, "toTimestamp must be a number or nil")
+	assert(
+		typeof(endTimestamp) == "number" or endTimestamp == nil,
+		"toTimestamp must be a number or nil"
+	)
 
 	return (endTimestamp or DateUtil.unix()) - timestamp
 end
@@ -111,14 +117,23 @@ end
 	@param useUTC boolean? -- Whether to use UTC time. Defaults to local time.
 	@return string -- The formatted time in local time.
 ]=]
-function DateUtil.formatUnix(timestamp: number, format: string, locale: string?, useUTC: boolean): string
+function DateUtil.formatUnix(
+	timestamp: number,
+	format: string,
+	locale: string?,
+	useUTC: boolean
+): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(typeof(format) == "string", "format must be a string")
 	assert(typeof(locale) == "string" or locale == nil, "locale must be a string or nil")
 
 	local dateTime = DateTime.fromUnixTimestamp(math.floor(timestamp))
 
-	return (dateTime :: any)[useUTC and "FormatUniversalTime" or "FormatLocalTime"](dateTime, format, locale or "en-us")
+	return (dateTime :: any)[useUTC and "FormatUniversalTime" or "FormatLocalTime"](
+		dateTime,
+		format,
+		locale or "en-us"
+	)
 end
 
 --[=[
@@ -139,7 +154,12 @@ function DateUtil.elapsedTimeClockFormat(timestamp: number): string
 
 	local isOverAnHour: boolean = timestamp >= 3600
 
-	return DateUtil.formatUnix(timestamp, isOverAnHour and "HH:mm:ss" or "mm:ss", "en-us", true)
+	return DateUtil.formatUnix(
+		timestamp,
+		isOverAnHour and "HH:mm:ss" or "mm:ss",
+		"en-us",
+		true
+	)
 end
 --[=[
 	Converts a unix timestamp to a readable time ago format (e.g. 1 minute ago, 1 minute 20 seconds ago).
@@ -164,7 +184,10 @@ end
 ]=]
 function DateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
-	assert(typeof(endTimestamp) == "number" or endTimestamp == nil, "endTimestamp must be a number or nil")
+	assert(
+		typeof(endTimestamp) == "number" or endTimestamp == nil,
+		"endTimestamp must be a number or nil"
+	)
 
 	local timeAgo: number = DateUtil.timeAgoUnix(timestamp, endTimestamp)
 	local result: string = ""
@@ -182,7 +205,8 @@ function DateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 		local unit: string = timeNames[current][2]
 
 		if (timeAgo >= unitThreshold) and current <= #timeNames then
-			local amount: number = math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
+			local amount: number =
+				math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
 
 			previousUnitSeconds += amount * unitThreshold
 
@@ -217,10 +241,21 @@ end
 	@param depth number? -- The maximum number of units to return.
 	@return string
 ]=]
-function DateUtil.totalTime(timestamp: number, endTimestamp: number?, separator: string?, depth: number?): string
+function DateUtil.totalTime(
+	timestamp: number,
+	endTimestamp: number?,
+	separator: string?,
+	depth: number?
+): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
-	assert(typeof(endTimestamp) == "number" or endTimestamp == nil, "endTimestamp must be a number or nil")
-	assert(typeof(separator) == "string" or separator == nil, "separator must be a string or nil")
+	assert(
+		typeof(endTimestamp) == "number" or endTimestamp == nil,
+		"endTimestamp must be a number or nil"
+	)
+	assert(
+		typeof(separator) == "string" or separator == nil,
+		"separator must be a string or nil"
+	)
 	assert(typeof(depth) == "number" or depth == nil, "depth must be a number or nil")
 
 	local _separator: string = separator or " "
@@ -242,7 +277,8 @@ function DateUtil.totalTime(timestamp: number, endTimestamp: number?, separator:
 		local unit: string = timeNames[current][2]
 
 		if (timeAgo >= unitThreshold) and current <= #timeNames then
-			local amount: number = math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
+			local amount: number =
+				math.floor((timeAgo - previousUnitSeconds) / unitThreshold)
 
 			previousUnitSeconds += amount * unitThreshold
 

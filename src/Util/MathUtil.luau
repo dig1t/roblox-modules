@@ -1,3 +1,5 @@
+--!native
+
 local MathUtil = {}
 
 --[=[
@@ -54,7 +56,10 @@ end
 	@param decimals number? -- The number of decimal places to round to. Defaults to 2.
 	@return string
 ]=]
-function MathUtil.formatNumber(number: number, decimals: number?): string -- 1000.01 to 1,000.01
+function MathUtil.formatNumber(
+	number: number,
+	decimals: number?
+): string -- 1000.01 to 1,000.01
 	assert(typeof(number) == "number", "Number argument must be a number")
 
 	local numberString: string = tostring(number)
@@ -63,7 +68,8 @@ function MathUtil.formatNumber(number: number, decimals: number?): string -- 100
 		return ""
 	end
 
-	local negative: string?, int: string?, _decimals: string? = numberString:match("([-]?)(%d+)([.]?%d*)")
+	local negative: string?, int: string?, _decimals: string? =
+		numberString:match("([-]?)(%d+)([.]?%d*)")
 
 	if not negative or not int or not _decimals then
 		return ""
@@ -102,8 +108,14 @@ end
 ]=]
 function MathUtil.random(minValue: number, maxValue: number?, float: boolean?): number
 	assert(typeof(minValue) == "number", "Number1 argument must be a number")
-	assert(typeof(maxValue) == "number" or maxValue == nil, "Number2 argument must be a number or nil")
-	assert(typeof(float) == "boolean" or float == nil, "Float argument must be a boolean or nil")
+	assert(
+		typeof(maxValue) == "number" or maxValue == nil,
+		"Number2 argument must be a number or nil"
+	)
+	assert(
+		typeof(float) == "boolean" or float == nil,
+		"Float argument must be a boolean or nil"
+	)
 
 	local min: number = not maxValue and 1 or minValue -- If maxValue is not defined, use 1 as min
 	local max: number = maxValue or minValue
@@ -129,7 +141,10 @@ local charsetLength: number = #charset
 	@return string
 ]=]
 function MathUtil.randomString(length: number?): string
-	assert(typeof(length) == "number" or length == nil, "Length argument must be a number or nil")
+	assert(
+		typeof(length) == "number" or length == nil,
+		"Length argument must be a number or nil"
+	)
 
 	local res: string = ""
 
@@ -159,7 +174,10 @@ end
 	@return any
 ]=]
 function MathUtil.randomObj(obj: { [any]: any } | Instance): any
-	assert(typeof(obj) == "table" or typeof(obj) == "Instance", "Object argument must be a table or Instance")
+	assert(
+		typeof(obj) == "table" or typeof(obj) == "Instance",
+		"Object argument must be a table or Instance"
+	)
 
 	if typeof(obj) == "Instance" then
 		-- Convert to a table
@@ -227,14 +245,30 @@ local shortNumberSuffixes: { string } =
 	@param decimals number? -- The number of decimal places to round to. Defaults to 1.
 	@return string
 ]=]
-function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, decimals: number?): string
-	assert(typeof(number) == "number" or typeof(number) == "string", "Number argument must be a number or string")
-	assert(typeof(minimumTiers) == "number" or minimumTiers == nil, "MinimumTiers argument must be a number or nil")
-	assert(typeof(decimals) == "number" or decimals == nil, "Decimals argument must be a number or nil")
+function MathUtil.shortenNumber(
+	number: number | string,
+	minimumTiers: number?,
+	decimals: number?
+): string
+	assert(
+		typeof(number) == "number" or typeof(number) == "string",
+		"Number argument must be a number or string"
+	)
+	assert(
+		typeof(minimumTiers) == "number" or minimumTiers == nil,
+		"MinimumTiers argument must be a number or nil"
+	)
+	assert(
+		typeof(decimals) == "number" or decimals == nil,
+		"Decimals argument must be a number or nil"
+	)
 
 	number = typeof(number) == "string" and tonumber(number) or number
 
-	assert(typeof(number) == "number", "Number argument be a number or string that can be converted to a number")
+	assert(
+		typeof(number) == "number",
+		"Number argument be a number or string that can be converted to a number"
+	)
 
 	-- Not necessary to shorten
 	if number < 1000 then
@@ -254,7 +288,8 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, 
 
 	tier = math.floor(tier)
 
-	local tierSuffix: string? = shortNumberSuffixes[tier] or shortNumberSuffixes[#shortNumberSuffixes] -- Get tier or use highest tier if # too high
+	local tierSuffix: string? = shortNumberSuffixes[tier]
+		or shortNumberSuffixes[#shortNumberSuffixes] -- Get tier or use highest tier if # too high
 
 	local _number: number? = tonumber(string.format("%.2f", number / 10 ^ (3 * tier)))
 
@@ -273,7 +308,8 @@ function MathUtil.shortenNumber(number: number | string, minimumTiers: number?, 
 		local decimalIndex = formattedNumber:find("%.")
 
 		if decimalIndex then
-			decimalText = "." .. formattedNumber:sub(decimalIndex + 1, decimalIndex + decimals)
+			decimalText = "."
+				.. formattedNumber:sub(decimalIndex + 1, decimalIndex + decimals)
 		end
 	end
 

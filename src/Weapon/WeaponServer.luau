@@ -141,7 +141,10 @@ end
 -- @return Color3|nil
 ]]
 function methods:getTeam(player)
-	return player and player.Character and player.Character:FindFirstChild("Team") and player.Character.Team.Value
+	return player
+		and player.Character
+		and player.Character:FindFirstChild("Team")
+		and player.Character.Team.Value
 end
 
 --[[
@@ -173,7 +176,11 @@ function methods:damagePlayer(victim, amount)
 
 		-- Make sure the local player and the victim are both
 		-- in teams before checking to see if they're teammates
-		if victimTeamColor and localPlayerTeamColor and victimTeamColor == localPlayerTeamColor then
+		if
+			victimTeamColor
+			and localPlayerTeamColor
+			and victimTeamColor == localPlayerTeamColor
+		then
 			-- Cannot damage teammates
 			return
 		end
@@ -316,7 +323,8 @@ function methods:shoot(data)
 							modelParts = self.modelParts,
 							projectileWeldToHit = self.config.projectileWeldToHit,
 							projectileRotation = self.config.projectileRotation,
-							distance = hit.Position and (data.origin.Position - hit.Position).Magnitude
+							distance = hit.Position
+									and (data.origin.Position - hit.Position).Magnitude
 								or self.config.maxRange,
 							velocity = self.config.projectileVelocity or 16,
 						},
@@ -339,7 +347,10 @@ function methods:shoot(data)
 		local projectile = data.projectile or self.projectileReference:Clone()
 
 		if data.projectile:IsA("Model") then
-			assert(data.projectile.PrimaryPart, "Projectile model must have a PrimaryPart defined")
+			assert(
+				data.projectile.PrimaryPart,
+				"Projectile model must have a PrimaryPart defined"
+			)
 
 			projectile = data.projectile.PrimaryPart
 		end
@@ -361,15 +372,22 @@ function methods:shoot(data)
 		task.spawn(function()
 			repeat
 				local direction = prevCFrame.LookVector
-				local position = prevCFrame.Position + (direction * velocity) - Vector3.new(0, bulletDrop, 0)
+				local position = prevCFrame.Position
+					+ (direction * velocity)
+					- Vector3.new(0, bulletDrop, 0)
 				local distance = (position - prevCFrame.Position).magnitude
 
-				local hit = self:raycast(prevCFrame, (position - prevCFrame.Position).unit * velocity)
+				local hit = self:raycast(
+					prevCFrame,
+					(position - prevCFrame.Position).unit * velocity
+				)
 
-				local nextCFrame = CFrame.new(prevCFrame.Position, position) * CFrame.new(0, 0, -distance / 2)
+				local nextCFrame = CFrame.new(prevCFrame.Position, position)
+					* CFrame.new(0, 0, -distance / 2)
 
 				prevCFrame = nextCFrame
-				projectile.CFrame = data.modifier and data.modifier(nextCFrame) or nextCFrame
+				projectile.CFrame = data.modifier and data.modifier(nextCFrame)
+					or nextCFrame
 
 				if hit.Instance then
 					data.callback(hit)
@@ -501,7 +519,8 @@ function WeaponServer.new(config)
 
 	-- Begin weapon configuration
 	if self.config.grip then
-		local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 = self.config.grip:GetComponents()
+		local x, y, z, R00, R01, R02, R10, R11, R12, R20, R21, R22 =
+			self.config.grip:GetComponents()
 
 		self.config.tool.GripPos = Vector3.new(x, y, z)
 		self.config.tool.GripRight = Vector3.new(R00, R10, R20)
@@ -557,12 +576,14 @@ function WeaponServer.new(config)
 			-- Mock action as if it came from the client
 			-- This will prevent equip/unequip action spam
 			self:processAction({
-				type = config.tool:IsDescendantOf(self.localPlayer) and "WEAPON_UNEQUIP" or "WEAPON_EQUIP",
+				type = config.tool:IsDescendantOf(self.localPlayer) and "WEAPON_UNEQUIP"
+					or "WEAPON_EQUIP",
 			})
 		end
 
 		detectLocation()
-		self.connections.equipListener = config.tool:GetPropertyChangedSignal("Parent"):Connect(detectLocation)
+		self.connections.equipListener =
+			config.tool:GetPropertyChangedSignal("Parent"):Connect(detectLocation)
 	end)
 
 	Util.set(config.tool, "Ready", true) -- TODO: Replace with config.tool:setAttribute("Ready", true)

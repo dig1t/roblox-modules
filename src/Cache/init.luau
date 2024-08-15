@@ -134,7 +134,8 @@ function Cache.Set(self: CacheType, key: Key, value: any, ttl: number?): boolean
 	self._cache[key] = {
 		key = key,
 		value = value,
-		expires = ttl or Util.unix() + (self.options.defaultTTL or defaultOptions.defaultTTL),
+		expires = ttl
+			or Util.unix() + (self.options.defaultTTL or defaultOptions.defaultTTL),
 	} :: CacheEntry
 
 	return true
@@ -163,7 +164,8 @@ end
 ]=]
 function Cache.SetMultiple(self: CacheType, cacheObjects: { CacheObject }): boolean
 	for _, cacheObject: CacheObject in cacheObjects do
-		local success: boolean? = self:Set(cacheObject.key, cacheObject.value, cacheObject.ttl)
+		local success: boolean? =
+			self:Set(cacheObject.key, cacheObject.value, cacheObject.ttl)
 
 		if success ~= true then
 			return false

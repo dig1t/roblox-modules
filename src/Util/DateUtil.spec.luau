@@ -20,7 +20,8 @@ return function()
 		it("should display a readable string of the time", function()
 			local nowTimestamp: number = DateUtil.unix()
 			local readableTime: string = DateUtil.totalTime(nowTimestamp - 120)
-			local readableTimeDiff: string = DateUtil.totalTime(nowTimestamp - 120, nowTimestamp)
+			local readableTimeDiff: string =
+				DateUtil.totalTime(nowTimestamp - 120, nowTimestamp)
 
 			expect(readableTime).to.equal("2 minutes")
 			expect(readableTimeDiff).to.equal("2 minutes")

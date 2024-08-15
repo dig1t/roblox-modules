@@ -62,7 +62,11 @@ function Ragdoll.setup(character: Model) -- Sets up the player's collision group
 
 		if not playerGroupExists or not ragdollGroupExists then
 			-- Disable collisions with ragdoll characters
-			PhysicsService:CollisionGroupSetCollidable(PLAYER_COLLISION_GROUP_NAME, RAGDOLL_COLLISION_GROUP_NAME, false)
+			PhysicsService:CollisionGroupSetCollidable(
+				PLAYER_COLLISION_GROUP_NAME,
+				RAGDOLL_COLLISION_GROUP_NAME,
+				false
+			)
 		end
 
 		Ragdoll.isReady = true
@@ -96,7 +100,9 @@ local function createRagdoll(character: Model)
 	end
 
 	local partAttachment: Attachment = Instance.new("Attachment")
-	partAttachment.Parent = character:FindFirstChild("Head") or character.PrimaryPart or Util.getFirstPart(character)
+	partAttachment.Parent = character:FindFirstChild("Head")
+		or character.PrimaryPart
+		or Util.getFirstPart(character)
 
 	-- Push player backwards
 	if partAttachment.Parent then
@@ -106,7 +112,9 @@ local function createRagdoll(character: Model)
 		force.Parent = partAttachment
 	end
 
-	for _, obj: Motor6D | BasePart | Script | Instance in pairs(character:GetDescendants()) do
+	for _, obj: Motor6D | BasePart | Script | Instance in
+		pairs(character:GetDescendants())
+	do
 		if obj:IsA("Motor6D") then
 			local root: Attachment = Instance.new("Attachment")
 			local attachment: Attachment = Instance.new("Attachment")
@@ -148,7 +156,12 @@ end
 	@param destroyTime number? -- The time in seconds before the ragdoll is destroyed
 	@param keepRagdollInWorld boolean? -- Whether or not to keep the ragdoll in the world
 ]=]
-function Ragdoll.playerDied(player: Player, parent: Instance?, destroyTime: number?, keepRagdollInWorld: boolean?)
+function Ragdoll.playerDied(
+	player: Player,
+	parent: Instance?,
+	destroyTime: number?,
+	keepRagdollInWorld: boolean?
+)
 	if not player.Character or not player.Character:GetAttribute("RagdollReady") then
 		return
 	end

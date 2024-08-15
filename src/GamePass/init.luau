@@ -41,7 +41,10 @@ local cache = Cache.new()
 	@return boolean
 ]=]
 function GamePass.has(player: Player, gamePassId: number): boolean
-	assert(typeof(player) == "Instance" and player:IsA("Player"), "GamePass.has - Missing Player object")
+	assert(
+		typeof(player) == "Instance" and player:IsA("Player"),
+		"GamePass.has - Missing Player object"
+	)
 	assert(typeof(gamePassId) == "number", "GamePass.has - Missing GamePass id")
 
 	local key = `${player.UserId}-${gamePassId}`
@@ -49,8 +52,12 @@ function GamePass.has(player: Player, gamePassId: number): boolean
 	local cached: boolean = cache:Get(key)
 
 	if cache:Get(key) == nil then
-		local success, res =
-			pcall(MarketplaceService.UserOwnsGamePassAsync, MarketplaceService, player.UserId, gamePassId)
+		local success, res = pcall(
+			MarketplaceService.UserOwnsGamePassAsync,
+			MarketplaceService,
+			player.UserId,
+			gamePassId
+		)
 
 		if success then
 			cache:Set(key, res)
@@ -76,7 +83,10 @@ end
 	@param gamePassId number -- The game pass id.
 ]=]
 function GamePass.prompt(player: Player, gamePassId: number)
-	assert(typeof(player) == "Instance" and player:IsA("Player"), "GamePass.prompt - Missing Player object")
+	assert(
+		typeof(player) == "Instance" and player:IsA("Player"),
+		"GamePass.prompt - Missing Player object"
+	)
 	assert(typeof(gamePassId) == "number", "GamePass.prompt - Missing game pass id")
 
 	MarketplaceService:PromptGamePassPurchase(player, gamePassId)

@@ -1,3 +1,5 @@
+--!native
+
 local SearchUtil = {}
 
 --[=[
@@ -18,7 +20,10 @@ function SearchUtil.getPartCount(instance: Instance?): number
 		return 0
 	end
 
-	assert(typeof(instance) == "Instance", "Util.getPartCount() - argument must be an Instance")
+	assert(
+		typeof(instance) == "Instance",
+		"Util.getPartCount() - argument must be an Instance"
+	)
 
 	local count: number = 0
 
@@ -44,7 +49,10 @@ end
 	@return { BasePart }
 ]=]
 function SearchUtil.getDescendantParts(instance: Instance): { BasePart }
-	assert(typeof(instance) == "Instance", "Util.getDescendantParts() - argument must be an Instance")
+	assert(
+		typeof(instance) == "Instance",
+		"Util.getDescendantParts() - argument must be an Instance"
+	)
 
 	local parts: { BasePart } = {}
 
@@ -92,8 +100,14 @@ end
 	@param condition string | (obj: Instance) -> boolean
 	@return any
 ]=]
-function SearchUtil.getAncestor(child: Instance, condition: string | (obj: Instance) -> boolean): any
-	assert(typeof(child) == "Instance", "Util.getAncestor() - child argument must be an Instance")
+function SearchUtil.getAncestor(
+	child: Instance,
+	condition: string | (obj: Instance) -> boolean
+): any
+	assert(
+		typeof(child) == "Instance",
+		"Util.getAncestor() - child argument must be an Instance"
+	)
 	assert(
 		typeof(condition) == "string" or typeof(condition) == "function",
 		"Util.getAncestor() - condition argument must be a string name or function"
@@ -186,8 +200,14 @@ function SearchUtil.find(
 		"Util.find() - node argument must be an Instance or table"
 	)
 	assert(condition ~= nil, "Util.find() - condition argument must be a function or key")
-	assert(typeof(maxDepth) == "number" or maxDepth == nil, "Util.find() - maxDepth must be a number or nil")
-	assert(typeof(_depth) == "number" or _depth == nil, "Util.find() - _depth must be a number or nil")
+	assert(
+		typeof(maxDepth) == "number" or maxDepth == nil,
+		"Util.find() - maxDepth must be a number or nil"
+	)
+	assert(
+		typeof(_depth) == "number" or _depth == nil,
+		"Util.find() - _depth must be a number or nil"
+	)
 
 	local function test(child: Instance): (boolean, any)
 		if typeof(condition) == "function" then
@@ -282,7 +302,10 @@ end
 	@param children string | { string }
 	@return boolean
 ]=]
-function SearchUtil.exists(node: Instance | { [string]: any }, children: (string | { string })?): boolean
+function SearchUtil.exists(
+	node: Instance | { [string]: any },
+	children: (string | { string })?
+): boolean
 	assert(
 		typeof(node) == "Instance" or typeof(node) == "table",
 		"Util.exists() - node argument must be an Instance or table"
