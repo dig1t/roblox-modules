@@ -16,7 +16,7 @@ Palette = "dig1t/palette@1.0.0"
 Promise = "dig1t/promise@1.1.1"
 Ragdoll = "dig1t/ragdoll@1.0.4"
 Util = "dig1t/util@1.0.9"
-ReactUtil = "dig1t/react-util@1.0.0"
+ReactUtil = "dig1t/react-util@1.0.1"
 ```
 
 ## Module Examples
