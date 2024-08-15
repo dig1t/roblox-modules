@@ -34,32 +34,6 @@ export type ReactChildren =
 
 export type Props = { [any]: any }?
 
-local React: React
-
--- Search for the React module automatically
--- If React is not found, it will have to be set manually using ReactUtil.locateReact(React)
-if script.Parent and script.Parent.Parent and script.Parent.Parent.Parent then
-	React = script.Parent.Parent.Parent:FindFirstChild("React")
-
-	if not React then
-		local ReplicatedStorage = game:GetService("ReplicatedStorage")
-		local Packages = ReplicatedStorage:FindFirstChild("Packages")
-
-		if Packages then
-			React = Packages:FindFirstChild("React", true)
-		else
-			-- Recursively search for the package folder
-			local _Index = ReplicatedStorage:FindFirstChild("_Index", true)
-			local _IndexPackages = _Index and _Index.Parent
-
-			React = _IndexPackages and _IndexPackages:FindFirstChild("React", true)
-		end
-	end
-end
-
-local REACT_NOT_FOUND =
-	"React module not found. Set it using ReactUtil.locateReact(React)"
-
 local DISALLOWED_PROPS = { "Parent", "Transparency", "Name", "ClassName" }
 
 local function getPropertiesFromInstance(instance: Instance): { [any]: any }
@@ -109,6 +83,7 @@ local function mergeInto(into: { [any]: any }, from: { [any]: any }?): { [any]: 
 end
 
 local function buildInstanceTree(
+	React: React,
 	instance: Instance,
 	props: Props,
 	children: ReactChildren
@@ -118,7 +93,7 @@ local function buildInstanceTree(
 	local instanceChildren = {}
 
 	for _, child in instance:GetChildren() do
-		instanceChildren[child.Name] = buildInstanceTree(child)
+		instanceChildren[child.Name] = buildInstanceTree(React, child)
 	end
 
 	if children then
@@ -137,26 +112,6 @@ end
 local ReactUtil = {}
 
 --[=[
-Sets the React module to be used by ReactUtil.
-
-This can be set anywhere in your codebase, but it is recommended to set it in a single location such as your main module.
-
-```lua
-local React = require(Location.To.React)
-local ReactUtil = require(game.ReplicatedStorage.Packages.ReactUtil)
-
-ReactUtil.locateReact(React)
-```
-
-@param react React -- The React module to use
-]=]
-function ReactUtil.locateReact(react: React)
-	assert(react, "Expected a React module")
-
-	React = react
-end
-
---[=[
 Hydrates an instance with React.
 
 Uses snippets from [RoactTemplate](https://github.com/Corecii/roact-template) to be made compatible with React.
@@ -168,7 +123,7 @@ local ReactUtil = require(game.ReplicatedStorage.Packages.ReactUtil)
 local template = game.ReplicatedStorage.TextBox
 
 local component(props: { [any]: any })
-	return ReactUtil.Hydrate(template, {
+	return ReactUtil.Hydrate(React, template, {
 		Text = "Hello World!",
 		TextScaled = true,
 	}, {
@@ -182,31 +137,30 @@ end
 return component
 ```
 
-@param instance Instance -- The instance to hydrate
-@param props { [any]: any } -- The element props
-@param children ReactChildren -- The children to set on the instance
-@return () -> ReactElement<{}, any> -- The hydrated element as a functional component
+@param React React -- The React object.
+@param instance Instance -- The instance to hydrate.
+@param props { [any]: any } -- The element props.
+@param children ReactChildren -- The children to set on the instance.
 ]=]
 function ReactUtil.Hydrate(
+	React: any,
 	instance: Instance,
 	props: Props,
 	children: any?
-): () -> ReactElement<{}, any>
-	assert(React, REACT_NOT_FOUND)
+): ReactElement<{}, any>
 	assert(typeof(instance) == "Instance", "Expected an instance")
 	assert(typeof(props) == "table" or props == nil, "Expected a table for props")
 
+	local _react: React = React
 	local _children: ReactChildren = children
 
 	local element = React.createElement(
-		React.Fragment,
+		_react.Fragment,
 		{},
-		buildInstanceTree(instance, props, _children)
+		buildInstanceTree(_react, instance, props, _children)
 	)
 
-	return function()
-		return element
-	end
+	return element
 end
 
 return ReactUtil
