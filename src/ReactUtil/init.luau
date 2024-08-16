@@ -24,6 +24,7 @@ export type React = {
 		props: P,
 		children: ReactChildren
 	) -> ReactElement<P, T>,
+	useRef: <T>(initialValue: T) -> { current: T },
 	Fragment: ReactElement<{}>,
 }
 
@@ -55,6 +56,10 @@ if script.Parent and script.Parent.Parent and script.Parent.Parent.Parent then
 			React = _IndexPackages and _IndexPackages:FindFirstChild("React", true)
 		end
 	end
+end
+
+if React then
+	React = require(React) :: React
 end
 
 local REACT_NOT_FOUND =
@@ -96,13 +101,15 @@ local function getPropertiesFromInstance(instance: Instance): { [any]: any }
 	return properties
 end
 
-local function mergeInto(into: { [any]: any }, from: { [any]: any }?): { [any]: any }
+local function mergeInto(into: { [any]: any }, from: { { [any]: any } }?): { [any]: any }
 	if not from then
 		return into
 	end
 
-	for key, value in pairs(from) do
-		into[key] = value
+	for _, value in pairs(from) do
+		for k, v in pairs(value) do
+			into[k] = v
+		end
 	end
 
 	return into
@@ -111,25 +118,38 @@ end
 local function buildInstanceTree(
 	instance: Instance,
 	props: Props,
-	children: ReactChildren
+	children: ReactChildren,
+	refs: any
 ): ReactElement<any, any>
 	assert(typeof(instance) == "Instance", "Expected an instance")
 
 	local instanceChildren = {}
 
+	refs[instance.Name] = {}
+
 	for _, child in instance:GetChildren() do
-		instanceChildren[child.Name] = buildInstanceTree(child)
+		instanceChildren[child.Name] =
+			buildInstanceTree(child, nil, nil, refs[instance.Name])
 	end
 
 	if children then
-		mergeInto(instanceChildren, children)
+		mergeInto(instanceChildren, { children })
 	end
+
+	local ref = React.useRef(nil)
 
 	local element = React.createElement(
 		instance.ClassName,
-		mergeInto(getPropertiesFromInstance(instance), props),
+		mergeInto(
+			getPropertiesFromInstance(instance),
+			{ props or {}, {
+				ref = ref,
+			} }
+		),
 		instanceChildren
 	)
+
+	refs[instance.Name]["$$root"] = element
 
 	return element
 end
@@ -155,6 +175,13 @@ function ReactUtil.locateReact(react: React)
 
 	React = react
 end
+
+local Util = require(script.Parent.Parent.Parent.Util)
+
+type RefNode = {
+	["$$root"]: ReactElement<{}, any>,
+	[string]: RefNode,
+}
 
 --[=[
 Hydrates an instance with React.
@@ -191,22 +218,50 @@ function ReactUtil.Hydrate(
 	instance: Instance,
 	props: Props,
 	children: any?
-): () -> ReactElement<{}, any>
+): {
+	context: () -> ReactElement<{}, any>,
+	element: ReactElement<{}, any>,
+	getRef: (string) -> any,
+	getElement: (string) -> ReactElement<{}, any>?,
+}
 	assert(React, REACT_NOT_FOUND)
 	assert(typeof(instance) == "Instance", "Expected an instance")
 	assert(typeof(props) == "table" or props == nil, "Expected a table for props")
 
 	local _children: ReactChildren = children
+	local refs = {} :: RefNode
 
-	local element = React.createElement(
-		React.Fragment,
-		{},
-		buildInstanceTree(instance, props, _children)
-	)
+	local instanceTree = buildInstanceTree(instance, props, _children, refs)
 
-	return function()
-		return element
+	if refs[instance.Name] then
+		-- Go up one level to the root
+		refs = refs[instance.Name]
 	end
+
+	return {
+		context = function()
+			return instanceTree
+		end,
+		element = instanceTree,
+		getRef = function(name: string)
+			local res = Util.treePath(refs, name)
+
+			if res then
+				return res["$$root"] and res["$$root"].ref
+			end
+
+			return nil
+		end,
+		getElement = function(name: string)
+			local res = Util.treePath(refs, name)
+
+			if res then
+				return res["$$root"]
+			end
+
+			return nil
+		end,
+	}
 end
 
 return ReactUtil
