@@ -24,6 +24,7 @@ export type React = {
 		props: P,
 		children: ReactChildren
 	) -> ReactElement<P, T>,
+	useRef: <T>(initialValue: T) -> { current: T },
 	Fragment: ReactElement<{}>,
 }
 
@@ -33,6 +34,36 @@ export type ReactChildren =
 	| nil
 
 export type Props = { [any]: any }?
+
+local React: React
+
+-- Search for the React module automatically
+-- If React is not found, it will have to be set manually using ReactUtil.locateReact(React)
+if script.Parent and script.Parent.Parent and script.Parent.Parent.Parent then
+	React = script.Parent.Parent.Parent:FindFirstChild("React")
+
+	if not React then
+		local ReplicatedStorage = game:GetService("ReplicatedStorage")
+		local Packages = ReplicatedStorage:FindFirstChild("Packages")
+
+		if Packages then
+			React = Packages:FindFirstChild("React", true)
+		else
+			-- Recursively search for the package folder
+			local _Index = ReplicatedStorage:FindFirstChild("_Index", true)
+			local _IndexPackages = _Index and _Index.Parent
+
+			React = _IndexPackages and _IndexPackages:FindFirstChild("React", true)
+		end
+	end
+end
+
+if React then
+	React = require(React) :: React
+end
+
+local REACT_NOT_FOUND =
+	"React module not found. Set it using ReactUtil.locateReact(React)"
 
 local DISALLOWED_PROPS = { "Parent", "Transparency", "Name", "ClassName" }
 
@@ -70,46 +101,87 @@ local function getPropertiesFromInstance(instance: Instance): { [any]: any }
 	return properties
 end
 
-local function mergeInto(into: { [any]: any }, from: { [any]: any }?): { [any]: any }
+local function mergeInto(into: { [any]: any }, from: { { [any]: any } }?): { [any]: any }
 	if not from then
 		return into
 	end
 
-	for key, value in pairs(from) do
-		into[key] = value
+	for _, value in pairs(from) do
+		for k, v in pairs(value) do
+			into[k] = v
+		end
 	end
 
 	return into
 end
 
 local function buildInstanceTree(
-	React: React,
 	instance: Instance,
 	props: Props,
-	children: ReactChildren
+	children: ReactChildren,
+	refs: any
 ): ReactElement<any, any>
 	assert(typeof(instance) == "Instance", "Expected an instance")
 
 	local instanceChildren = {}
 
+	refs[instance.Name] = {}
+
 	for _, child in instance:GetChildren() do
-		instanceChildren[child.Name] = buildInstanceTree(React, child)
+		instanceChildren[child.Name] =
+			buildInstanceTree(child, nil, nil, refs[instance.Name])
 	end
 
 	if children then
-		mergeInto(instanceChildren, children)
+		mergeInto(instanceChildren, { children })
 	end
+
+	local ref = React.useRef(nil)
 
 	local element = React.createElement(
 		instance.ClassName,
-		mergeInto(getPropertiesFromInstance(instance), props),
+		mergeInto(
+			getPropertiesFromInstance(instance),
+			{ props or {}, {
+				ref = ref,
+			} }
+		),
 		instanceChildren
 	)
+
+	refs[instance.Name]["$$root"] = element
 
 	return element
 end
 
 local ReactUtil = {}
+
+--[=[
+Sets the React module to be used by ReactUtil.
+
+This can be set anywhere in your codebase, but it is recommended to set it in a single location such as your main module.
+
+```lua
+local React = require(Location.To.React)
+local ReactUtil = require(game.ReplicatedStorage.Packages.ReactUtil)
+
+ReactUtil.locateReact(React)
+```
+
+@param react React -- The React module to use
+]=]
+function ReactUtil.locateReact(react: React)
+	assert(react, "Expected a React module")
+
+	React = react
+end
+
+local Util = require(script.Parent.Parent.Parent.Util)
+
+type RefNode = {
+	["$$root"]: ReactElement<{}, any>,
+	[string]: RefNode,
+}
 
 --[=[
 Hydrates an instance with React.
@@ -123,7 +195,7 @@ local ReactUtil = require(game.ReplicatedStorage.Packages.ReactUtil)
 local template = game.ReplicatedStorage.TextBox
 
 local component(props: { [any]: any })
-	return ReactUtil.Hydrate(React, template, {
+	return ReactUtil.Hydrate(template, {
 		Text = "Hello World!",
 		TextScaled = true,
 	}, {
@@ -137,30 +209,59 @@ end
 return component
 ```
 
-@param React React -- The React object.
-@param instance Instance -- The instance to hydrate.
-@param props { [any]: any } -- The element props.
-@param children ReactChildren -- The children to set on the instance.
+@param instance Instance -- The instance to hydrate
+@param props { [any]: any } -- The element props
+@param children ReactChildren -- The children to set on the instance
+@return () -> ReactElement<{}, any> -- The hydrated element as a functional component
 ]=]
 function ReactUtil.Hydrate(
-	React: any,
 	instance: Instance,
 	props: Props,
 	children: any?
-): ReactElement<{}, any>
+): {
+	context: () -> ReactElement<{}, any>,
+	element: ReactElement<{}, any>,
+	getRef: (string) -> any,
+	getElement: (string) -> ReactElement<{}, any>?,
+}
+	assert(React, REACT_NOT_FOUND)
 	assert(typeof(instance) == "Instance", "Expected an instance")
 	assert(typeof(props) == "table" or props == nil, "Expected a table for props")
 
-	local _react: React = React
 	local _children: ReactChildren = children
+	local refs = {} :: RefNode
 
-	local element = React.createElement(
-		_react.Fragment,
-		{},
-		buildInstanceTree(_react, instance, props, _children)
-	)
+	local instanceTree = buildInstanceTree(instance, props, _children, refs)
 
-	return element
+	if refs[instance.Name] then
+		-- Go up one level to the root
+		refs = refs[instance.Name]
+	end
+
+	return {
+		context = function()
+			return instanceTree
+		end,
+		element = instanceTree,
+		getRef = function(name: string)
+			local res = Util.treePath(refs, name)
+
+			if res then
+				return res["$$root"] and res["$$root"].ref
+			end
+
+			return nil
+		end,
+		getElement = function(name: string)
+			local res = Util.treePath(refs, name)
+
+			if res then
+				return res["$$root"]
+			end
+
+			return nil
+		end,
+	}
 end
 
 return ReactUtil
