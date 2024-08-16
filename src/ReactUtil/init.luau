@@ -8,6 +8,7 @@ Utility functions for working with React.
 
 local ApiDumpStatic =
 	require(script.Parent.ApiDumpStatic) :: { Classes: { [string]: any } }
+local Util = require(script.Parent.Util)
 
 export type ReactElement<P = { [string]: any }, T = any> = {
 	["$$typeof"]: number,
@@ -101,20 +102,6 @@ local function getPropertiesFromInstance(instance: Instance): { [any]: any }
 	return properties
 end
 
-local function mergeInto(into: { [any]: any }, from: { { [any]: any } }?): { [any]: any }
-	if not from then
-		return into
-	end
-
-	for _, value in pairs(from) do
-		for k, v in pairs(value) do
-			into[k] = v
-		end
-	end
-
-	return into
-end
-
 local function buildInstanceTree(
 	instance: Instance,
 	props: Props,
@@ -133,19 +120,16 @@ local function buildInstanceTree(
 	end
 
 	if children then
-		mergeInto(instanceChildren, { children })
+		Util.extend(instanceChildren, children)
 	end
 
 	local ref = React.useRef(nil)
 
 	local element = React.createElement(
 		instance.ClassName,
-		mergeInto(
-			getPropertiesFromInstance(instance),
-			{ props or {}, {
-				ref = ref,
-			} }
-		),
+		Util.extend(getPropertiesFromInstance(instance), props or {}, {
+			ref = ref,
+		}),
 		instanceChildren
 	)
 
@@ -175,8 +159,6 @@ function ReactUtil.locateReact(react: React)
 
 	React = react
 end
-
-local Util = require(script.Parent.Parent.Parent.Util)
 
 type RefNode = {
 	["$$root"]: ReactElement<{}, any>,

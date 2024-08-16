@@ -1,6 +1,6 @@
 [package]
 name = "dig1t/react-util"
-version = "1.0.1"
+version = "1.0.2"
 description = "Module part of the dig1t/roblox-modules repository"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
@@ -9,3 +9,4 @@ exclude = ["*.spec.luau"]
 
 [dependencies]
 ApiDumpStatic = "corecii/api-dump-static@^1.0"
+Util = "dig1t/util@1.0.10"
