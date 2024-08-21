@@ -9,4 +9,4 @@ exclude = ["*.spec.luau"]
 
 [dependencies]
 ApiDumpStatic = "corecii/api-dump-static@^1.0"
-Util = "dig1t/util@1.0.10"
+Util = "dig1t/util@1.0.11"

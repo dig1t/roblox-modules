@@ -1,5 +1,3 @@
---!native
-
 local valueClasses = {
 	BoolValue = true,
 	BrickColorValue = true,
@@ -235,7 +233,7 @@ function TableUtil.mapIndex(
 
 	local res = {}
 
-	for key: any, value: any in source do
+	for key: any, value: any in ipairs(source) do
 		local index = #res + 1
 
 		if filterFn then
@@ -445,7 +443,7 @@ function TableUtil.join(
 
 	local res: string = ""
 
-	for index: number, value: string | number in stringTable do
+	for index: number, value: string | number in ipairs(stringTable) do
 		local _value: string | number? = value
 
 		if typeof(_value) == "number" then
@@ -496,9 +494,7 @@ function TableUtil.extend(
 	targetTable: { [any]: any },
 	...: { [any]: any }?
 ): { [any]: any }
-	local args: { { [any]: any } } = { targetTable, ... :: { [any]: any } }
-
-	for argIndex: number, sourceTable: { [any]: any } in pairs(args) do
+	for argIndex: number, sourceTable: { [any]: any } in pairs({ ... } :: { [any]: any }) do
 		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)
 
 		for key, value in pairs(sourceTable) do
@@ -836,7 +832,7 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 		end
 	elseif typeof(removeTest) == "table" then
 		test = function(value, _newIndex, _i)
-			for _, v in removeTest do
+			for _, v in ipairs(removeTest) do
 				return value == v
 			end
 
@@ -850,7 +846,7 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 
 	local newIndex = 1
 
-	for i, value in obj do
+	for i, value in ipairs(obj) do
 		if not test(value, newIndex, i) then
 			if i ~= newIndex then
 				obj[newIndex] = obj[i] -- Move to new index

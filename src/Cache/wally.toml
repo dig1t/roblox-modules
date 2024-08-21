@@ -8,5 +8,5 @@ realm = "shared"
 exclude = ["*.spec.luau"]
 
 [dependencies]
-Util = "dig1t/util@1.0.10"
+Util = "dig1t/util@1.0.11"
 Maid = "dig1t/maid@1.0.4"
