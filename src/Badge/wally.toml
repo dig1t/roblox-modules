@@ -8,4 +8,4 @@ realm = "shared"
 exclude = ["*.spec.luau"]
 
 [dependencies]
-Cache = "dig1t/cache@1.0.6"
+Cache = "dig1t/cache@1.0.7"
