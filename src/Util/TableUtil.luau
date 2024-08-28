@@ -566,20 +566,24 @@ end
 
 	@within Util
 	@param tree { [any]: any } | Instance -- The table or instance you want to get the value from
-	@param path string -- The path to the value
+	@param path string? -- The path to the value
 	@param delimiter string? -- The delimiter to use when splitting the path
 	@return any
 ]=]
 function TableUtil.treePath(
 	tree: { [any]: any } | Instance,
-	path: string,
+	path: string?,
 	delimiter: string?
 ): any
 	assert(
 		typeof(tree) == "table" or typeof(tree) == "Instance",
 		"Tree must be a table or instance"
 	)
-	assert(typeof(path) == "string", "path must be a string")
+	assert(typeof(path) == "string" or path == nil, "path must be a string")
+
+	if path == nil then
+		return tree
+	end
 
 	local node = tree
 	local steps: { string } = TableUtil.split(path, delimiter or ".")

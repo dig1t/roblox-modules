@@ -191,10 +191,16 @@ end
 return component
 ```
 
+This function returns a table containing the hydrated context, element, and utility functions:
+- `context` is the element as a functional component.
+- `element` is the hydrated element.
+- `getRef(name: string?)` returns the ref of the instance with the given name.
+- `getElement(name: string?)` returns the element of the instance with the given name.
+
 @param instance Instance -- The instance to hydrate
 @param props { [any]: any } -- The element props
 @param children ReactChildren -- The children to set on the instance
-@return () -> ReactElement<{}, any> -- The hydrated element as a functional component
+@return table -- A table containing the hydrated context, element, and utility functions
 ]=]
 function ReactUtil.Hydrate(
 	instance: Instance,
@@ -203,8 +209,8 @@ function ReactUtil.Hydrate(
 ): {
 	context: () -> ReactElement<{}, any>,
 	element: ReactElement<{}, any>,
-	getRef: (string) -> any,
-	getElement: (string) -> ReactElement<{}, any>?,
+	getRef: (string?) -> any,
+	getElement: (string?) -> ReactElement<{}, any>?,
 }
 	assert(React, REACT_NOT_FOUND)
 	assert(typeof(instance) == "Instance", "Expected an instance")
@@ -225,7 +231,7 @@ function ReactUtil.Hydrate(
 			return instanceTree
 		end,
 		element = instanceTree,
-		getRef = function(name: string)
+		getRef = function(name: string?)
 			local res = Util.treePath(refs, name)
 
 			if res then
@@ -234,7 +240,7 @@ function ReactUtil.Hydrate(
 
 			return nil
 		end,
-		getElement = function(name: string)
+		getElement = function(name: string?)
 			local res = Util.treePath(refs, name)
 
 			if res then

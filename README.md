@@ -15,8 +15,8 @@ Maid = "dig1t/maid@1.0.6"
 Palette = "dig1t/palette@1.0.0"
 Promise = "dig1t/promise@1.1.2"
 Ragdoll = "dig1t/ragdoll@1.0.4"
-Util = "dig1t/util@1.0.11"
-ReactUtil = "dig1t/react-util@1.0.4"
+Util = "dig1t/util@1.0.12"
+ReactUtil = "dig1t/react-util@1.0.5"
 ```
 
 Use version ^1.0 on any module to use its latest version.
