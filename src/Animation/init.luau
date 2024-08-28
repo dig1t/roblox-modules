@@ -55,7 +55,6 @@ Animation.defaultConfig = {}
 	.frameCallback () -> ()? -- Callback that runs on each RunService step
 	.stopped (Enum.PlaybackState) -> ()? -- Callback for when the animation is stopped
 	.await boolean? -- Wait for the animation to complete
-	.promisify boolean? -- Returns a promise along with the tween
 	.loop number? -- Times to loop the animation
 	.reverse boolean? -- Reverse the animation after it's done
 	.delay number? -- Delay before starting the animation
@@ -69,7 +68,6 @@ export type AnimationConfig = {
 	frameCallback: () -> ()?,
 	stopped: (Enum.PlaybackState) -> ()?,
 	await: boolean?,
-	promisify: boolean?,
 	loop: number?,
 	reverse: boolean?,
 	delay: number?,
@@ -112,10 +110,71 @@ function Animation.setDefaultConfig(config: AnimationConfig)
 end
 
 --[=[
+	Animates an instance and returns a promise.
+
+	@param config AnimationConfig -- The animation configuration
+	@return Promise.PromiseType
+]=]
+function Animation.promise(config: AnimationConfig): Promise.PromiseType
+	if config.await then
+		Animation.play(config)
+
+		return Promise.resolve(Enum.PlaybackState.Completed)
+	end
+
+	return Promise.new(function(resolve)
+		config.await = true
+
+		Animation.play(config)
+
+		resolve(Enum.PlaybackState.Completed)
+	end)
+end
+
+--[=[
+	Animates an instance.
+
+	@param config AnimationConfig -- The animation configuration
+	@return Tween -- The tween instance
+]=]
+function Animation.play(config: AnimationConfig): Tween
+	local tween: Tween = Animation.new(config)
+
+	if not config.await then
+		tween:Play()
+	end
+
+	return tween
+end
+
+--[=[
+	Animates multiple instances and returns a promise.
+
+	@param instances { Instance } -- The instances to animate
+	@param config AnimationConfig -- The animation configuration
+	@return Promise.PromiseType
+]=]
+function Animation.promiseAll(
+	instances: { Instance },
+	config: AnimationConfig
+): Promise.PromiseType
+	local promises = {}
+
+	for _, instance in instances do
+		local newConfig = table.clone(config)
+		newConfig.source = instance
+
+		table.insert(promises, Animation.promise(newConfig))
+	end
+
+	return Promise.all(promises)
+end
+
+--[=[
 	Constructs a tween
 
 	@param config AnimationConfig -- The animation configuration
-	@return (Tween, Promise.PromiseType?) -- The tween instance and a promise if promisify is true
+	@return Tween -- The tween instance
 ]=]
 function Animation.new(config: AnimationConfig): (Tween, Promise.PromiseType?)
 	assert(config and typeof(config) == "table", "Missing animation configuration")
@@ -183,39 +242,34 @@ function Animation.new(config: AnimationConfig): (Tween, Promise.PromiseType?)
 		end
 	end
 
-	local TweenBuild = TweenService:Create(config.source, config.tweenInfo, config.goal)
+	local newTween = TweenService:Create(config.source, config.tweenInfo, config.goal)
+
 	local maid = Maid.new()
-
-	local promise = config.promisify
-			and not config.await
-			and Promise.new(function(resolve)
-				TweenBuild.Completed:Once(resolve)
-			end)
-		or nil :: Promise.PromiseType?
-
-	TweenBuild:Play()
 
 	if config.frameCallback then
 		maid:Task(RunService.Stepped:Connect(config.frameCallback))
 	end
 
 	if config.stopped then
-		maid:Task(TweenBuild.Completed:Connect(config.stopped))
+		maid:Task(newTween.Completed:Connect(config.stopped))
 	end
 
-	TweenBuild.Completed:Once(function()
+	newTween.Completed:Once(function()
+		task.wait()
 		maid:Destroy()
 	end)
 
 	if config.await then
-		TweenBuild.Completed:Wait()
+		newTween:Play()
 
-		if config.promisify then
-			promise = Promise.resolve(Enum.PlaybackState.Completed)
+		if newTween.PlaybackState == Enum.PlaybackState.Completed then
+			return newTween
 		end
+
+		newTween.Completed:Wait()
 	end
 
-	return TweenBuild, promise
+	return newTween
 end
 
 return Animation
