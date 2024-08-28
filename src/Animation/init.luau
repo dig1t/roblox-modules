@@ -42,20 +42,37 @@ local Animation = {}
 ]=]
 Animation.defaultConfig = {}
 
-export type AnimationConfig = {
-	source: Instance | { [any]: any }?,
-	start: { [string]: any }?,
-	goal: { [string]: any }?,
-	tweenInfo: TweenInfo?, -- Predefined tween info
-	frameCallback: () -> ()?, -- Callback for each animation step
-	stopped: (Enum.PlaybackState) -> ()?, -- Callback when the animation is stopped
-	await: boolean?, -- Wait for the animation to complete
-	promisify: boolean?, -- Return a promise instead of a tween
+--[=[
+	Animation configuration.
 
-	-- These will overwrite tweenInfo, if it's defined
-	loop: number?, -- Times to loop
-	reverse: boolean?, -- Reverse the animation after it's done
-	delay: number?, -- Delay before starting the animation
+	Warning: setting loop, reverse, or delay will overwrite tweenInfo if it's defined.
+
+	@interface AnimationConfig
+	.source Instance -- The instance to animate
+	.start { [string]: any }? -- Starting properties (this will overwrite the current properties)
+	.goal { [string]: any } -- Properties to animate to
+	.tweenInfo TweenInfo? -- TweenInfo for the animation
+	.frameCallback () -> ()? -- Callback that runs on each RunService step
+	.stopped (Enum.PlaybackState) -> ()? -- Callback for when the animation is stopped
+	.await boolean? -- Wait for the animation to complete
+	.promisify boolean? -- Returns a promise along with the tween
+	.loop number? -- Times to loop the animation
+	.reverse boolean? -- Reverse the animation after it's done
+	.delay number? -- Delay before starting the animation
+	@within Animation
+]=]
+export type AnimationConfig = {
+	source: Instance,
+	start: { [string]: any }?,
+	goal: { [string]: any },
+	tweenInfo: TweenInfo?,
+	frameCallback: () -> ()?,
+	stopped: (Enum.PlaybackState) -> ()?,
+	await: boolean?,
+	promisify: boolean?,
+	loop: number?,
+	reverse: boolean?,
+	delay: number?,
 }
 
 --[=[
