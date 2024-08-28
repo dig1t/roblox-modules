@@ -1,7 +1,7 @@
 --[=[
 	Lightweight Promise class for asynchronous operations.
 
-	```lua
+	```luau
 	local promise: typeof(Promise.PromiseType)? -- Blank variable to allow rejection during a waterfall
 
 	promise = Promise.new(function(resolve, reject)
@@ -40,6 +40,7 @@ export type PromiseType = typeof(setmetatable(
 		_onFinalizedCallback: Callback?,
 		_resultArgs: { [any]: any },
 		_executor: PromiseExecutor,
+		_running: boolean,
 		status: string?,
 		promise: boolean,
 	},
@@ -69,7 +70,7 @@ Promise.statusType = {
 --[=[
 	Constructs a new Promise instance.
 
-	```lua
+	```luau
 	Promise.new(function(resolve, reject)
 		task.wait(1)
 		resolve(0)
@@ -87,6 +88,7 @@ function Promise.new(executor: PromiseExecutor): PromiseType
 	self._fulfillmentCallbacks = {}
 	self._rejectionCallbacks = {}
 	self._resultArgs = {}
+	self._running = false
 	self.promise = true
 
 	self._executor = executor
@@ -95,22 +97,52 @@ function Promise.new(executor: PromiseExecutor): PromiseType
 	return self
 end
 
---- Creates a new promise that resolves when all of the promises in the iterable argument have resolved.
-function Promise.all(promises: { PromiseType }): PromiseType
+--- Creates a new promise that resolves when all of the promises in the given table have resolved.
+function Promise.all(promises: { PromiseType? }): PromiseType
 	return Promise.new(function(resolve: Callback, reject: Callback)
 		local results = {}
+		local totalPromises = 0
+		local promisesResolved = 0
+		local currentTasks = {}
+		local rejected = false
 
-		for index: number, promise: PromiseType in promises do
-			local success: boolean, res: string = promise:await()
-
-			results[index] = res
-
-			if not success then
-				return reject(res)
-			end
+		for _, _ in promises do
+			totalPromises += 1
 		end
 
-		resolve(results)
+		for index: number, promise: PromiseType? in promises do
+			if not promise then
+				continue
+			end
+
+			local taskId = #currentTasks + 1
+
+			currentTasks[taskId] = task.spawn(function()
+				local success: boolean, res: string = promise:await()
+
+				results[index] = res
+				promisesResolved += 1
+				currentTasks[taskId] = nil
+
+				if not success then
+					-- Cancel all other tasks
+					for _, _task: thread in pairs(currentTasks) do
+						task.cancel(_task)
+					end
+
+					if not rejected then
+						rejected = true
+						reject(res)
+					end
+
+					return
+				end
+
+				if promisesResolved == totalPromises then
+					resolve(results)
+				end
+			end)
+		end
 	end)
 end
 
@@ -144,7 +176,7 @@ end
 --[=[
 	Runs the Promise executor.
 
-	```lua
+	```luau
 	Promise:_run()
 	```
 
@@ -153,9 +185,11 @@ end
 	@ignore
 ]=]
 function Promise._run(self: PromiseType)
-	if self.status ~= Promise.statusType.pending then
+	if self.status ~= Promise.statusType.pending or self._running then
 		return
 	end
+
+	self._running = true
 
 	-- Results
 	local resolveResult: any
@@ -190,7 +224,7 @@ end
 --[=[
 	Resolves a promise with tuple parameters.
 
-	```lua
+	```luau
 	Promise:resolve(...)
 	```
 
@@ -248,7 +282,7 @@ end
 --[=[
 	Rejects a promise with tuple parameters.
 
-	```lua
+	```luau
 	Promise:reject(errorMessage)
 	```
 
@@ -297,7 +331,7 @@ end
 
 	The promise can be rejected until the last fulfillment callback is called.
 
-	```lua
+	```luau
 	Promise:resolve(...)
 	```
 
@@ -355,7 +389,7 @@ end
 	Similar to andThen, finally will always be called at the end of the Promise
 	and can only be set once, if the Promise is rejected then the callback run with return no parameters
 
-	```lua
+	```luau
 	Promise:resolve(...)
 	```
 
@@ -393,7 +427,7 @@ end
 --[=[
 	Awaits the promise and returns the result.
 
-	```lua
+	```luau
 	local success: boolean, result: any = Promise:await()
 	```
 
@@ -404,7 +438,21 @@ end
 ]=]
 function Promise.await(self: PromiseType): (boolean, any)
 	if self.status == Promise.statusType.pending then
-		self:_run()
+		local _coroutine = coroutine.running()
+		local suspended = false
+
+		self:finally(function()
+			if not suspended then
+				return
+			end
+
+			task.spawn(_coroutine)
+		end):catch(function() end)
+
+		if self.status == Promise.statusType.pending then
+			suspended = true
+			coroutine.yield()
+		end
 	end
 
 	return self.status == Promise.statusType.fulfilled, unpack(self._resultArgs)
@@ -413,7 +461,7 @@ end
 --[=[
 	Destroys the Promise instance.
 
-	```lua
+	```luau
 	Promise:destroy()
 	```
 
