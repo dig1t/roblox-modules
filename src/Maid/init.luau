@@ -81,24 +81,26 @@ end
 
 	@within Maid
 	@method Task
-	@param _task any -- The task to add.
-	@return string -- The task id.
+	@param _task MaidTask -- The task to add
+	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
-function Maid.Task(self: MaidType, _task: MaidTask): string
+function Maid.Task(self: MaidType, _task: MaidTask): (MaidTask, string)
 	local taskId = Util.randomString(14)
 
 	self._tasks[taskId] = _task
 
-	return taskId
+	return _task, taskId
 end
 
 --[=[
 	Alias for Maid.Task
 
 	@within Maid
-	@method AddTask
+	@method Add
+	@param _task MaidTask -- The task to add
+	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
-function Maid.AddTask(self: MaidType, _task: MaidTask): string
+function Maid.Add(self: MaidType, _task: MaidTask): (MaidTask, string)
 	return self:Task(_task)
 end
 
