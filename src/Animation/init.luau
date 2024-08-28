@@ -1,7 +1,11 @@
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
+local Maid = require(script.Parent.Maid)
+local Promise = require(script.Parent.Promise)
 local Util = require(script.Parent.Util)
+
+local DEFAULT_TWEEN_TIME = 0.2
 
 --[=[
 	Animation library for animating instances.
@@ -20,12 +24,12 @@ local Animation = {}
 		start = {
 			Transparency = 1
 		},
-		stop = {
+		goal = {
 			Transparency = 0
 		}
 	})
 
-	Animation.prepareAnimatedModel(model)
+	Animation.weldModel(model)
 
 	-- Animate the model
 	Animation.animate({
@@ -41,19 +45,27 @@ Animation.defaultConfig = {}
 export type AnimationConfig = {
 	source: Instance | { [any]: any }?,
 	start: { [string]: any }?,
-	stop: { [string]: any }?,
-	tweenInfo: TweenInfo?,
-	frameCallback: () -> (),
-	stopCallback: () -> (),
-	async: boolean?,
+	goal: { [string]: any }?,
+	tweenInfo: TweenInfo?, -- Predefined tween info
+	frameCallback: () -> ()?, -- Callback for each animation step
+	stopped: (Enum.PlaybackState) -> ()?, -- Callback when the animation is stopped
+	await: boolean?, -- Wait for the animation to complete
+	promisify: boolean?, -- Return a promise instead of a tween
+
+	-- These will overwrite tweenInfo, if it's defined
+	loop: number?, -- Times to loop
+	reverse: boolean?, -- Reverse the animation after it's done
+	delay: number?, -- Delay before starting the animation
 }
 
 --[=[
-	Prepares a model for animation by welding all descendant parts to the primary part.
+	Welds all descendant parts to the primary part.
+
+	This requires the model to have a PrimaryPart set.
 
 	@param model Model -- The model to prepare
 ]=]
-function Animation.prepareAnimatedModel(model)
+function Animation.weldModel(model)
 	if not model.PrimaryPart then
 		return
 	end
@@ -73,7 +85,7 @@ end
 
 	@param config AnimationConfig -- The default animation configuration
 ]=]
-function Animation.setDefaultConfig(config: AnimationConfig): ()
+function Animation.setDefaultConfig(config: AnimationConfig)
 	assert(
 		config and typeof(config) == "table",
 		"Table must be passed to set the default animation config"
@@ -83,19 +95,58 @@ function Animation.setDefaultConfig(config: AnimationConfig): ()
 end
 
 --[=[
-	Animates an instance.
+	Constructs a tween
 
 	@param config AnimationConfig -- The animation configuration
+	@return (Tween, Promise.PromiseType?) -- The tween instance and a promise if promisify is true
 ]=]
-function Animation.animate(config: AnimationConfig): ()
+function Animation.new(config: AnimationConfig): (Tween, Promise.PromiseType?)
 	assert(config and typeof(config) == "table", "Missing animation configuration")
+	assert(typeof(config.source) == "Instance", "Missing instance to animate")
 	assert(
-		typeof(config.source) == "Instance" or typeof(config.source) == "table",
-		"Missing instance to animate"
+		typeof(config.start) == "table" or config.start == nil,
+		"Start properties must be a table"
 	)
-	assert(typeof(config.start) == "table", "Missing start properties")
-	assert(typeof(config.stop) == "table", "Missing stop properties")
-	assert(config.tweenInfo, "Missing TweenInfo")
+	assert(typeof(config.goal) == "table", "Goal properties must be a table")
+	assert(
+		typeof(config.tweenInfo) == "TweenInfo" or config.tweenInfo == nil,
+		"tweenInfo must be a TweenInfo type"
+	)
+	assert(
+		typeof(config.frameCallback) == "function" or config.frameCallback == nil,
+		"frameCallback must be a function"
+	)
+	assert(
+		typeof(config.stopped) == "function" or config.stopped == nil,
+		"stopped must be a function"
+	)
+	assert(
+		typeof(config.await) == "boolean" or config.await == nil,
+		"await must be a boolean"
+	)
+	assert(typeof(config.loop) == "number" or config.loop == nil, "loop must be a number")
+	assert(
+		typeof(config.reverse) == "boolean" or config.reverse == nil,
+		"reverse must be a boolean"
+	)
+	assert(
+		typeof(config.delay) == "number" or config.delay == nil,
+		"delay must be a number"
+	)
+
+	local tweenInfo = config.tweenInfo or TweenInfo.new(DEFAULT_TWEEN_TIME)
+
+	if config.loop then
+		tweenInfo.RepeatCount = config.loop
+	end
+
+	if config.reverse then
+		tweenInfo.Reverses = true
+	end
+
+	if config.delay then
+		tweenInfo.DelayTime = config.delay
+	end
 
 	-- Place default values
 	for k, v in pairs(Animation.defaultConfig) do
@@ -105,31 +156,49 @@ function Animation.animate(config: AnimationConfig): ()
 	end
 
 	if config.start then
-		local source = config.source :: { [any]: any }
+		local source = (config.source :: any) :: { [any]: any }
 
 		for property, value in pairs(config.start) do
-			source[property] = value
+			-- Safely set the new property
+			pcall(function()
+				source[property] = value
+			end)
 		end
 	end
 
-	local TweenBuild = TweenService:Create(config.source, config.tweenInfo, config.stop)
+	local TweenBuild = TweenService:Create(config.source, config.tweenInfo, config.goal)
+	local maid = Maid.new()
+
+	local promise = config.promisify
+			and not config.await
+			and Promise.new(function(resolve)
+				TweenBuild.Completed:Once(resolve)
+			end)
+		or nil :: Promise.PromiseType?
 
 	TweenBuild:Play()
 
 	if config.frameCallback then
-		while TweenBuild.PlaybackState == Enum.PlaybackState.Playing do
-			config.frameCallback()
-			RunService.Stepped:Wait()
+		maid:Task(RunService.Stepped:Connect(config.frameCallback))
+	end
+
+	if config.stopped then
+		maid:Task(TweenBuild.Completed:Connect(config.stopped))
+	end
+
+	TweenBuild.Completed:Once(function()
+		maid:Destroy()
+	end)
+
+	if config.await then
+		TweenBuild.Completed:Wait()
+
+		if config.promisify then
+			promise = Promise.resolve(Enum.PlaybackState.Completed)
 		end
 	end
 
-	if config.async then
-		TweenBuild.Completed:Wait()
-	end
-
-	if config.stopCallback then
-		config.stopCallback()
-	end
+	return TweenBuild, promise
 end
 
 return Animation
