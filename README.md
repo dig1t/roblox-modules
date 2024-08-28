@@ -7,17 +7,19 @@ roblox-modules is a collection of modules and libraries for development in Roblo
 ## Installing Modules (wally)
 **Available modules:**
 ```toml
-Animation = "dig1t/animation@1.0.3"
-Badge = "dig1t/badge@1.0.3"
-Cache = "dig1t/cache@1.0.7"
-GamePass = "dig1t/gamepass@1.0.7"
-Maid = "dig1t/maid@1.0.5"
+Animation = "dig1t/animation@1.0.5"
+Badge = "dig1t/badge@1.0.4"
+Cache = "dig1t/cache@1.0.8"
+GamePass = "dig1t/gamepass@1.0.8"
+Maid = "dig1t/maid@1.0.6"
 Palette = "dig1t/palette@1.0.0"
 Promise = "dig1t/promise@1.1.1"
 Ragdoll = "dig1t/ragdoll@1.0.4"
 Util = "dig1t/util@1.0.11"
-ReactUtil = "dig1t/react-util@1.0.3"
+ReactUtil = "dig1t/react-util@1.0.4"
 ```
+
+Use version ^1.0 on any module to use its latest version.
 
 ## Module Examples
 

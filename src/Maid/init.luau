@@ -20,6 +20,7 @@ export type MaidTask = {
 	Disconnect: () -> (),
 	Destroy: (any) -> (),
 	Destructor: (task: any) -> (),
+	Stop: () -> (),
 }? | () -> ()? | Instance
 
 --[=[
@@ -160,7 +161,11 @@ function Maid.Clean(self: MaidType)
 		elseif typeof(_task) == "RBXScriptConnection" and _task.Connected then
 			_task:Disconnect()
 		elseif typeof(_task) == "Instance" then
-			_task:Destroy()
+			if _task:IsA("AnimationTrack") then
+				_task:Stop()
+			else
+				_task:Destroy()
+			end
 		elseif typeof(_task) == "table" then
 			-- Type workaround for non-roblox instances with Destroy methods
 			if _task.Destroy then

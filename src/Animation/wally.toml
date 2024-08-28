@@ -1,6 +1,6 @@
 [package]
 name = "dig1t/animation"
-version = "1.0.3"
+version = "1.0.5"
 description = "Module part of the dig1t/roblox-modules repository"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"
@@ -8,4 +8,6 @@ realm = "shared"
 exclude = ["*.spec.luau"]
 
 [dependencies]
-Util = "dig1t/util@1.0.11"
+Util = "dig1t/util@^1.0"
+Maid = "dig1t/maid@^1.0"
+Promise = "dig1t/promise@^1.1"
