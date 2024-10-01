@@ -550,7 +550,19 @@ end
 	@return { [any]: any }
 ]=]
 function TableUtil.assign(targetTable: { [any]: any }, ...): { [any]: any }
-	return TableUtil.extend(targetTable, ...)
+	for argIndex: number, sourceTable: { [any]: any } in pairs({ ... } :: { [any]: any }) do
+		assert(typeof(sourceTable) == "table", `Argument #{argIndex} must be a table`)
+
+		for key, value in pairs(sourceTable) do
+			if typeof(key) == "number" and targetTable[key] ~= nil then
+				table.insert(targetTable, value)
+			else
+				targetTable[key] = value
+			end
+		end
+	end
+
+	return targetTable
 end
 
 --[=[

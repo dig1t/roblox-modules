@@ -68,7 +68,9 @@ local REACT_NOT_FOUND =
 
 local DISALLOWED_PROPS = { "Parent", "Transparency", "Name", "ClassName" }
 
-local function getPropertiesFromInstance(instance: Instance): { [any]: any }
+local ReactUtil = {}
+
+function ReactUtil.getPropertiesFromInstance(instance: Instance): { [any]: any }
 	assert(typeof(instance) == "Instance", "Expected an instance")
 
 	local api = ApiDumpStatic.Classes[instance.ClassName]
@@ -127,7 +129,7 @@ local function buildInstanceTree(
 
 	local element = React.createElement(
 		instance.ClassName,
-		Util.extend(getPropertiesFromInstance(instance), props or {}, {
+		Util.extend(ReactUtil.getPropertiesFromInstance(instance), props or {}, {
 			ref = ref,
 		}),
 		instanceChildren
@@ -137,8 +139,6 @@ local function buildInstanceTree(
 
 	return element
 end
-
-local ReactUtil = {}
 
 --[=[
 Sets the React module to be used by ReactUtil.
