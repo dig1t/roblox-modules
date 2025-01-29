@@ -58,7 +58,7 @@ State.__index = State
 
 export type SubscriptionId = string
 
-export type StateType = typeof(setmetatable(
+export type State<T> = typeof(setmetatable(
 	{} :: {
 		_context: { [any]: any }?,
 		_listeners: {
@@ -72,28 +72,21 @@ export type StateType = typeof(setmetatable(
 	Creates a new state instance
 
 	@param initialState { [any]: any }? -- Initial state values
-	@return StateType
+	@return State
 ]=]
-function State.new(initialState: { [any]: any }?): StateType
+function State.new<T>(initialState: { [any]: any }?): State<T | any>
 	if initialState ~= nil then
 		assert(typeof(initialState) == "table", "Expected initialState to be a table")
 	end
 
-	local self = setmetatable(
-		{
-			__index = function(_self, key)
-				return _self._context[key] or _self[key]
-			end,
-		} :: any,
-		State
-	) :: StateType
+	return setmetatable({
+		__index = function(_self, key)
+			return _self._context[key] or _self[key]
+		end,
 
-	self._context = initialState or {}
-	self._listeners = {} :: {
-		[SubscriptionId]: (prevState: any, newState: any) -> nil,
-	}
-
-	return self
+		_context = initialState or {},
+		_listeners = {},
+	}, State) :: State<T>
 end
 
 -- Number of first level children
@@ -118,7 +111,7 @@ end
 	@method Length
 	@return number
 ]=]
-function State.Length(self: StateType): number
+function State.Length<T>(self: State<T>): number
 	return self._context and Util.tableLength(self._context) or 0
 end
 
@@ -147,8 +140,8 @@ end
 	@param path string | number | boolean
 	@return any
 ]=]
-function State.Get(
-	self: StateType,
+function State.Get<T>(
+	self: State<T>,
 	path: string | number | boolean
 ): any -- Todo: support for nested tables
 	if not self._context then
@@ -187,8 +180,8 @@ end
 	@param callback (prevState: any, newState: any) -> nil
 	@return SubscriptionId?
 ]=]
-function State.Listen(
-	self: StateType,
+function State.Listen<T>(
+	self: State<T>,
 	callback: (prevState: any, newState: any) -> ()
 ): SubscriptionId?
 	if not self._listeners then
@@ -229,7 +222,7 @@ end
 	@method Unlisten
 	@param subscriptionId SubscriptionId
 ]=]
-function State.Unlisten(self: StateType, subscriptionId: SubscriptionId)
+function State.Unlisten<T>(self: State<T>, subscriptionId: SubscriptionId)
 	if not self._listeners then
 		return
 	end
@@ -244,7 +237,7 @@ end
 
 	@private
 ]=]
-function State._pushUpdates(self: StateType, prevState: any, newState: any)
+function State._pushUpdates<T>(self: State<T>, prevState: any, newState: any)
 	if not self._context or not self._listeners then
 		return
 	end
@@ -280,7 +273,7 @@ end
 	@param value any? -- The value to push
 	@return any -- The key of the pushed value
 ]=]
-function State.Push(self: StateType, keyOrValue: any, value: any?): any
+function State.Push<T>(self: State<T>, keyOrValue: any, value: any?): any
 	if not self._context then
 		return
 	end
@@ -316,7 +309,7 @@ end
 	@within State
 	@method Reset
 ]=]
-function State.Reset(self: StateType)
+function State.Reset<T>(self: State<T>)
 	self:_pushUpdates(self._context, {})
 
 	self._context = {}
@@ -357,7 +350,7 @@ end
 	@param newState any -- The new state value
 	@param value any? -- The value to set
 ]=]
-function State.Set(self: StateType, newState: any, value: any)
+function State.Set<T>(self: State<T>, newState: any, value: any)
 	if not self._context then
 		return
 	end
@@ -432,7 +425,7 @@ end
 	@method Remove
 	@param path string | number -- The path to the value to remove
 ]=]
-function State.Remove(self: StateType, path: string | number)
+function State.Remove<T>(self: State<T>, path: string | number)
 	local prevState = Util.extend({}, self._context or {}) -- Create a local copy
 	local treePath = Util.split(tostring(path), ".", true)
 	local res = self._context
@@ -484,7 +477,7 @@ end
 	@within State
 	@method Destroy
 ]=]
-function State.Destroy(self: StateType)
+function State.Destroy<T>(self: State<T>)
 	self._context = nil
 	self._listeners = nil
 
