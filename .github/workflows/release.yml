@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm run build:dependencies-unix
 
-      - name: Publish all changes modules to wally
+      - name: Publish all changed modules to wally
         shell: bash
         env:
           WALLY_TOKEN: ${{ secrets.WALLY_TOKEN }}
