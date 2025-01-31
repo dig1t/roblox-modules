@@ -38,4 +38,4 @@ jobs:
           rm -rf packages testez.toml .github node_modules .vscode
           mkdir -p ~/.wally
           printf "[tokens]\n\"https://api.wally.run/\" = \"%s\"" "$WALLY_TOKEN" >> ~/.wally/auth.toml
-          find src -type d -exec sh -c 'cd "{}" && wally publish || true' \;
+          find src -maxdepth 1 -type d -exec sh -c 'cd "{}" && wally publish || true' \;
