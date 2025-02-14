@@ -19,6 +19,7 @@ ReactUtil = "dig1t/react-util@1.0.6"
 Replica = "dig1t/replica@1.0.0"
 Signal = "dig1t/signal@1.0.0"
 State = "dig1t/state@1.0.0"
+Trash = "dig1t/trash@1.0.0"
 Util = "dig1t/util@1.0.13"
 ```
 
