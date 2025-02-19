@@ -56,6 +56,12 @@ local tNewReplica = t.strictInterface({
 	class = t.string,
 })
 
+--[=[
+	Get all ReplicaServer objects by their class
+
+	@param class string -- The class of the ReplicaServer objects
+	@return { ReplicaServer }
+]=]
 function ReplicaServer.getReplicasByClass(class: string): { ReplicaServer }
 	local res: { ReplicaServer } = {}
 
@@ -68,6 +74,12 @@ function ReplicaServer.getReplicasByClass(class: string): { ReplicaServer }
 	return res
 end
 
+--[=[
+	Get a ReplicaServer object by its replicaId
+
+	@param replicaId string -- The replicaId of the ReplicaServer object
+	@return ReplicaServer?
+]=]
 function ReplicaServer.getReplicaById(replicaId: string): ReplicaServer?
 	for _, replica: ReplicaServer in replicas do
 		if replica.replicaId == replicaId then
