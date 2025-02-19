@@ -32,12 +32,8 @@ export type ReplicaClient = typeof(setmetatable(
 	ReplicaClient
 ))
 
---[=[
-	Internally used to create a new ReplicaClient object
-
-	@private
-]=]
-function ReplicaClient.new(
+-- Used to create a new ReplicaClient object
+local function newReplicaClient(
 	existingReplica: ReplicaTypes.ReplicaFetchPayloadItem
 ): ReplicaClient
 	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
@@ -62,6 +58,12 @@ function ReplicaClient.new(
 	return self
 end
 
+--[=[
+	Returns a Signal that fires when a key in the replica is updated
+
+	@param key string -- The key to get the value of
+	@return Signal.Signal<ReplicaClient>
+]=]
 function ReplicaClient.getKeyChangedSignal(
 	self: ReplicaClient,
 	key: string
@@ -80,6 +82,12 @@ function ReplicaClient.getKeyChangedSignal(
 	return signal
 end
 
+--[=[
+	Gets an existing replica
+
+	@param replicaId string -- The id of the replica to get
+	@return ReplicaClient?
+]=]
 function ReplicaClient.getReplicaById(replicaId: string): ReplicaClient?
 	for _, replica in replicas do
 		if replica.replicaId == replicaId then
@@ -151,7 +159,7 @@ if RunService:IsClient() then
 
 			-- Create new replica instances for each existing replica
 			for _, existingReplica: ReplicaTypes.ReplicaFetchPayloadItem in action.payload do
-				ReplicaClient.new(existingReplica)
+				newReplicaClient(existingReplica)
 			end
 		elseif action.type == "REPLICA_NEW" then
 			-- Does the replica already exist?
@@ -162,7 +170,7 @@ if RunService:IsClient() then
 			end
 
 			-- Create a new replica instance
-			ReplicaClient.new(action.payload :: ReplicaTypes.ReplicaFetchPayloadItem)
+			newReplicaClient(action.payload :: ReplicaTypes.ReplicaFetchPayloadItem)
 		elseif action.type == "REPLICA_UPDATE" then
 			local replica = ReplicaClient.getReplicaById(action.payload.replicaId)
 
