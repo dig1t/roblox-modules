@@ -120,6 +120,7 @@ function Trash.new(instance: any, life: number?): Trash
 	return self
 end
 
+--- Destroys a Trash object
 function Trash.Destroy(self: Trash)
 	local trashIndex = table.find(trash, self)
 
@@ -130,13 +131,21 @@ end
 
 RunService.Stepped:Connect(function()
 	local now = os.clock()
+	local trashAmount = #trash
 
-	for garbageIndex = 1, #trash do
+	if trashAmount == 0 then
+		return
+	end
+
+	for garbageIndex = 1, trashAmount do
 		local debris = trash[garbageIndex]
 
 		if now > debris.destroyAt then
 			destroyTrash(garbageIndex)
 		else
+			-- The trash list is ordered by destruction time
+			-- If we reach an instance that has not yet expired,
+			-- we can safely break the loop
 			return
 		end
 	end
