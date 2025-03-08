@@ -14,8 +14,9 @@
 
 	```lua
 	local Players = game:GetService("Players")
+	local ServerScriptService = game:GetService("ServerScriptService")
 
-	local ProfileDB = require(game.ServerScriptService.ProfileDB)
+	local ProfileDB = require(ServerScriptService.ProfileDB)
 
 	local ProfileDataTemplate = {
 		coins = 100,
@@ -34,8 +35,8 @@
 
 		profile:Reconcile() -- Add any missing tables to the player's profile
 
-		local savedData = profile.data
-		savedData.data.coins += 100 -- Add 100 coins to the player's profile
+		local playerData = profile:GetPlayerData()
+		playerData.coins += 100 -- Add 100 coins to the player's profile
 		profile:Save() -- Save the player's profile data
 	end)
 	```
@@ -72,12 +73,24 @@ local SESSION_LOCK_TIMEOUT: number = 60
 local SESSION_CHECK_INTERVAL: number = 8
 
 --[=[
-	ProfileData contains everything that is saved to the data store
+	PlayerData contains the player's data
+
+	@interface PlayerData
+	@within ProfileDB
+
+	{ [string]: any } -- The player's data.
+]=]
+export type PlayerData = { [string]: any }
+
+--[=[
+	ProfileData contains everything that's saved to Roblox.
+
+	The "PlayerData" type will contain the player's data.
 
 	@interface ProfileData
 	@within ProfileDB
 
-	.data { [string]: any } -- The player's data.
+	.data PlayerData -- The player's data.
 	.created number -- The time the profile was created.
 	.last_seen number -- The time the player was last seen.
 	.sessions number -- The number of times the player has joined the game.
@@ -93,8 +106,6 @@ export type ProfileData = {
 		lastUpdate: number,
 		jobId: string,
 	}?,
-
-	[any]: any,
 }
 
 --[=[
@@ -109,7 +120,7 @@ export type ProfileData = {
 	.saveInterval number -- The interval in seconds to save the player's data.
 	.keysToIgnore { string }? -- The keys to ignore when saving the player's data.
 
-	.template ProfileData -- The template for profile data.
+	.template PlayerData | (Player?) -> PlayerData -- The template for profile data.
 ]=]
 export type Settings = {
 	saveToDataStore: boolean?,
@@ -120,7 +131,7 @@ export type Settings = {
 	saveInterval: number?,
 	keysToIgnore: { string }?,
 
-	template: { [any]: any } | (Player?) -> { [any]: any },
+	template: PlayerData | (Player?) -> PlayerData,
 }
 
 local defaultSettings: Settings = {
@@ -153,7 +164,7 @@ ProfileDB.canSaveToDataStore = connectedToRobloxAPI :: boolean
 
 export type Profile = typeof(setmetatable(
 	{} :: {
-		_template: { [any]: any },
+		_template: PlayerData | (Player?) -> PlayerData,
 
 		dataStoreName: string,
 		dataStoreVersion: number,
@@ -168,6 +179,7 @@ export type Profile = typeof(setmetatable(
 		dataFetched: boolean,
 
 		connectedToDataStore: boolean,
+		saveIntervalRunning: boolean,
 
 		newPlayer: boolean,
 		userId: number,
@@ -179,14 +191,12 @@ export type Profile = typeof(setmetatable(
 		versionDataStore: OrderedDataStore,
 
 		-- Signals
-		Updated: Signal.Signal<ProfileData>,
-		Saved: Signal.Signal<ProfileData>,
+		Updated: Signal.Signal<PlayerData>,
+		Saved: Signal.Signal<PlayerData>,
 
 		maid: Maid.MaidType,
 
 		data: ProfileData,
-
-		[any]: any,
 	},
 	ProfileDB
 ))
@@ -205,8 +215,6 @@ export type Profile = typeof(setmetatable(
 function ProfileDB.new(userId: number, settings: Settings?): Profile
 	assert(type(userId) == "number", "UserId must be a number")
 	assert(settings == nil or type(settings) == "table", "Settings must be a table")
-
-	local self: Profile = setmetatable({}, ProfileDB) :: Profile
 
 	local _settings: Settings = Util.extend({}, defaultSettings, settings)
 
@@ -248,6 +256,8 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 		-- so we should disable access to data stores
 		_settings.saveToDataStore = false
 	end
+
+	local self: Profile = setmetatable({}, ProfileDB) :: Profile
 
 	self._template = if typeof(_settings.template) == "function"
 		then _settings.template(Players:GetPlayerByUserId(userId))
@@ -331,12 +341,12 @@ end
 
 	@within ProfileDB
 	@method GetTemplate
-	@return { [any]: any } -- The template provided in the constructor or the result of the template function if the template is a function
+	@return PlayerData -- The template provided in the constructor or the result of the template function if the template is a function
 ]=]
-function ProfileDB.GetTemplate(self: Profile): { [any]: any }
-	return typeof(self._template) == "function"
-			and self._template(Players:GetUserByUserId(self.userId))
-		or table.clone(self._template)
+function ProfileDB.GetTemplate(self: Profile): PlayerData
+	return if typeof(self._template) == "function"
+		then self._template(Players:GetUserByUserId(self.userId))
+		else table.clone(self._template) :: PlayerData
 end
 
 function ProfileDB.ConnectToDataStore(self: Profile): boolean
@@ -398,7 +408,7 @@ function ProfileDB.GetLastVersion(self: Profile): (boolean, string?)
 end
 
 --[=[
-	Returns a new profile data object
+	Creates a new profile data object
 
 	@within ProfileDB
 	@method GetNewData
@@ -543,22 +553,23 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 
 	self.data.last_seen = Workspace:GetServerTimeNow() -- Update the last seen time
 
-	local tableToSave: { [any]: any } = {}
+	-- `self.data` will be formatted to be saved to the data store
+	local serializedData: { [any]: any } = {}
 
 	for key: string, value: any in pairs(self.data) do
 		if
 			not table.find(KEYS_TO_IGNORE, key) and not table.find(self.keysToIgnore, key)
 		then
-			tableToSave[key] = value
+			serializedData[key] = value
 		end
 	end
 
 	-- Allow another server to load and save the player's data
 	if releaseSession then
-		tableToSave.sessionData = nil
+		serializedData.sessionData = nil
 	end
 
-	local saveString: string? = HttpService:JSONEncode(tableToSave)
+	local saveString: string? = HttpService:JSONEncode(serializedData)
 
 	if not saveString then
 		return false
@@ -597,7 +608,7 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 		pcall(HttpService.PostAsync, HttpService, self.apiURL, saveString)
 	end
 
-	self.Saved:Fire(self.data)
+	self.Saved:Fire(self.data.data)
 
 	return true
 end
@@ -615,19 +626,21 @@ function ProfileDB.Reconcile(self: Profile)
 
 	local addedKeys: boolean = false
 
+	local template = self:GetTemplate()
+
 	-- Add any tables that were missing from the saved profile
 	-- Example: the developers added a trading system and now the profile
 	-- does not have a trade_history table. The below loop will insert
 	-- a blank trade_history table from the default profile constructor
-	for key: string, value: any in pairs(self._template) do
-		if self.data[key] == nil then
-			self.data[key] = value
+	for key: string, value: any in pairs(template) do
+		if self.data.data[key] == nil then
+			self.data.data[key] = value
 			addedKeys = true
 		end
 	end
 
 	if addedKeys then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 end
 
@@ -639,7 +652,7 @@ end
 ]=]
 function ProfileDB.Reset(self: Profile)
 	self.data = self:GetNewData()
-	self.Updated:Fire(self.data)
+	self.Updated:Fire(self.data.data)
 end
 
 --[=[
@@ -655,7 +668,13 @@ end
 function ProfileDB.Get(self: Profile, path: string?): any
 	assert(path == nil or typeof(path) == "string", "A path must be a string")
 
-	return Util.treePath(self.data.data, path or "", ".")
+	return if path == nil
+		then self.data.data
+		else Util.treePath(self.data.data, path, ".")
+end
+
+function ProfileDB.GetPlayerData(self: Profile): PlayerData
+	return self.data.data
 end
 
 function ProfileDB.GetMultiple(self: Profile, data: { string }): { [string]: any }
@@ -727,7 +746,7 @@ function ProfileDB.Set(
 
 	if #split == 1 then
 		self.data.data[path] = value
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 		return true
 	end
 
@@ -766,7 +785,7 @@ function ProfileDB.Set(
 	end
 
 	if not skipUpdate then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return true
@@ -795,7 +814,7 @@ function ProfileDB.SetMultiple(self: Profile, data: { [string]: any }): { string
 	end
 
 	if #updatedKeys > 0 then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return updatedKeys
@@ -838,7 +857,7 @@ function ProfileDB.UnsetMultiple(self: Profile, data: { string }): { string }
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return removedKeys
@@ -915,7 +934,7 @@ function ProfileDB.Insert(
 	table.insert(node[lastKey], value)
 
 	if not skipUpdate then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return true
@@ -945,7 +964,7 @@ function ProfileDB.InsertMultiple(self: Profile, data: { any }): { string }
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return removedKeys
@@ -1019,7 +1038,7 @@ function ProfileDB.RemoveValue(
 	table.remove(node[lastKey], index)
 
 	if not skipUpdate then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return true
@@ -1049,7 +1068,7 @@ function ProfileDB.RemoveValues(self: Profile, data: { [string]: any }): { strin
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.data)
+		self.Updated:Fire(self.data.data)
 	end
 
 	return removedKeys
@@ -1110,7 +1129,7 @@ function ProfileDB.SetData(self: Profile, callback: (ProfileData) -> ()): boolea
 		return false
 	end
 
-	self.Updated:Fire(self.data)
+	self.Updated:Fire(self.data.data)
 
 	return true
 end

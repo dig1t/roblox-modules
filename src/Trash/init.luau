@@ -7,6 +7,10 @@
 
 	In addition to instances, this class can be used to destroy any class object that has a `Destroy` method.
 
+	Migrating from Debris:
+	`Debris:AddItem(part, 8)` -> `Trash.new(part, 8)`
+
+	Timed class destruction:
 	```lua
 	local MyClass = require(class)
 
@@ -15,6 +19,7 @@
 	Trash.new(myInstance, 10) -- Destroy the instance after 10 seconds
 	```
 
+	Use case:
 	```lua
 	local function partExplosion()
 		for i = 1, 100 do
