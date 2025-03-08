@@ -37,7 +37,7 @@
 
 	state:Remove("val") -- Removes val from the state
 
-	state:Reset()
+	state:Reset() -- Reset the state to the initial state
 
 	state:Destroy()
 
@@ -60,10 +60,11 @@ export type SubscriptionId = string
 
 export type State<T> = typeof(setmetatable(
 	{} :: {
-		_context: { [any]: any }?,
+		_context: T,
 		_listeners: {
-			[SubscriptionId]: (prevState: any, newState: any) -> nil,
+			[SubscriptionId]: (prevState: T, newState: T) -> (),
 		}?,
+		_initialState: T,
 	},
 	State
 ))
@@ -71,10 +72,10 @@ export type State<T> = typeof(setmetatable(
 --[=[
 	Creates a new state instance
 
-	@param initialState { [any]: any }? -- Initial state values
-	@return State
+	@param initialState T -- Initial state values
+	@return State<T>
 ]=]
-function State.new<T>(initialState: { [any]: any }?): State<T | any>
+function State.new<T>(initialState: T): State<T>
 	if initialState ~= nil then
 		assert(typeof(initialState) == "table", "Expected initialState to be a table")
 	end
@@ -84,8 +85,9 @@ function State.new<T>(initialState: { [any]: any }?): State<T | any>
 			return _self._context[key] or _self[key]
 		end,
 
-		_context = initialState or {},
+		_context = initialState or {} :: any,
 		_listeners = {},
+		_initialState = initialState,
 	}, State) :: State<T>
 end
 
@@ -112,11 +114,14 @@ end
 	@return number
 ]=]
 function State.Length<T>(self: State<T>): number
+	assert(typeof(self._context) == "table", "State context is not a table")
+
 	return self._context and Util.tableLength(self._context) or 0
 end
 
 --[=[
-	Returns the value at the given path
+	Returns the value at the given path.
+	The path parameter can only be used if the state is a table.
 
 	Example:
 	```lua
@@ -132,29 +137,34 @@ end
 	print(state:Get("nest.val")) -- expect 123123
 
 	-- True as the argument returns the entire state
-	print(state:Get(true)) -- expect { val = 1, time = tick(), nest = { val = 123123 } }
+	print(state:Get()) -- expect { val = 1, time = tick(), nest = { val = 123123 } }
 	```
 
 	@within State
 	@method Get
-	@param path string | number | boolean
+	@param path string | number? -- The path to the value to get. Leave empty to get the entire state
 	@return any
 ]=]
 function State.Get<T>(
 	self: State<T>,
-	path: string | number | boolean
+	path: string | number?
 ): any -- Todo: support for nested tables
-	if not self._context then
-		return nil
+	if path == nil then
+		return self._context
 	end
+
+	-- The following requires context to be a table
+	assert(typeof(self._context) == "table", "State context is not a table")
 
 	if typeof(path) == "number" then
 		return self._context[path] -- Return the index, if exists
 	end
 
-	return path == true and self._context -- return the entire state
-		or (typeof(path) == "string" and Util.treePath(self._context, path, "."))
-		or nil
+	if typeof(path) == "table" then
+		return Util.treePath(self._context, path, ".")
+	end
+
+	error("Invalid path type")
 end
 
 --[=[
@@ -250,7 +260,9 @@ function State._pushUpdates<T>(self: State<T>, prevState: any, newState: any)
 end
 
 --[=[
-	Pushes a new value to the state
+	Pushes a new value to the state.
+
+	The state must be a table to use this method.
 
 	Example:
 	```lua
@@ -274,9 +286,7 @@ end
 	@return any -- The key of the pushed value
 ]=]
 function State.Push<T>(self: State<T>, keyOrValue: any, value: any?): any
-	if not self._context then
-		return
-	end
+	assert(typeof(self._context) == "table", "Cannot push to a non-table state")
 
 	local prevState = Util.extend({}, self._context) -- Create a 1 level copy -- TODO: change to deep copy
 	local key: any = value ~= nil and keyOrValue or #self._context + 1
@@ -289,7 +299,32 @@ function State.Push<T>(self: State<T>, keyOrValue: any, value: any?): any
 end
 
 --[=[
-	Resets the state to an empty table
+	Resets the state to the initial state
+
+	Example:
+	```lua
+	local state = State.new({
+		val = 1
+	})
+
+	state:Set("val", 2)
+
+	state:Reset()
+
+	state:Get() -- expect { val = 1 }
+	```
+
+	@within State
+	@method Reset
+]=]
+function State.Reset<T>(self: State<T>)
+	self:_pushUpdates(self._context, self._initialState)
+
+	self._context = self._initialState :: any
+end
+
+--[=[
+	Sets the state with a new value.
 
 	Example:
 	```lua
@@ -301,18 +336,77 @@ end
 		}
 	})
 
-	state:Reset()
-
-	state:Get(true) -- expect {}
+	state:Set({
+		val = 1111
+	}) -- Change val to 1111
 	```
 
 	@within State
-	@method Reset
+	@method Set
+	@param newState T -- The new state value
 ]=]
-function State.Reset<T>(self: State<T>)
-	self:_pushUpdates(self._context, {})
+function State.Set<T>(self: State<T>, newState: T)
+	-- TODO: Create a deep copy if the newState is a table
+	local prevState: T = if typeof(self._context) == "table"
+		then Util.extend({}, self._context :: any) :: any
+		else self._context
 
-	self._context = {}
+	self._context = newState
+
+	self:_pushUpdates(prevState, self._context)
+end
+
+--[=[
+	Sets the state with a new value.
+
+	The `modifier` function should NOT yield as it can cause issues or data loss.
+	This function should be used as a shortcut to modify the state.
+
+	For example
+	```
+	local value = state:Get()
+
+	value.number += 1
+
+	state:Set(value)
+	```
+
+	Turns into:
+	```
+	state:SetCallback(function(context)
+		context.number += 1
+	end)
+	```
+
+	Example:
+	```lua
+	type NumberState = {
+		val: number
+	}
+
+	local state: State.State<NumberState> = State.new({
+		val = 1
+	})
+
+	state:SetCallback(function(prevState: NumberState)
+		prevState.val = 111
+	end) -- Change val to 111
+	```
+
+	@within State
+	@method SetCallback
+	@param modifier (T) -> ()
+]=]
+function State.SetCallback<T>(self: State<T>, modifier: (T) -> ())
+	local prevState: T = if typeof(self._context) == "table"
+		then Util.extend({}, self._context :: any) :: any
+		else self._context
+
+	-- call the "modifier" function so _context can be altered
+	-- the "modifier" function should NOT yield
+	modifier(self._context)
+
+	self:_pushUpdates(prevState, self._context)
 end
 
 --[=[
@@ -328,76 +422,38 @@ end
 		}
 	})
 
-	state:Set("val", 11) -- Change val to 11
-
-	state:Set(function(prevState)
-		prevState.val = 111
-
-		return prevState
-	end) -- Change val to 111
-
-	state:Set({
-		val = 1111
-	}) -- Change val to 1111
-
-	state:Set("nest.val", 11111) -- Change nest.val to 11111
-
-	state:Set("undefinedNest.val", 11111) -- Create undefinedNest and set val to 11111
+	state:SetPath("nest.val", 11111) -- Change nest.val from 123123 to 11111
 	```
 
 	@within State
-	@method Set
-	@param newState any -- The new state value
+	@method SetPath
+	@param pathString string -- The path to set
 	@param value any? -- The value to set
 ]=]
-function State.Set<T>(self: State<T>, newState: any, value: any)
-	if not self._context then
+function State.SetPath<T>(self: State<T>, pathString: string, value: any)
+	assert(typeof(self._context) == "table", "State context must be a table")
+
+	local prevState: T = Util.extend({}, self._context :: any) :: any -- Create a copy
+	local path: { string } = Util.split(pathString, ".", true)
+	local res = self._context
+
+	if not res then
 		return
 	end
 
-	local prevState = Util.extend({}, self._context) -- Create a local copy -- TODO: change to deep copy
+	-- Go through nest until the last nest level is reached
+	for i: number, childName: string in path do
+		local numberIndex: number? = tonumber(childName)
+		local resIndex: number | string = numberIndex or childName
 
-	if typeof(newState) == "function" then
-		-- Replace entire state with the result of newState()
-		-- If newState() returns nil, the state will not be changed -- TODO: change to nil instead of doing nothing?
-		-- If the required value is nil, use State:Reset()
-
-		self._context = newState(self._context) or self._context
-	elseif typeof(newState) == "table" then
-		-- Replace specific state keys with given values
-
-		for k: any, v: any in pairs(newState) do
-			self._context[k] = v
+		if res[resIndex] and i ~= #path then
+			res = res[resIndex]
+		elseif i == #path then
+			-- Change the value if end of the path was reached
+			res[resIndex] = value
+		else
+			break
 		end
-	elseif typeof(newState) == "string" then
-		-- Set specified state path with given value
-		-- This requires the second argument to be a
-		-- value, unless the path is being set to nil
-
-		local path: { string } = Util.split(newState, ".", true)
-		local res = self._context
-
-		if not res then
-			return
-		end
-
-		-- Go through nest until the last nest level is reached
-		for i: number, childName: string in path do
-			local numberIndex: number? = tonumber(childName)
-			local resIndex: number | string = numberIndex or childName
-
-			if res[resIndex] and i ~= #path then
-				res = res[resIndex]
-			elseif i == #path then
-				-- Change the value if end of the path was reached
-				res[resIndex] = value
-			else
-				break
-			end
-		end
-	else
-		warn("No valid state setter was given")
-		return
 	end
 
 	self:_pushUpdates(prevState)
@@ -418,7 +474,7 @@ end
 
 	state:Remove("val") -- Removes val from the state
 
-	state:Get(true) -- expect { time = tick(), nest = { val = 123123 } }
+	state:Get() -- expect { time = tick(), nest = { val = 123123 } }
 	```
 
 	@within State
@@ -426,6 +482,8 @@ end
 	@param path string | number -- The path to the value to remove
 ]=]
 function State.Remove<T>(self: State<T>, path: string | number)
+	assert(typeof(self._context) == "table", "State context must be a table")
+
 	local prevState = Util.extend({}, self._context or {}) -- Create a local copy
 	local treePath = Util.split(tostring(path), ".", true)
 	local res = self._context
@@ -468,6 +526,7 @@ end
 	state:Destroy()
 
 	local success = pcall(function()
+		-- This should throw an error since the state object was destroyed
 		state:Set("val", 1)
 	end)
 
@@ -478,7 +537,7 @@ end
 	@method Destroy
 ]=]
 function State.Destroy<T>(self: State<T>)
-	self._context = nil
+	self._context = nil :: any
 	self._listeners = nil
 
 	pcall(setmetatable, self, {})
