@@ -142,8 +142,20 @@ RunService.Stepped:Connect(function()
 		return
 	end
 
-	for garbageIndex = 1, trashAmount do
+	for trashIndex = trashAmount, 1, -1 do
+		local debris = trash[trashIndex]
+
+		if debris.destroyAt <= now then
+			destroyTrash(trashIndex)
+		end
+	end
+
+	for garbageIndex = trashAmount, 1, -1 do
 		local debris = trash[garbageIndex]
+
+		if not debris then
+			continue
+		end
 
 		if now > debris.destroyAt then
 			destroyTrash(garbageIndex)

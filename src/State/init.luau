@@ -76,16 +76,12 @@ export type State<T> = typeof(setmetatable(
 	@return State<T>
 ]=]
 function State.new<T>(initialState: T): State<T>
-	if initialState ~= nil then
-		assert(typeof(initialState) == "table", "Expected initialState to be a table")
-	end
-
 	return setmetatable({
 		__index = function(_self, key)
 			return _self._context[key] or _self[key]
 		end,
 
-		_context = initialState or {} :: any,
+		_context = initialState :: T,
 		_listeners = {},
 		_initialState = initialState,
 	}, State) :: State<T>
@@ -247,7 +243,7 @@ end
 
 	@private
 ]=]
-function State._pushUpdates<T>(self: State<T>, prevState: any, newState: any)
+function State._pushUpdates<T>(self: State<T>, prevState: T, newState: T)
 	if not self._context or not self._listeners then
 		return
 	end
@@ -288,12 +284,12 @@ end
 function State.Push<T>(self: State<T>, keyOrValue: any, value: any?): any
 	assert(typeof(self._context) == "table", "Cannot push to a non-table state")
 
-	local prevState = Util.extend({}, self._context) -- Create a 1 level copy -- TODO: change to deep copy
+	local prevState: T = table.clone(self._context) :: any -- Create a 1 level copy -- TODO: change to deep copy
 	local key: any = value ~= nil and keyOrValue or #self._context + 1
 
 	self._context[key] = value ~= nil and value or keyOrValue
 
-	self:_pushUpdates(prevState)
+	self:_pushUpdates(prevState, self._context)
 
 	return key
 end
@@ -433,7 +429,7 @@ end
 function State.SetPath<T>(self: State<T>, pathString: string, value: any)
 	assert(typeof(self._context) == "table", "State context must be a table")
 
-	local prevState: T = Util.extend({}, self._context :: any) :: any -- Create a copy
+	local prevState: T = table.clone(self._context) :: any -- Create a copy
 	local path: { string } = Util.split(pathString, ".", true)
 	local res = self._context
 
@@ -456,7 +452,7 @@ function State.SetPath<T>(self: State<T>, pathString: string, value: any)
 		end
 	end
 
-	self:_pushUpdates(prevState)
+	self:_pushUpdates(prevState, self._context)
 end
 
 --[=[
@@ -484,7 +480,7 @@ end
 function State.Remove<T>(self: State<T>, path: string | number)
 	assert(typeof(self._context) == "table", "State context must be a table")
 
-	local prevState = Util.extend({}, self._context or {}) -- Create a local copy
+	local prevState: T = table.clone(self._context) :: any -- Create a local copy
 	local treePath = Util.split(tostring(path), ".", true)
 	local res = self._context
 
@@ -507,7 +503,7 @@ function State.Remove<T>(self: State<T>, path: string | number)
 		end
 	end
 
-	self:_pushUpdates(prevState)
+	self:_pushUpdates(prevState, self._context)
 end
 
 --[=[
