@@ -15,7 +15,7 @@
 		}
 	})
 
-	state:Listen(function(prevState, newState)
+	state:Listen(function(newState, prevState)
 		print(prevState, newState)
 	end)
 
@@ -23,10 +23,8 @@
 
 	print(state:Length()) -- expect 3
 
-	state:Set(function(prevState)
-		prevState.val = 111
-
-		return prevState
+	state:Set(function(state)
+		state.val = 111
 	end)
 
 	state:Set({
@@ -62,7 +60,7 @@ export type State<T> = typeof(setmetatable(
 	{} :: {
 		_context: T,
 		_listeners: {
-			[SubscriptionId]: (prevState: T, newState: T) -> (),
+			[SubscriptionId]: (newState: T, prevState: T) -> (),
 		}?,
 		_initialState: T,
 	},
@@ -176,19 +174,19 @@ end
 		}
 	})
 
-	state:Listen(function(prevState, newState)
+	state:Listen(function(newState, prevState)
 		print(prevState, newState)
 	end)
 	```
 
 	@within State
 	@method Listen
-	@param callback (prevState: any, newState: any) -> nil
+	@param callback (newState: any, prevStates: any) -> nil
 	@return SubscriptionId?
 ]=]
 function State.Listen<T>(
 	self: State<T>,
-	callback: (prevState: any, newState: any) -> ()
+	callback: (newState: any, prevStates: any) -> ()
 ): SubscriptionId?
 	if not self._listeners then
 		return
@@ -217,7 +215,7 @@ end
 		}
 	})
 
-	local subscriptionId = state:Listen(function(prevState, newState)
+	local subscriptionId = state:Listen(function(newState, prevState)
 		print(prevState, newState)
 	end)
 
@@ -243,7 +241,7 @@ end
 
 	@private
 ]=]
-function State._pushUpdates<T>(self: State<T>, prevState: T, newState: T)
+function State._pushUpdates<T>(self: State<T>, newState: T, prevState: T)
 	if not self._context or not self._listeners then
 		return
 	end
@@ -251,7 +249,7 @@ function State._pushUpdates<T>(self: State<T>, prevState: T, newState: T)
 	local _newState = newState or self._context
 
 	for _, callback in pairs(self._listeners) do
-		pcall(callback, prevState, _newState)
+		pcall(callback, _newState, prevState)
 	end
 end
 
@@ -289,7 +287,7 @@ function State.Push<T>(self: State<T>, keyOrValue: any, value: any?): any
 
 	self._context[key] = value ~= nil and value or keyOrValue
 
-	self:_pushUpdates(prevState, self._context)
+	self:_pushUpdates(self._context, prevState)
 
 	return key
 end
@@ -314,9 +312,9 @@ end
 	@method Reset
 ]=]
 function State.Reset<T>(self: State<T>)
-	self:_pushUpdates(self._context, self._initialState)
+	self:_pushUpdates(self._initialState, self._context)
 
-	self._context = self._initialState :: any
+	self._context = self._initialState
 end
 
 --[=[
@@ -349,7 +347,7 @@ function State.Set<T>(self: State<T>, newState: T)
 
 	self._context = newState
 
-	self:_pushUpdates(prevState, self._context)
+	self:_pushUpdates(self._context, prevState)
 end
 
 --[=[
@@ -402,7 +400,7 @@ function State.SetCallback<T>(self: State<T>, modifier: (T) -> ())
 	-- the "modifier" function should NOT yield
 	modifier(self._context)
 
-	self:_pushUpdates(prevState, self._context)
+	self:_pushUpdates(self._context, prevState)
 end
 
 --[=[
@@ -452,7 +450,7 @@ function State.SetPath<T>(self: State<T>, pathString: string, value: any)
 		end
 	end
 
-	self:_pushUpdates(prevState, self._context)
+	self:_pushUpdates(self._context, prevState)
 end
 
 --[=[
@@ -503,7 +501,7 @@ function State.Remove<T>(self: State<T>, path: string | number)
 		end
 	end
 
-	self:_pushUpdates(prevState, self._context)
+	self:_pushUpdates(self._context, prevState)
 end
 
 --[=[
