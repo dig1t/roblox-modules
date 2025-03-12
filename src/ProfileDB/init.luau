@@ -49,8 +49,6 @@
 	```
 ]=]
 
---!strict
-
 local DataStoreService = game:GetService("DataStoreService")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -108,6 +106,8 @@ export type ProfileData = {
 	}?,
 }
 
+export type Template = PlayerData | (Player) -> PlayerData
+
 --[=[
 	@interface Settings
 	@within ProfileDB
@@ -131,7 +131,7 @@ export type Settings = {
 	saveInterval: number?,
 	keysToIgnore: { string }?,
 
-	template: PlayerData | (Player?) -> PlayerData,
+	template: Template?,
 }
 
 local defaultSettings: Settings = {
@@ -164,7 +164,7 @@ ProfileDB.canSaveToDataStore = connectedToRobloxAPI :: boolean
 
 export type Profile = typeof(setmetatable(
 	{} :: {
-		_template: PlayerData | (Player?) -> PlayerData,
+		_template: Template,
 
 		dataStoreName: string,
 		dataStoreVersion: number,
@@ -197,6 +197,8 @@ export type Profile = typeof(setmetatable(
 		maid: Maid.MaidType,
 
 		data: ProfileData,
+
+		[any]: any,
 	},
 	ProfileDB
 ))
@@ -217,6 +219,7 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 	assert(settings == nil or type(settings) == "table", "Settings must be a table")
 
 	local _settings: Settings = Util.extend({}, defaultSettings, settings)
+	local player: Player? = Players:GetPlayerByUserId(userId)
 
 	assert(
 		typeof(_settings.saveToDataStore) == "boolean",
@@ -250,6 +253,7 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 		typeof(_settings.keysToIgnore) == "table" or _settings.keysToIgnore == nil,
 		"Settings.keysToIgnore must be a table or nil"
 	)
+	assert(player, "Player must exist in the game")
 
 	if not ProfileDB.canSaveToDataStore or userId < 0 then
 		-- Using DataStores will fail in Studio,
@@ -260,7 +264,7 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 	local self: Profile = setmetatable({}, ProfileDB) :: Profile
 
 	self._template = if typeof(_settings.template) == "function"
-		then _settings.template(Players:GetPlayerByUserId(userId))
+		then _settings.template(player)
 		else table.clone(_settings.template)
 
 	self.connectedToDataStore = false
