@@ -52,6 +52,7 @@ export type Trash = typeof(setmetatable(
 	{} :: {
 		instance: any,
 		destroyAt: number,
+		callback: () -> (),
 	},
 	Trash
 ))
@@ -65,12 +66,16 @@ local function destroyTrash(trashIndex: number)
 
 	pcall(debris.instance.Destroy, debris.instance) -- Safely destroy the instance
 
+	if debris.callback then
+		task.spawn(debris.callback)
+	end
+
 	table.remove(trash, trashIndex)
 end
 
 --- Destroys all instances waiting to be destroyed.
 function Trash.empty()
-	for trashIndex, _ in trash do
+	for trashIndex = #trash, 1, -1 do
 		destroyTrash(trashIndex)
 	end
 
@@ -93,20 +98,23 @@ end
 
 	@param instance Instance -- The instance to destroy
 	@param life number? -- The amount of time (seconds) to wait before destroying the instance. Defaults to 60 seconds.
+	@param callback function? -- A callback function to call when the instance is destroyed
+	@return Trash
 ]=]
-function Trash.new(instance: any, life: number?): Trash
+function Trash.new(instance: any, life: number?, callback: () -> ()?): Trash
 	assert(instance.Destroy, "Instance must have a Destroy method")
 
 	local self = setmetatable({
 		instance = instance,
 		destroyAt = os.clock() + (life or DEFAULT_DESTRUCTION_TIME),
-	}, Trash)
+		callback = callback,
+	}, Trash) :: Trash
 
 	table.insert(trash, self)
 
 	-- Order the trash by destruction time
 	table.sort(trash, function(a, b)
-		return a.destroyAt < b.destroyAt
+		return a.destroyAt > b.destroyAt
 	end)
 
 	-- Is this instance has a Destroying signal
