@@ -158,6 +158,12 @@ RunService.Stepped:Connect(function()
 		end
 	end
 
+	trashAmount = #trash -- Update the trash amount
+
+	if trashAmount == 0 then
+		return
+	end
+
 	for garbageIndex = trashAmount, 1, -1 do
 		local debris = trash[garbageIndex]
 
