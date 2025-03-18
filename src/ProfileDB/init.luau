@@ -35,8 +35,9 @@
 
 		profile:Reconcile() -- Add any missing tables to the player's profile
 
-		local playerData = profile:GetPlayerData()
-		playerData.coins += 100 -- Add 100 coins to the player's profile
+		local profileData = profile:GetData()
+		profileData.coins += 100 -- Add 100 coins to the player's profile
+
 		profile:Save() -- Save the player's profile data
 	end)
 	```
@@ -71,30 +72,30 @@ local SESSION_LOCK_TIMEOUT: number = 60
 local SESSION_CHECK_INTERVAL: number = 8
 
 --[=[
-	PlayerData contains the player's data
-
-	@interface PlayerData
-	@within ProfileDB
-
-	{ [string]: any } -- The player's data.
-]=]
-export type PlayerData = { [string]: any }
-
---[=[
-	ProfileData contains everything that's saved to Roblox.
-
-	The "PlayerData" type will contain the player's data.
+	ProfileData contains the player's data
 
 	@interface ProfileData
 	@within ProfileDB
 
-	.data PlayerData -- The player's data.
+	{ [string]: any } -- The player's data.
+]=]
+export type ProfileData = { [string]: any }
+
+--[=[
+	ProfileMetadata contains everything that's saved to Roblox.
+
+	The "ProfileData" type will contain the player's data.
+
+	@interface ProfileMetadata
+	@within ProfileDB
+
+	.data ProfileData -- The player's data.
 	.created number -- The time the profile was created.
 	.last_seen number -- The time the player was last seen.
 	.sessions number -- The number of times the player has joined the game.
 ]=]
-export type ProfileData = {
-	data: { [string]: any },
+export type ProfileMetadata = {
+	data: ProfileData,
 
 	created: number,
 	last_seen: number,
@@ -106,7 +107,7 @@ export type ProfileData = {
 	}?,
 }
 
-export type Template = PlayerData | (Player) -> PlayerData
+export type Template = ProfileData | (Player) -> ProfileData
 
 --[=[
 	@interface Settings
@@ -120,7 +121,7 @@ export type Template = PlayerData | (Player) -> PlayerData
 	.saveInterval number -- The interval in seconds to save the player's data.
 	.keysToIgnore { string }? -- The keys to ignore when saving the player's data.
 
-	.template PlayerData | (Player?) -> PlayerData -- The template for profile data.
+	.template ProfileData | (Player?) -> ProfileData -- The template for profile data.
 ]=]
 export type Settings = {
 	saveToDataStore: boolean?,
@@ -191,12 +192,12 @@ export type Profile = typeof(setmetatable(
 		versionDataStore: OrderedDataStore,
 
 		-- Signals
-		Updated: Signal.Signal<PlayerData>,
-		Saved: Signal.Signal<PlayerData>,
+		Updated: Signal.Signal<ProfileData>,
+		Saved: Signal.Signal<ProfileData>,
 
 		maid: Maid.MaidType,
 
-		data: ProfileData,
+		metadata: ProfileMetadata,
 
 		[any]: any,
 	},
@@ -296,13 +297,13 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 
 	self:ConnectToDataStore()
 
-	self.data = self:LoadData()
+	self.metadata = self:LoadData()
 
 	self:StartSaveInterval()
 
 	self.maid:Add(function()
 		-- Clear session data so that the data can be loaded elsewhere
-		self.data.sessionData = nil
+		self.metadata.sessionData = nil
 
 		self:Save()
 	end)
@@ -345,12 +346,12 @@ end
 
 	@within ProfileDB
 	@method GetTemplate
-	@return PlayerData -- The template provided in the constructor or the result of the template function if the template is a function
+	@return ProfileData -- The template provided in the constructor or the result of the template function if the template is a function
 ]=]
-function ProfileDB.GetTemplate(self: Profile): PlayerData
+function ProfileDB.GetTemplate(self: Profile): ProfileData
 	return if typeof(self._template) == "function"
 		then self._template(Players:GetUserByUserId(self.userId))
-		else table.clone(self._template) :: PlayerData
+		else table.clone(self._template) :: ProfileData
 end
 
 function ProfileDB.ConnectToDataStore(self: Profile): boolean
@@ -416,9 +417,9 @@ end
 
 	@within ProfileDB
 	@method GetNewData
-	@return ProfileData -- A new profile data object
+	@return ProfileMetadata -- A new profile data object
 ]=]
-function ProfileDB.GetNewData(self: Profile): ProfileData
+function ProfileDB.GetNewData(self: Profile): ProfileMetadata
 	local now: number = Workspace:GetServerTimeNow()
 
 	return {
@@ -430,19 +431,19 @@ function ProfileDB.GetNewData(self: Profile): ProfileData
 end
 
 --[=[
-	Fetches the latest player data from the data store
+	Fetches the latest player metadata from the data store
 
 	@private
 	@within ProfileDB
 	@method LoadData
-	@return ProfileData -- The player's data or a new profile data object if the player is new
+	@return ProfileMetadata -- The player's metadata or a new profile data object if the player is new
 ]=]
-function ProfileDB.LoadData(self: Profile): ProfileData
+function ProfileDB.LoadData(self: Profile): ProfileMetadata
 	if self.dataFetched then
-		return self.data
+		return self.metadata
 	end
 
-	local newData: ProfileData = self:GetNewData()
+	local newData: ProfileMetadata = self:GetNewData()
 
 	if not self.saveToDataStore then
 		return newData
@@ -475,7 +476,7 @@ function ProfileDB.LoadData(self: Profile): ProfileData
 		end
 
 		-- Fetch the player's profile data from the data store
-		local success, profileData: ProfileData? = Util.attempt(function()
+		local success, profileData: ProfileMetadata? = Util.attempt(function()
 			-- Never use cache when fetching player data
 			local getOptions: DataStoreGetOptions = Instance.new("DataStoreGetOptions")
 			getOptions.UseCache = false
@@ -483,7 +484,7 @@ function ProfileDB.LoadData(self: Profile): ProfileData
 			return self.dataStore:GetAsync(profileVersion, getOptions)
 		end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
-		local decodedData: ProfileData? = profileData
+		local decodedData: ProfileMetadata? = profileData
 			and HttpService:JSONDecode(profileData)
 
 		if
@@ -522,8 +523,8 @@ function ProfileDB.LoadData(self: Profile): ProfileData
 			jobId = game.JobId,
 		}
 
-		self.data = decodedData
-		self.data.sessions += 1 -- Increment the session count
+		self.metadata = decodedData
+		self.metadata.sessions += 1 -- Increment the session count
 
 		self.newPlayer = false -- Mark the profile as not new
 		self.dataFetched = true
@@ -555,12 +556,12 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 		return true
 	end
 
-	self.data.last_seen = Workspace:GetServerTimeNow() -- Update the last seen time
+	self.metadata.last_seen = Workspace:GetServerTimeNow() -- Update the last seen time
 
-	-- `self.data` will be formatted to be saved to the data store
+	-- `self.metadata` will be formatted to be saved to the data store
 	local serializedData: { [any]: any } = {}
 
-	for key: string, value: any in pairs(self.data) do
+	for key: string, value: any in pairs(self.metadata) do
 		if
 			not table.find(KEYS_TO_IGNORE, key) and not table.find(self.keysToIgnore, key)
 		then
@@ -612,7 +613,7 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 		pcall(HttpService.PostAsync, HttpService, self.apiURL, saveString)
 	end
 
-	self.Saved:Fire(self.data.data)
+	self.Saved:Fire(self.metadata.data)
 
 	return true
 end
@@ -637,14 +638,14 @@ function ProfileDB.Reconcile(self: Profile)
 	-- does not have a trade_history table. The below loop will insert
 	-- a blank trade_history table from the default profile constructor
 	for key: string, value: any in pairs(template) do
-		if self.data.data[key] == nil then
-			self.data.data[key] = value
+		if self.metadata.data[key] == nil then
+			self.metadata.data[key] = value
 			addedKeys = true
 		end
 	end
 
 	if addedKeys then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 end
 
@@ -655,8 +656,8 @@ end
 	@method Reset
 ]=]
 function ProfileDB.Reset(self: Profile)
-	self.data = self:GetNewData()
-	self.Updated:Fire(self.data.data)
+	self.metadata = self:GetNewData()
+	self.Updated:Fire(self.metadata.data)
 end
 
 --[=[
@@ -673,12 +674,12 @@ function ProfileDB.Get(self: Profile, path: string?): any
 	assert(path == nil or typeof(path) == "string", "A path must be a string")
 
 	return if path == nil
-		then self.data.data
-		else Util.treePath(self.data.data, path, ".")
+		then self.metadata.data
+		else Util.treePath(self.metadata.data, path, ".")
 end
 
-function ProfileDB.GetPlayerData(self: Profile): PlayerData
-	return self.data.data
+function ProfileDB.GetData(self: Profile): ProfileData
+	return self.metadata.data
 end
 
 function ProfileDB.GetMultiple(self: Profile, data: { string }): { [string]: any }
@@ -749,8 +750,8 @@ function ProfileDB.Set(
 	end
 
 	if #split == 1 then
-		self.data.data[path] = value
-		self.Updated:Fire(self.data.data)
+		self.metadata.data[path] = value
+		self.Updated:Fire(self.metadata.data)
 		return true
 	end
 
@@ -761,7 +762,7 @@ function ProfileDB.Set(
 		return false
 	end
 
-	local node: { [any]: any }? = Util.treePath(self.data.data, parentPath, ".")
+	local node: { [any]: any }? = Util.treePath(self.metadata.data, parentPath, ".")
 
 	if typeof(node) ~= "table" then
 		return false
@@ -789,7 +790,7 @@ function ProfileDB.Set(
 	end
 
 	if not skipUpdate then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return true
@@ -818,7 +819,7 @@ function ProfileDB.SetMultiple(self: Profile, data: { [string]: any }): { string
 	end
 
 	if #updatedKeys > 0 then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return updatedKeys
@@ -861,7 +862,7 @@ function ProfileDB.UnsetMultiple(self: Profile, data: { string }): { string }
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return removedKeys
@@ -872,20 +873,20 @@ end
 
 	Example
 	```lua
-	print(profile.data.data.inventory) -- { "item_12345", "item_67890" }
+	print(profile.metadata.data.inventory) -- { "item_12345", "item_67890" }
 
 	profile:Insert("inventory", "item_54321")
 
-	print(profile.data.data.inventory) -- { "item_12345", "item_67890", "item_54321" }
+	print(profile.metadata.data.inventory) -- { "item_12345", "item_67890", "item_54321" }
 	```
 
 	Need to insert it into a nested table?
 	```lua
-	print(profile.data.data.inventory.weapons) -- { "weapon_12345", "weapon_67890" }
+	print(profile.metadata.data.inventory.weapons) -- { "weapon_12345", "weapon_67890" }
 
 	profile:Insert("inventory.weapons", "weapon_54321")
 
-	print(profile.data.data.inventory) -- { "weapon_12345", "weapon_67890", "weapon_54321" }
+	print(profile.metadata.data.inventory) -- { "weapon_12345", "weapon_67890", "weapon_54321" }
 	```
 
 	@within ProfileDB
@@ -924,7 +925,7 @@ function ProfileDB.Insert(
 		return false
 	end
 
-	local node: { [any]: any }? = Util.treePath(self.data.data, parentPath, ".")
+	local node: { [any]: any }? = Util.treePath(self.metadata.data, parentPath, ".")
 
 	if typeof(node) ~= "table" then
 		return false
@@ -938,7 +939,7 @@ function ProfileDB.Insert(
 	table.insert(node[lastKey], value)
 
 	if not skipUpdate then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return true
@@ -968,7 +969,7 @@ function ProfileDB.InsertMultiple(self: Profile, data: { any }): { string }
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return removedKeys
@@ -979,11 +980,11 @@ end
 
 	Example
 	```lua
-	print(profile.data.data) -- { inventory = { "item_12345", "item_67890" } }
+	print(profile.metadata.data) -- { inventory = { "item_12345", "item_67890" } }
 
 	profile:RemoveValue("inventory", "item_12345")
 
-	print(profile.data.data) -- { inventory = { "item_67890" } }
+	print(profile.metadata.data) -- { inventory = { "item_67890" } }
 	```
 
 	@within ProfileDB
@@ -1022,7 +1023,7 @@ function ProfileDB.RemoveValue(
 		return false
 	end
 
-	local node: { [any]: any }? = Util.treePath(self.data.data, parentPath, ".")
+	local node: { [any]: any }? = Util.treePath(self.metadata.data, parentPath, ".")
 
 	if typeof(node) ~= "table" then
 		return false
@@ -1042,7 +1043,7 @@ function ProfileDB.RemoveValue(
 	table.remove(node[lastKey], index)
 
 	if not skipUpdate then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return true
@@ -1072,7 +1073,7 @@ function ProfileDB.RemoveValues(self: Profile, data: { [string]: any }): { strin
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.data.data)
+		self.Updated:Fire(self.metadata.data)
 	end
 
 	return removedKeys
@@ -1116,24 +1117,24 @@ end
 
 	Example
 	```lua
-	profile:SetData(function(data: ProfileDB.ProfileData)
+	profile:SetData(function(data: ProfileDB.ProfileMetadata)
 		data.coins = 100
 	end)
 	```
 
 	@within ProfileDB
 	@method SetData
-	@param callback (ProfileData) -> () -- The callback to update the profile data
+	@param callback (ProfileMetadata) -> () -- The callback to update the profile data
 	@return boolean -- Whether or not the data was updated
 ]=]
-function ProfileDB.SetData(self: Profile, callback: (ProfileData) -> ()): boolean
-	local successful = pcall(callback, self.data.data)
+function ProfileDB.SetData(self: Profile, callback: (ProfileMetadata) -> ()): boolean
+	local successful = pcall(callback, self.metadata.data)
 
 	if not successful then
 		return false
 	end
 
-	self.Updated:Fire(self.data.data)
+	self.Updated:Fire(self.metadata.data)
 
 	return true
 end
