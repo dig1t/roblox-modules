@@ -113,9 +113,9 @@ end
 	Animates an instance and returns a promise.
 
 	@param config AnimationConfig -- The animation configuration
-	@return Promise.PromiseType
+	@return Promise.Promise
 ]=]
-function Animation.promise(config: AnimationConfig): Promise.PromiseType
+function Animation.promise(config: AnimationConfig): Promise.Promise
 	if config.await then
 		Animation.play(config)
 
@@ -152,12 +152,12 @@ end
 
 	@param instances { Instance } -- The instances to animate
 	@param config AnimationConfig -- The animation configuration
-	@return Promise.PromiseType
+	@return Promise.Promise
 ]=]
 function Animation.promiseAll(
 	instances: { Instance },
 	config: AnimationConfig
-): Promise.PromiseType
+): Promise.Promise
 	local promises = {}
 
 	for _, instance in instances do
@@ -176,7 +176,7 @@ end
 	@param config AnimationConfig -- The animation configuration
 	@return Tween -- The tween instance
 ]=]
-function Animation.new(config: AnimationConfig): (Tween, Promise.PromiseType?)
+function Animation.new(config: AnimationConfig): (Tween, Promise.Promise?)
 	assert(config and typeof(config) == "table", "Missing animation configuration")
 	assert(typeof(config.source) == "Instance", "Missing instance to animate")
 	assert(

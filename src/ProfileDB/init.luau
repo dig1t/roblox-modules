@@ -195,7 +195,7 @@ export type Profile = typeof(setmetatable(
 		Updated: Signal.Signal<ProfileData>,
 		Saved: Signal.Signal<ProfileData>,
 
-		maid: Maid.MaidType,
+		maid: Maid.Maid,
 
 		metadata: ProfileMetadata,
 

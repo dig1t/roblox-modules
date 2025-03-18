@@ -32,7 +32,7 @@ export type ReplicaServer = typeof(setmetatable(
 		replicatedTo: { Player }?,
 		data: ReplicaTypes.Data,
 
-		maid: Maid.MaidType,
+		maid: Maid.Maid,
 	},
 	ReplicaServer
 ))

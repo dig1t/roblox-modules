@@ -38,7 +38,7 @@ type CacheTypeOptions = {
 	maxKeys: number,
 }
 
-export type CacheType = typeof(setmetatable(
+export type Cache = typeof(setmetatable(
 	{} :: {
 		_cache: { [string]: CacheEntry },
 		options: CacheTypeOptions,
@@ -71,7 +71,7 @@ local defaultOptions: CacheTypeOptions = {
 
 	@param options? { defaultTTL: number? }
 ]=]
-function Cache.new(options: CacheOptions?): CacheType
+function Cache.new(options: CacheOptions?): Cache
 	assert(typeof(options) == "table" or options == nil, "options must be a table or nil")
 
 	if options then
@@ -81,12 +81,12 @@ function Cache.new(options: CacheOptions?): CacheType
 		)
 	end
 
-	local self = setmetatable({}, Cache) :: CacheType
+	local self = setmetatable({
+		_cache = {},
+		options = options and Util.extend(options, defaultOptions) or defaultOptions,
 
-	self._cache = {}
-	self.options = options and Util.extend(options, defaultOptions) or defaultOptions
-
-	self._maid = Maid.new()
+		_maid = Maid.new(),
+	}, Cache) :: Cache
 
 	self._maid:Task(Util.interval(self.options.checkInterval, function()
 		local timestamp: number = Util.unix()
@@ -123,7 +123,7 @@ end
 	@param ttl number? -- The time-to-live for the cache entry. Defaults to the defaultTTL option. 0 for unlimited.
 	@return boolean -- Whether or not the value was set.
 ]=]
-function Cache.Set(self: CacheType, key: Key, value: any, ttl: number?): boolean
+function Cache.Set(self: Cache, key: Key, value: any, ttl: number?): boolean
 	local numberKeys: number = Util.tableLength(self:Keys())
 	local maxKeys: number = self.options.maxKeys or 0
 
@@ -150,7 +150,7 @@ end
 	local obj = { my = "Special", variable = 42 }
 	local obj2 = { my = "other special", variable = 1337 }
 
-	local success = myCache:setMultiple({
+	local success = myCache:SetMultiple({
 		{ key = "myKey", value = obj, ttl = 10000 },
 		{ key = "myKey2", value = obj2 }
 	})
@@ -162,7 +162,7 @@ end
 	@param cacheObjects { CacheObject } -- The key to set.
 	@return boolean -- Whether or not the value was set.
 ]=]
-function Cache.SetMultiple(self: CacheType, cacheObjects: { CacheObject }): boolean
+function Cache.SetMultiple(self: Cache, cacheObjects: { CacheObject }): boolean
 	for _, cacheObject: CacheObject in cacheObjects do
 		local success: boolean? =
 			self:Set(cacheObject.key, cacheObject.value, cacheObject.ttl)
@@ -181,7 +181,7 @@ end
 	Gets a saved `value` from the cache. Returns `nil` if not found or expired. If the `value` was found it returns the `value`.
 
 	```lua
-	local value = myCache:get("myKey")
+	local value = myCache:Get("myKey")
 	```
 
 	@within Cache
@@ -189,7 +189,7 @@ end
 	@param key Key -- The key to retrieve.
 	@return CacheEntry? -- The value of the key.
 ]=]
-function Cache.Get(self: CacheType, key: Key): CacheEntry?
+function Cache.Get(self: Cache, key: Key): CacheEntry?
 	assert(typeof(key) == "string", "key must be a string")
 
 	local cacheEntry = self._cache[key] :: CacheEntry?
@@ -220,7 +220,7 @@ end
 	@param key Key -- The key to retrieve.
 	@return CacheEntry? -- The value of the key.
 ]=]
-function Cache.Take(self: CacheType, key: Key): CacheEntry?
+function Cache.Take(self: Cache, key: Key): CacheEntry?
 	assert(typeof(key) == "string", "key must be a string")
 
 	local cacheEntry = self._cache[key] :: CacheEntry?
@@ -250,7 +250,7 @@ end
 	@param keys { Key } -- The keys to retrieve.
 	@return { [Key]: any } -- The values of the keys.
 ]=]
-function Cache.GetMultiple(self: CacheType, keys: { Key }): { [Key]: any }
+function Cache.GetMultiple(self: Cache, keys: { Key }): { [Key]: any }
 	local values = {} :: { [string]: any }
 
 	for _, key: Key in keys do
@@ -272,7 +272,7 @@ end
 	@param key Key -- The key to delete.
 	@return number -- The number of deleted entries.
 ]=]
-function Cache.Delete(self: CacheType, key: Key): number
+function Cache.Delete(self: Cache, key: Key): number
 	assert(key ~= nil, "Key is required")
 
 	if self._cache[key] == nil then
@@ -296,7 +296,7 @@ end
 	@param keys { Key } -- The keys to delete.
 	@return number -- The number of deleted entries.
 ]=]
-function Cache.MultipleDelete(self: CacheType, keys: { Key }): number
+function Cache.MultipleDelete(self: Cache, keys: { Key }): number
 	local deleted: number = 0
 
 	for _, key: Key in keys do
@@ -319,7 +319,7 @@ end
 	@param ttl number -- The time-to-live for the cache entry.
 	@return boolean -- Whether or not the ttl was updated.
 ]=]
-function Cache.TTL(self: CacheType, key: Key, ttl: number): boolean
+function Cache.TTL(self: Cache, key: Key, ttl: number): boolean
 	assert(key ~= nil, "Key is required")
 	assert(typeof(ttl) == "number", "ttl must be a number")
 
@@ -346,7 +346,7 @@ end
 	@param key string -- The key to retrieve.
 	@return number? -- The time-to-live for the cache entry.
 ]=]
-function Cache.GetTTL(self: CacheType, key: Key): number?
+function Cache.GetTTL(self: Cache, key: Key): number?
 	assert(key ~= nil, "Key is required")
 
 	local cacheEntry = self._cache[key] :: CacheEntry?
@@ -369,7 +369,7 @@ end
 	@method Keys
 	@return { Key } -- The keys in the cache.
 ]=]
-function Cache.Keys(self: CacheType): { Key }
+function Cache.Keys(self: Cache): { Key }
 	local keys = {} :: { Key }
 
 	for key: Key, _ in pairs(self._cache) do
@@ -391,7 +391,7 @@ end
 	@param key string -- The key to check.
 	@return boolean -- Whether or not the key exists.
 ]=]
-function Cache.Has(self: CacheType, key: Key): boolean
+function Cache.Has(self: Cache, key: Key): boolean
 	assert(key ~= nil, "Key is required")
 
 	return self._cache[key] ~= nil
@@ -414,7 +414,7 @@ end
 	@within Cache
 	@method Destroy
 ]=]
-function Cache.Destroy(self: CacheType)
+function Cache.Destroy(self: Cache)
 	self._cache = {}
 
 	self._maid:Destroy()

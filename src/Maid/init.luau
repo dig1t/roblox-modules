@@ -8,7 +8,7 @@ local Util = require(script.Parent.Util)
 local Maid = {}
 Maid.__index = Maid
 
-export type MaidType = typeof(setmetatable(
+export type Maid = typeof(setmetatable(
 	{} :: {
 		_tasks: { [string]: MaidTask },
 	},
@@ -30,10 +30,10 @@ export type MaidTask = {
 	local maid = Maid.new()
 	```
 
-	@return MaidType
+	@return Maid
 ]=]
-function Maid.new(): MaidType
-	local self = setmetatable({}, Maid) :: MaidType
+function Maid.new(): Maid
+	local self = setmetatable({}, Maid) :: Maid
 
 	self._tasks = {}
 
@@ -54,7 +54,7 @@ end
 	Multiple types of tasks can be added to the Maid instance.
 
 	```lua
-	local maid: Maid.MaidType = Maid.new()
+	local maid: Maid.Maid = Maid.new()
 
 	-- Functions
 	maid:Task(function()
@@ -85,7 +85,7 @@ end
 	@param _task MaidTask -- The task to add
 	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
-function Maid.Task(self: MaidType, _task: MaidTask): (MaidTask, string)
+function Maid.Task(self: Maid, _task: MaidTask): (MaidTask, string)
 	local taskId = Util.randomString(14)
 
 	self._tasks[taskId] = _task
@@ -101,7 +101,7 @@ end
 	@param _task MaidTask -- The task to add
 	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
-function Maid.Add(self: MaidType, _task: MaidTask): (MaidTask, string)
+function Maid.Add(self: Maid, _task: MaidTask): (MaidTask, string)
 	return self:Task(_task)
 end
 
@@ -109,7 +109,7 @@ end
 	Removes a task from the Maid instance.
 
 	```lua
-	local maid: Maid.MaidType = Maid.new()
+	local maid: Maid.Maid = Maid.new()
 
 	local taskId = maid:Task(function()
 		print("Hello world!")
@@ -122,7 +122,7 @@ end
 	@method RemoveTask
 	@param taskToRemove any -- The task item to remove.
 ]=]
-function Maid.RemoveTask(self: MaidType, taskToRemove: string | MaidTask): ()
+function Maid.RemoveTask(self: Maid, taskToRemove: string | MaidTask): ()
 	-- Remove by task id
 	if typeof(taskToRemove) == "string" then
 		self._tasks[taskToRemove] = nil
@@ -142,7 +142,7 @@ end
 	Cleans up all tasks in the Maid instance.
 
 	```lua
-	local maid: Maid.MaidType = Maid.new()
+	local maid: Maid.Maid = Maid.new()
 
 	maid:Task(function()
 		print("Hello world!")
@@ -154,7 +154,7 @@ end
 	@within Maid
 	@method Clean
 ]=]
-function Maid.Clean(self: MaidType)
+function Maid.Clean(self: Maid)
 	for taskId, _task: MaidTask in pairs(self._tasks) do
 		if typeof(_task) == "function" then
 			_task() -- Run cleaning _task
@@ -185,7 +185,7 @@ end
 	@within Maid
 	@method Cleanup
 ]=]
-function Maid.Cleanup(self: MaidType)
+function Maid.Cleanup(self: Maid)
 	self:Clean()
 end
 
@@ -207,7 +207,7 @@ end
 	@within Maid
 	@method Destroy
 ]=]
-function Maid.Destroy(self: MaidType)
+function Maid.Destroy(self: Maid)
 	for key: any, _ in pairs(self) do
 		self[key] = nil
 	end
