@@ -74,17 +74,15 @@ local SESSION_CHECK_INTERVAL: number = 8
 --[=[
 	ProfileData contains the player's data
 
-	@interface ProfileData
+	@type ProfileData { [string]: any }
 	@within ProfileDB
-
-	{ [string]: any } -- The player's data.
 ]=]
 export type ProfileData = { [string]: any }
 
 --[=[
 	ProfileMetadata contains everything that's saved to Roblox.
 
-	The "ProfileData" type will contain the player's data.
+	The `data` table will contain the player's data.
 
 	@interface ProfileMetadata
 	@within ProfileDB
@@ -93,6 +91,7 @@ export type ProfileData = { [string]: any }
 	.created number -- The time the profile was created.
 	.last_seen number -- The time the player was last seen.
 	.sessions number -- The number of times the player has joined the game.
+	.sessionData { lastUpdate: number, jobId: string }? -- Session data for the player.
 ]=]
 export type ProfileMetadata = {
 	data: ProfileData,
@@ -107,6 +106,13 @@ export type ProfileMetadata = {
 	}?,
 }
 
+--[=[
+	Template is the template for the profile data.
+	It can be a table of default values or a function that returns a table of default values.
+
+	@type Template ProfileData | (Player) -> ProfileData
+	@within ProfileDB
+]=]
 export type Template = ProfileData | (Player) -> ProfileData
 
 --[=[
