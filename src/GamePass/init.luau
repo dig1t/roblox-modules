@@ -19,8 +19,10 @@ local Maid = require(script.Parent.Maid)
 ]=]
 local GamePass = {}
 
---- @type Callback (player: Player, gamePassId: number) -> ()
---- @within GamePass
+--[=[
+	@type Callback (player: Player, gamePassId: number) -> ()
+	@within GamePass
+]=]
 export type Callback = (player: Player, gamePassId: number) -> ()
 
 local callbacks: { Callback } = {}

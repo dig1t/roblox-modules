@@ -1,5 +1,7 @@
 --[=[
 	@class ReplicaClient
+	@client
+	@tag Replica
 
 	A class for receiving replicated objects from the server.
 ]=]
@@ -61,10 +63,21 @@ end
 --[=[
 	Returns a Signal that fires when a key in the replica is updated
 
+	Usage:
+	```lua
+	local replica = ReplicaClient.getReplicaById("replicaId")
+
+	replica:GetKeyChangedSignal("key"):Connect(function(value)
+		print("Key changed:", value)
+	end)
+	```
+
+	@method GetKeyChangedSignal
+	@within ReplicaClient
 	@param key string -- The key to get the value of
 	@return Signal.Signal<ReplicaClient>
 ]=]
-function ReplicaClient.getKeyChangedSignal(
+function ReplicaClient.GetKeyChangedSignal(
 	self: ReplicaClient,
 	key: string
 ): Signal.Signal<ReplicaClient>

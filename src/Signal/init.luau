@@ -129,6 +129,8 @@ end
 	Fires the signal with the given arguments
 	All arguments are stored in the buffer until the buffer is full or the buffer time has elapsed
 
+	@method Fire
+	@within Signal
 	@param ... tuple -- The arguments to pass to the signal
 ]=]
 function Signal.Fire<T...>(self: Signal<T...>, ...)
@@ -154,6 +156,8 @@ end
 	Flushes the buffer and fires all events.
 
 	@private
+	@method _flush
+	@within Signal
 ]=]
 function Signal._flush<T...>(self: Signal<T...>)
 	self:_stopTimer()
@@ -206,6 +210,8 @@ end
 	For advanced usage, you can store the connection's ID and disconnect it later.
 
 	@private
+	@method Disconnect
+	@within Signal
 ]=]
 function Signal.Disconnect<T...>(self: Signal<T...>, connectionId: string)
 	self._connections[connectionId] = nil
@@ -224,6 +230,8 @@ end
 	signal:Fire("Hello, world!")
 	```
 
+	@method Connect
+	@within Signal
 	@param callback Callback<T...> -- The function to call when the signal is fired
 	@return RBXScriptConnection -- The connection object that can be used to disconnect
 ]=]
@@ -249,6 +257,8 @@ end
 	signal:Fire("Hello, world!")
 	```
 
+	@method Once
+	@within Signal
 	@param callback Callback<T...> -- The function to call when the signal is fired
 ]=]
 function Signal.Once<T...>(self: Signal<T...>, callback: Callback<T...>): RBXScriptConnection
@@ -280,6 +290,9 @@ end
 	local message = signal:Wait() -- Blocks until the signal is fired
 	print(message) -- "Hello, world!"
 	```
+
+	@method Wait
+	@within Signal
 ]=]
 function Signal.Wait<T...>(self: Signal<T...>): T...
 	local _coroutine = coroutine.running()
@@ -301,6 +314,10 @@ end
 	Disconnects all connections from the signal.
 
 	`Destroy` is not necessary to call as the signal will be garbage collected when it is no longer referenced.
+
+	@method Destroy
+	@within Signal
+	@tag Cleanup
 ]=]
 function Signal.Destroy<T...>(self: Signal<T...>)
 	self:_stopTimer()

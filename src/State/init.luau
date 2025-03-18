@@ -103,8 +103,8 @@ end
 	print(state:Length()) -- expect 3
 	```
 
-	@within State
 	@method Length
+	@within State
 	@return number
 ]=]
 function State.Length<T>(self: State<T>): number
@@ -134,8 +134,8 @@ end
 	print(state:Get()) -- expect { val = 1, time = tick(), nest = { val = 123123 } }
 	```
 
-	@within State
 	@method Get
+	@within State
 	@param path string | number? -- The path to the value to get. Leave empty to get the entire state
 	@return any
 ]=]
@@ -179,8 +179,8 @@ end
 	end)
 	```
 
-	@within State
 	@method Listen
+	@within State
 	@param callback (newState: any, prevStates: any) -> nil
 	@return SubscriptionId?
 ]=]
@@ -222,8 +222,8 @@ end
 	state:Unlisten(subscriptionId)
 	```
 
-	@within State
 	@method Unlisten
+	@within State
 	@param subscriptionId SubscriptionId
 ]=]
 function State.Unlisten<T>(self: State<T>, subscriptionId: SubscriptionId)
@@ -273,8 +273,8 @@ end
 	print(state:Get("val")) -- expect 2
 	```
 
-	@within State
 	@method Push
+	@within State
 	@param keyOrValue any -- The key of the pushed value or the value itself if the state is an array
 	@param value any? -- The value to push
 	@return any -- The key of the pushed value
@@ -308,8 +308,8 @@ end
 	state:Get() -- expect { val = 1 }
 	```
 
-	@within State
 	@method Reset
+	@within State
 ]=]
 function State.Reset<T>(self: State<T>)
 	self:_pushUpdates(self._initialState, self._context)
@@ -335,8 +335,8 @@ end
 	}) -- Change val to 1111
 	```
 
-	@within State
 	@method Set
+	@within State
 	@param newState T -- The new state value
 ]=]
 function State.Set<T>(self: State<T>, newState: T)
@@ -387,8 +387,8 @@ end
 	end) -- Change val to 111
 	```
 
-	@within State
 	@method SetCallback
+	@within State
 	@param modifier (T) -> ()
 ]=]
 function State.SetCallback<T>(self: State<T>, modifier: (T) -> ())
@@ -419,8 +419,8 @@ end
 	state:SetPath("nest.val", 11111) -- Change nest.val from 123123 to 11111
 	```
 
-	@within State
 	@method SetPath
+	@within State
 	@param pathString string -- The path to set
 	@param value any? -- The value to set
 ]=]
@@ -471,8 +471,8 @@ end
 	state:Get() -- expect { time = tick(), nest = { val = 123123 } }
 	```
 
-	@within State
 	@method Remove
+	@within State
 	@param path string | number -- The path to the value to remove
 ]=]
 function State.Remove<T>(self: State<T>, path: string | number)
@@ -527,8 +527,9 @@ end
 	print('state destroyed?', not success) -- expect: true
 	```
 
-	@within State
 	@method Destroy
+	@within State
+	@tag Cleanup
 ]=]
 function State.Destroy<T>(self: State<T>)
 	self._context = nil :: any

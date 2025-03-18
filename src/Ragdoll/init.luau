@@ -18,16 +18,16 @@ Ragdoll.isReady = false
 --[=[
 	Whether or not the ragdoll is collidable (default: false)
 
-	@within Ragdoll
 	@prop isCollidable boolean
+	@within Ragdoll
 ]=]
 Ragdoll.isCollidable = false
 
 --[=[
 	Seconds before the ragdoll is destroyed (default: 5)
 
-	@within Ragdoll
 	@prop destroyTime number
+	@within Ragdoll
 ]=]
 Ragdoll.destroyTime = 5 -- Roblox default for characters
 

@@ -80,8 +80,8 @@ end
 	maid:Task(instance)
 	```
 
-	@within Maid
 	@method Task
+	@within Maid
 	@param _task MaidTask -- The task to add
 	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
@@ -96,8 +96,8 @@ end
 --[=[
 	Alias for Maid.Task
 
-	@within Maid
 	@method Add
+	@within Maid
 	@param _task MaidTask -- The task to add
 	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
@@ -118,8 +118,8 @@ end
 	maid:RemoveTask(taskId)
 	```
 
-	@within Maid
 	@method RemoveTask
+	@within Maid
 	@param taskToRemove any -- The task item to remove.
 ]=]
 function Maid.RemoveTask(self: Maid, taskToRemove: string | MaidTask): ()
@@ -151,8 +151,9 @@ end
 	maid:Clean() -- Hello world!
 	```
 
-	@within Maid
 	@method Clean
+	@within Maid
+	@tag Cleanup
 ]=]
 function Maid.Clean(self: Maid)
 	for taskId, _task: MaidTask in pairs(self._tasks) do
@@ -182,8 +183,9 @@ end
 --[=[
 	Alias for Maid.Clean
 
-	@within Maid
 	@method Cleanup
+	@within Maid
+	@tag Cleanup
 ]=]
 function Maid.Cleanup(self: Maid)
 	self:Clean()
@@ -204,8 +206,9 @@ end
 	maid:Clean() -- method no longer exists
 	```
 
-	@within Maid
 	@method Destroy
+	@within Maid
+	@tag Cleanup
 ]=]
 function Maid.Destroy(self: Maid)
 	for key: any, _ in pairs(self) do

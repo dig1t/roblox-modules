@@ -1,6 +1,7 @@
 --[=[
 	@class ReplicaServer
 	@server
+	@tag Replica
 
 	A class for creating replicated objects.
 
@@ -40,8 +41,8 @@ export type ReplicaServer = typeof(setmetatable(
 --[=[
 	@interface ReplicaServerConfig
 	@within ReplicaServer
-	.players: { Player }? -- If defined, only these players will receive the replicated object
-	.initialState: { [string]: any }? -- The initial state of the replicated object. Keys must be strings.
+	.players { Player }? -- If defined, only these players will receive the replicated object
+	.initialState { [string]: any }? -- The initial state of the replicated object. Keys must be strings.
 ]=]
 export type ReplicaServerConfig = {
 	players: { Player }?,
@@ -145,9 +146,11 @@ end
 --[=[
 	Fires an action to the appropriate clients
 
+	@method Fire
+	@within ReplicaServer
 	@param action ReplicaTypes.Action -- The action to fire
 ]=]
-function ReplicaServer:Fire(action: ReplicaTypes.Action)
+function ReplicaServer.Fire(self: ReplicaServer, action: ReplicaTypes.Action)
 	print("firing", action.type, action)
 
 	if self.replicatedTo then
@@ -162,6 +165,8 @@ end
 --[=[
 	Pushes the changed key to the clients
 
+	@method Push
+	@within ReplicaServer
 	@param key string -- The key to push
 ]=]
 function ReplicaServer.Push(self: ReplicaServer, key: string)
@@ -179,6 +184,8 @@ end
 --[=[
 	Sets the value of a key in the ReplicaServer object and pushes the change to the clients
 
+	@method Set
+	@within ReplicaServer
 	@param key string -- The key to REPLICA_UPDATE
 	@param value any -- The value to set
 ]=]
@@ -188,6 +195,13 @@ function ReplicaServer.Set(self: ReplicaServer, key: string, value: any)
 	self:Push(key)
 end
 
+--[=[
+	Destroys a replica object and replicates the event to clients
+
+	@method Destroy
+	@within ReplicaServer
+	@tag Cleanup
+]=]
 function ReplicaServer.Destroy(self: ReplicaServer)
 	self.maid:Clean()
 end

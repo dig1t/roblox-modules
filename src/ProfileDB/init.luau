@@ -215,8 +215,8 @@ export type Profile = typeof(setmetatable(
 
 	A settings table can be provided to configure the ProfileDB instance.
 
-	@within ProfileDB
 	@function new
+	@within ProfileDB
 	@param userId number -- The user ID of the player
 	@param settings Settings? -- The settings for the profile
 	@return Profile -- The new ProfileDB instance
@@ -350,8 +350,8 @@ end
 --[=[
 	Returns the template given in the constructor
 
-	@within ProfileDB
 	@method GetTemplate
+	@within ProfileDB
 	@return ProfileData -- The template provided in the constructor or the result of the template function if the template is a function
 ]=]
 function ProfileDB.GetTemplate(self: Profile): ProfileData
@@ -401,8 +401,8 @@ end
 --[=[
 	Fetches the last version from the version history data store
 
-	@within ProfileDB
 	@method GetLastVersion
+	@within ProfileDB
 	@return (boolean, string?) -- Whether or not the fetch was successful and the last version if successful
 ]=]
 function ProfileDB.GetLastVersion(self: Profile): (boolean, string?)
@@ -421,8 +421,8 @@ end
 --[=[
 	Creates a new profile data object
 
-	@within ProfileDB
 	@method GetNewData
+	@within ProfileDB
 	@return ProfileMetadata -- A new profile data object
 ]=]
 function ProfileDB.GetNewData(self: Profile): ProfileMetadata
@@ -440,8 +440,8 @@ end
 	Fetches the latest player metadata from the data store
 
 	@private
-	@within ProfileDB
 	@method LoadData
+	@within ProfileDB
 	@return ProfileMetadata -- The player's metadata or a new profile data object if the player is new
 ]=]
 function ProfileDB.LoadData(self: Profile): ProfileMetadata
@@ -550,8 +550,8 @@ end
 --[=[
 	Returns whether or not the profile was saved
 
-	@within ProfileDB
 	@method Save
+	@within ProfileDB
 	@param releaseSession boolean? -- Whether or not to release the session lock
 	@return boolean -- Whether or not the profile was saved
 ]=]
@@ -627,8 +627,8 @@ end
 --[=[
 	Reconciles the profile data with the template provided in the constructor
 
-	@within ProfileDB
 	@method Reconcile
+	@within ProfileDB
 ]=]
 function ProfileDB.Reconcile(self: Profile)
 	if not self.saveToDataStore then
@@ -658,8 +658,8 @@ end
 --[=[
 	Resets the profile data to the template provided in the constructor
 
-	@within ProfileDB
 	@method Reset
+	@within ProfileDB
 ]=]
 function ProfileDB.Reset(self: Profile)
 	self.metadata = self:GetNewData()
@@ -671,8 +671,8 @@ end
 
 	Not providing a path will return the entire profile data table
 
-	@within ProfileDB
 	@method Get
+	@within ProfileDB
 	@param path string? -- The path to the value
 	@return any -- The value at the given path or nil if the value does not exist
 ]=]
@@ -731,8 +731,8 @@ end
 	end
 	```
 
-	@within ProfileDB
 	@method Set
+	@within ProfileDB
 	@param path string -- The path to the value
 	@param value any -- The value to set
 	@param skipUpdate boolean? -- Whether or not to skip firing the Updated signal
@@ -805,8 +805,8 @@ end
 --[=[
 	Sets multiple values in the profile data.
 
-	@within ProfileDB
 	@method SetMultiple
+	@within ProfileDB
 	@param data { [string]: any } -- The data paths to set
 	@return { string } -- The keys that were updated
 ]=]
@@ -836,8 +836,8 @@ end
 
 	Alias for `profile:Set(path, nil)`.
 
-	@within ProfileDB
 	@method Unset
+	@within ProfileDB
 	@param path string -- The path to the value
 	@return boolean -- Whether or not the value was unset
 ]=]
@@ -848,8 +848,8 @@ end
 --[=[
 	Unsets multiple values in the profile data.
 
-	@within ProfileDB
 	@method UnsetMultiple
+	@within ProfileDB
 	@param data { string } -- The data paths to unset
 	@return { string } -- The keys that were removed
 ]=]
@@ -895,8 +895,8 @@ end
 	print(profile.metadata.data.inventory) -- { "weapon_12345", "weapon_67890", "weapon_54321" }
 	```
 
-	@within ProfileDB
 	@method Insert
+	@within ProfileDB
 	@param path string -- The path to the table
 	@param value any -- The value to insert
 	@param skipUpdate boolean? -- Whether or not to skip firing the Updated signal
@@ -954,8 +954,8 @@ end
 --[=[
 	Inserts multiple values into a table at the given path.
 
-	@within ProfileDB
 	@method InsertMultiple
+	@within ProfileDB
 	@param path string -- The path to the table
 	@param data { any } -- The values to insert
 	@return { string } -- The keys that were updated
@@ -993,8 +993,8 @@ end
 	print(profile.metadata.data) -- { inventory = { "item_67890" } }
 	```
 
-	@within ProfileDB
 	@method RemoveValue
+	@within ProfileDB
 	@param path string -- The path to the table
 	@param value any -- The value to remove
 	@param skipUpdate boolean? -- Whether or not to skip firing the Updated signal
@@ -1058,8 +1058,8 @@ end
 --[=[
 	Removes multiple values from a table at the given path.
 
-	@within ProfileDB
 	@method RemoveMultiple
+	@within ProfileDB
 	@param path string -- The path to the table
 	@param data { [string]: any } -- The path and values to remove
 	@return { string } -- The keys that were removed
@@ -1088,8 +1088,8 @@ end
 --[=[
 	Increments the value at the given path in the profile data.
 
-	@within ProfileDB
 	@method Increment
+	@within ProfileDB
 	@param path string -- The path to the value
 	@param value number -- The value to increment by
 	@return boolean -- Whether or not the value was incremented
@@ -1128,8 +1128,8 @@ end
 	end)
 	```
 
-	@within ProfileDB
 	@method SetData
+	@within ProfileDB
 	@param callback (ProfileMetadata) -> () -- The callback to update the profile data
 	@return boolean -- Whether or not the data was updated
 ]=]
@@ -1148,8 +1148,9 @@ end
 --[=[
 	Destroys the profile and disconnects all events.
 
-	@within ProfileDB
 	@method Destroy
+	@within ProfileDB
+	@tag Cleanup
 ]=]
 function ProfileDB.Destroy(self: Profile)
 	self.maid:Destroy()

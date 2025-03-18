@@ -2,6 +2,9 @@
 	@class Replica
 
 	A class for creating replicated objects.
+
+	[Replica.Server](/api/ReplicaServer) is used on the server to create and manage replicated objects.
+	[Replica.Client](/api/ReplicaClient) is used on the client to receive replicated objects.
 ]=]
 
 --!strict
@@ -16,7 +19,18 @@ export type ReplicaClient = ReplicaClient.ReplicaClient
 export type EventData = ReplicaTypes.EventData
 export type Data = ReplicaTypes.Data
 
-return {
-	Server = ReplicaServer,
-	Client = ReplicaClient,
-}
+local Replica = {}
+
+--[=[
+		@prop Server ReplicaServer
+		@within Replica
+	]=]
+Replica.Server = ReplicaServer
+
+--[=[
+		@prop Client ReplicaClient
+		@within Replica
+	]=]
+Replica.Client = ReplicaClient
+
+return Replica

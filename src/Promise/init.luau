@@ -28,8 +28,8 @@ local Promise = {}
 Promise.__index = Promise
 
 --[=[
-	@within Promise
 	@type Callback (...any) -> ()
+	@within Promise
 ]=]
 export type Callback = (...any) -> ()
 
@@ -48,8 +48,8 @@ export type Promise = typeof(setmetatable(
 ))
 
 --[=[
-	@within Promise
 	@interface PromiseExecutor
+	@within Promise
 	@field resolve Callback -- Resolves the promise
 	@field reject Callback -- Rejects the promise
 ]=]
@@ -58,8 +58,8 @@ export type PromiseExecutor = (resolve: Callback, reject: Callback) -> ()
 --[=[
 	Current status of the promise
 
-	@within Promise
 	@prop statusType table -- The status types of the promise
+	@within Promise
 ]=]
 Promise.statusType = {
 	pending = "pending", -- The promise is waiting for a result
@@ -180,8 +180,8 @@ end
 	Promise:_run()
 	```
 
-	@within Promise
 	@method _run
+	@within Promise
 	@ignore
 ]=]
 function Promise._run(self: Promise)
@@ -229,8 +229,8 @@ end
 	```
 
 	@ignore
-	@within Promise
 	@method _resolve
+	@within Promise
 	@param ... any -- The tuple parameters to resolve the promise with.
 ]=]
 function Promise._resolve(self: Promise, ...)
@@ -287,8 +287,8 @@ end
 	```
 
 	@ignore
-	@within Promise
 	@method _reject
+	@within Promise
 	@param ... any -- The tuple parameters to reject the promise with.
 ]=]
 function Promise._reject(self: Promise, ...)
@@ -335,8 +335,8 @@ end
 	Promise:resolve(...)
 	```
 
-	@within Promise
 	@method andThen
+	@within Promise
 	@param executor function -- The function to call when the promise is fulfilled.
 	@return Promise
 ]=]
@@ -362,8 +362,8 @@ end
 	Called when the Promise is rejected.
 
 
-	@within Promise
 	@method catch
+	@within Promise
 	@param callback function -- The function to call when the Promise is rejected.
 	@return Promise
 ]=]
@@ -394,8 +394,8 @@ end
 	```
 
 
-	@within Promise
 	@method finally
+	@within Promise
 	@param callback function -- The function to call when the promise is fulfilled.
 	@return Promise
 ]=]
@@ -431,8 +431,8 @@ end
 	local success: boolean, result: any = Promise:await()
 	```
 
-	@within Promise
 	@method await
+	@within Promise
 	@return boolean -- Whether the promise was fulfilled or not.
 	@return any -- The result of the promise.
 ]=]
@@ -465,8 +465,8 @@ end
 	Promise:destroy()
 	```
 
-	@within Promise
 	@method destroy
+	@within Promise
 ]=]
 function Promise.destroy(self: Promise)
 	for key: any, _ in pairs(self) do
@@ -477,8 +477,9 @@ end
 --[=[
 	Alias for promise:destroy()
 
-	@within Promise
 	@method Destroy
+	@within Promise
+	@tag Cleanup
 ]=]
 function Promise.Destroy(self: Promise)
 	self:destroy()

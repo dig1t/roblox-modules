@@ -133,7 +133,13 @@ function Trash.new(instance: any, life: number?, callback: () -> ()?): Trash
 	return self
 end
 
---- Destroys a Trash object
+--[=[
+	Destroys a Trash object
+
+	@method Destroy
+	@within Trash
+	@tag Cleanup
+]=]
 function Trash.Destroy(self: Trash)
 	local trashIndex = table.find(trash, self)
 

@@ -131,9 +131,32 @@ local paletteColors = {
 }
 
 --[=[
+	@class Palette
+
 	Easy color picker that uses the Material color system
 
-	@class Palette
+	Available colors:
+	- red
+	- orange
+	- yellow
+	- gold
+	- green
+	- blue
+	- purple
+	- blue-grey
+	- grey
+
+	Available shades:
+	- 50
+	- 100
+	- 200
+	- 300
+	- 400
+	- 500 (default)
+	- 600
+	- 700
+	- 800
+	- 900
 ]=]
 local Palette = {}
 

@@ -37,8 +37,8 @@ local Animation = {}
 	})
 	```
 
-	@within Animation
 	@prop defaultConfig AnimationConfig
+	@within Animation
 ]=]
 Animation.defaultConfig = {}
 
@@ -48,6 +48,7 @@ Animation.defaultConfig = {}
 	Warning: setting loop, reverse, or delay will overwrite tweenInfo if it's defined.
 
 	@interface AnimationConfig
+	@within Animation
 	.source Instance -- The instance to animate
 	.start { [string]: any }? -- Starting properties (this will overwrite the current properties)
 	.goal { [string]: any } -- Properties to animate to
@@ -58,7 +59,6 @@ Animation.defaultConfig = {}
 	.loop number? -- Times to loop the animation
 	.reverse boolean? -- Reverse the animation after it's done
 	.delay number? -- Delay before starting the animation
-	@within Animation
 ]=]
 export type AnimationConfig = {
 	source: Instance,

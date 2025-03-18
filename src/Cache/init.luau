@@ -20,8 +20,8 @@ export type CacheObject = {
 }
 
 --[=[
-	@within Cache
 	@interface CacheOptions
+	@within Cache
 	.defaultTTL? number -- The default time-to-live for a cache entry. Defaults to 6000.
 	.checkInterval? number -- The interval in seconds to check for expired cache entries. Defaults to 600.
 	.maxKeys? number -- The maximum amount of keys to store in the cache. 0 for unlimited. Defaults to 0.
@@ -48,8 +48,8 @@ export type Cache = typeof(setmetatable(
 ))
 
 --[=[
-	@within Cache
 	@interface CacheEntry
+	@within Cache
 	.key Key -- The key of the cache entry.
 	.value any -- The value of the cache entry.
 	.expires number -- The unix timestamp of when the cache entry expires.
@@ -116,8 +116,8 @@ end
 	```
 	> Note: If the key expires based on it's `ttl` it will be deleted entirely from the internal data object.
 
-	@within Cache
 	@method Set
+	@within Cache
 	@param key string -- The key to set.
 	@param value any -- The value to set.
 	@param ttl number? -- The time-to-live for the cache entry. Defaults to the defaultTTL option. 0 for unlimited.
@@ -157,8 +157,8 @@ end
 	-- true
 	```
 
-	@within Cache
 	@method SetMultiple
+	@within Cache
 	@param cacheObjects { CacheObject } -- The key to set.
 	@return boolean -- Whether or not the value was set.
 ]=]
@@ -184,8 +184,8 @@ end
 	local value = myCache:Get("myKey")
 	```
 
-	@within Cache
 	@method Get
+	@within Cache
 	@param key Key -- The key to retrieve.
 	@return CacheEntry? -- The value of the key.
 ]=]
@@ -215,8 +215,8 @@ end
 	myCache:Has("myKey") -- false
 	```
 
-	@within Cache
 	@method Take
+	@within Cache
 	@param key Key -- The key to retrieve.
 	@return CacheEntry? -- The value of the key.
 ]=]
@@ -245,8 +245,8 @@ end
 	local values = myCache:GetMultiple({ "myKey", "myKey2" })
 	```
 
-	@within Cache
 	@method GetMultiple
+	@within Cache
 	@param keys { Key } -- The keys to retrieve.
 	@return { [Key]: any } -- The values of the keys.
 ]=]
@@ -267,8 +267,8 @@ end
 	local deleted: number = myCache:Delete("myKey")
 	```
 
-	@within Cache
 	@method Delete
+	@within Cache
 	@param key Key -- The key to delete.
 	@return number -- The number of deleted entries.
 ]=]
@@ -291,8 +291,8 @@ end
 	local deleted: number = myCache:MultipleDelete({ "myKey", "myKey2" })
 	```
 
-	@within Cache
 	@method MultipleDelete
+	@within Cache
 	@param keys { Key } -- The keys to delete.
 	@return number -- The number of deleted entries.
 ]=]
@@ -313,8 +313,8 @@ end
 	local success = myCache:TTL("myKey", 10000)
 	```
 
-	@within Cache
 	@method TTL
+	@within Cache
 	@param key string -- The key to update.
 	@param ttl number -- The time-to-live for the cache entry.
 	@return boolean -- Whether or not the ttl was updated.
@@ -341,8 +341,8 @@ end
 	local ttl = myCache:GetTTL("myKey")
 	```
 
-	@within Cache
 	@method GetTTL
+	@within Cache
 	@param key string -- The key to retrieve.
 	@return number? -- The time-to-live for the cache entry.
 ]=]
@@ -365,8 +365,8 @@ end
 	local keys = myCache:Keys()
 	```
 
-	@within Cache
 	@method Keys
+	@within Cache
 	@return { Key } -- The keys in the cache.
 ]=]
 function Cache.Keys(self: Cache): { Key }
@@ -386,8 +386,8 @@ end
 	myCache:Has("myKey") -- true
 	```
 
-	@within Cache
 	@method Has
+	@within Cache
 	@param key string -- The key to check.
 	@return boolean -- Whether or not the key exists.
 ]=]
@@ -411,8 +411,9 @@ end
 	myCache:Destroy()
 	```
 
-	@within Cache
 	@method Destroy
+	@within Cache
+	@tag Cleanup
 ]=]
 function Cache.Destroy(self: Cache)
 	self._cache = {}
