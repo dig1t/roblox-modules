@@ -48,7 +48,7 @@ Use version ^1.0 on any module to use its latest version.
 - Weapon - Modular weapon system with client/server implementation (WIP)
 
 ## UI & Visuals
-- Palette dig1t/palette@1.0.0 - Color management system
+- Palette [`dig1t/palette@1.0.0`](https://dig1t.github.io/roblox-modules/api/Palette) - Color picker that uses the Material color system
 
 ## Usage Examples
 

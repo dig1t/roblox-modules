@@ -131,7 +131,7 @@ local paletteColors = {
 }
 
 --[=[
-	Easy color picker using Google Material's color system to pick colors.
+	Easy color picker that uses the Material color system
 
 	@class Palette
 ]=]
