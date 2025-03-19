@@ -664,7 +664,7 @@ end
 	@param model Model
 	@return number
 ]=]
-function Util.getMass(model: Model): number?
+function Util.getMass(model: Model): number
 	assert(
 		typeof(model) == "Instance",
 		"Util.getMass - First argument must be an instance"
