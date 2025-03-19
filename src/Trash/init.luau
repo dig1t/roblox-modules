@@ -35,6 +35,11 @@
 		end
 	end
 	```
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Trash = "dig1t/trash@1.0.3"
+	```
 ]=]
 
 --!native

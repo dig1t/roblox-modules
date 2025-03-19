@@ -2,11 +2,16 @@ local Maid = require(script.Parent.Maid)
 local Util = require(script.Parent.Util)
 
 --[=[
+	@class Cache
+
 	Cache class for storing data in a cache instance.
 
 	Based off [node-cache](https://npmjs.com/package/node-cache).
 
-	@class Cache
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Cache = "dig1t/cache@1.0.9"
+	```
 ]=]
 local Cache = {}
 Cache.__index = Cache

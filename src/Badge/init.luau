@@ -6,6 +6,8 @@ local Cache = require(script.Parent.Cache)
 local badges = {}
 
 --[=[
+	@class Badge
+
 	Badge management class for awarding badges to players.
 
 	Use the `Badge.add` method to add badges to the cache.
@@ -25,8 +27,12 @@ local badges = {}
 	if not hasBadge then
 		Badge.award(player, "BadgeName")
 	end
+	```
 
-	@class Badge
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Badge = "dig1t/badge@1.0.4"
+	```
 ]=]
 local Badge = {}
 local cache = Cache.new()

@@ -77,6 +77,12 @@ local Promise = require(ReplicatedStorage.Packages.Promise)
 -- Create and use a promise
 local myPromise: Promise.Promise = Promise.new(function(resolve, reject)
     -- Async operation
+    local success = pcall(function()
+        -- Simulate some work
+        task.wait(2)
+        print("Data loaded successfully")
+    end)
+
     if success then
         resolve(data)
     else
@@ -103,7 +109,7 @@ myMaid:GiveTask(workspace.ChildAdded:Connect(function() end))
 myMaid:GiveTask(function() print("Cleanup!") end)
 
 -- Clean up all tasks
-myMaid:DoCleaning()
+myMaid:Clean()
 ```
 
 ### Palette
@@ -125,8 +131,8 @@ local Cache = require(ReplicatedStorage.Packages.Cache)
 local myCache = Cache.new()
 
 -- Store and retrieve data
-myCache:set("playerStats", { coins = 100, level = 5 })
-local stats = myCache:get("playerStats")
+myCache:Set("playerStats", { coins = 100, level = 5 })
+local stats = myCache:Get("playerStats")
 print(stats.coins) -- 100
 ```
 
@@ -137,7 +143,9 @@ All modules include type definitions for Luau's type checking system. You can im
 ```lua
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
-local myPromise: Promise.Promise = Promise.new(function(resolve)
+type Promise = Promise.Promise
+
+local myPromise: Promise = Promise.new(function(resolve)
     resolve(true)
 end)
 ```

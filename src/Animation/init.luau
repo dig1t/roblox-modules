@@ -8,9 +8,14 @@ local Util = require(script.Parent.Util)
 local DEFAULT_TWEEN_TIME = 0.2
 
 --[=[
+	@class Animation
+
 	Animation library for animating instances.
 
-	@class Animation
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Animation = "dig1t/animation@1.0.7"
+	```
 ]=]
 local Animation = {}
 

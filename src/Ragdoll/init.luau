@@ -10,6 +10,13 @@ local RAGDOLL_COLLISION_GROUP_NAME: string = "Ragdoll"
 
 --[=[
 	@class Ragdoll
+
+	Ragdoll package for converting a player's character into a ragdoll.
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Ragdoll = "dig1t/ragdoll@1.0.4"
+	```
 ]=]
 local Ragdoll = {}
 

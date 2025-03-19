@@ -157,6 +157,11 @@ local paletteColors = {
 	- 700
 	- 800
 	- 900
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Palette = "dig1t/palette@1.0.0"
+	```
 ]=]
 local Palette = {}
 

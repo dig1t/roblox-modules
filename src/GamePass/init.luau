@@ -5,6 +5,8 @@ local Cache = require(script.Parent.Cache)
 local Maid = require(script.Parent.Maid)
 
 --[=[
+	@class GamePass
+
 	Game pass library that caches game pass ownership results and watches for pass purchases.
 
 	This module fixes the caching issue with UserOwnsGamePassAsync
@@ -15,7 +17,10 @@ local Maid = require(script.Parent.Maid)
 	local hasPass = GamePass.has(player.UserId, 123456)
 	```
 
-	@class GamePass
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	GamePass = "dig1t/gamepass@1.0.8"
+	```
 ]=]
 local GamePass = {}
 

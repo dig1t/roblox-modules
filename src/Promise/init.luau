@@ -1,4 +1,6 @@
 --[=[
+	@class Promise
+
 	Lightweight Promise class for asynchronous operations.
 
 	```lua
@@ -22,7 +24,10 @@
 	end) :: Promise.Promise
 	```
 
-	@class Promise
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Promise = "dig1t/promise@1.1.3"
+	```
 ]=]
 local Promise = {}
 Promise.__index = Promise

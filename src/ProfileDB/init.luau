@@ -48,6 +48,11 @@
 		print("Player data was updated", profileData.data.coins)
 	end)
 	```
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	ProfileDB = "dig1t/profiledb@1.0.2"
+	```
 ]=]
 
 local DataStoreService = game:GetService("DataStoreService")

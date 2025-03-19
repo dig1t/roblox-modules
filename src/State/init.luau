@@ -45,6 +45,11 @@
 
 	print("state destroyed:", not success) -- expect: state destroyed: true
 	```
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	State = "dig1t/state@1.1.2"
+	```
 ]=]
 
 --!strict

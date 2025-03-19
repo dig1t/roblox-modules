@@ -1,9 +1,14 @@
 --[=[
-@class Signal
+	@class Signal
 
-Author: dig1t
+	Author: dig1t
 
-A lightweight signal implementation that allows for firing, connecting, and disconnecting.
+	A lightweight signal implementation that allows for firing, connecting, and disconnecting.
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Signal = "dig1t/signal@1.0.0"
+	```
 ]=]
 
 --!strict

@@ -1,9 +1,14 @@
 local Util = require(script.Parent.Util)
 
 --[=[
+	@class Maid
+
 	Task management class for cleaning up things for garbage collection.
 
-	@class Maid
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Maid = "dig1t/maid@1.0.7"
+	```
 ]=]
 local Maid = {}
 Maid.__index = Maid

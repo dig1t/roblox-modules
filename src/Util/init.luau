@@ -107,6 +107,11 @@ Util.trimWhitespace = TableUtil.trimWhitespace
 
 	Util.requiredFunction() -- "Hello world!"
 	```
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Util = "dig1t/util@1.0.15"
+	```
 ]=]
 function Util.use(moduleName: string | ModuleScript)
 	local module: { [any]: any }
