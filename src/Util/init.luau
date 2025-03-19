@@ -11,7 +11,14 @@ local TableUtil = require(script.TableUtil)
 
 local _cache: { [string]: any } = {}
 
---- @class Util
+--[=[
+	@class Util
+
+	Install with wally by adding the following to your `wally.toml`:
+	```toml
+	Util = "dig1t/util@1.0.15"
+	```
+]=]
 local Util = {}
 
 setmetatable({}, {
@@ -106,11 +113,6 @@ Util.trimWhitespace = TableUtil.trimWhitespace
 	Util.use(pathToModule)
 
 	Util.requiredFunction() -- "Hello world!"
-	```
-
-	Install with wally by adding the following to your `wally.toml`:
-	```toml
-	Util = "dig1t/util@1.0.15"
 	```
 ]=]
 function Util.use(moduleName: string | ModuleScript)
