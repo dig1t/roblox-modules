@@ -26,7 +26,7 @@ jobs:
         run: rojo sourcemap --include-non-scripts --output sourcemap.json
 
       - name: Lint with luau-lsp
-        run: luau-lsp analyze --defs=globalTypes.d.luau --sourcemap=sourcemap.json --no-strict-dm-types --ignore=Packages/** --ignore=*.spec.luau --flag:LuauTinyControlFlowAnalysis=True src
+        run: luau-lsp analyze --defs=globalTypes.d.luau --sourcemap=sourcemap.json --no-strict-dm-types --ignore=**/_Index/** --ignore=*.spec.luau src
 
       - name : Lint with selene
         run: selene src
