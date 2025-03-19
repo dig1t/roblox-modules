@@ -189,7 +189,7 @@ function TableUtil.filter(
 		)
 	do
 		if callbackFn(value, key, source) == true then
-			res[#res + 1] = value
+			table.insert(res, value)
 		end
 	end
 
@@ -233,7 +233,7 @@ function TableUtil.mapIndex(
 
 	local res = {}
 
-	for key: any, value: any in ipairs(source) do
+	for key: any, value: any in source do
 		local index = #res + 1
 
 		if filterFn then
@@ -385,11 +385,11 @@ function TableUtil.split(
 	end
 
 	for match: string in string.gmatch(text, `([^{delimiter}]+)`) do
-		chunks[#chunks + 1] = trim and TableUtil.trimWhitespace(match) or match
+		table.insert(chunks, trim and TableUtil.trimWhitespace(match) or match)
 	end
 
 	if not trimTrailingDelimiter and text:sub(-1, -1) == delimiter then
-		chunks[#chunks + 1] = ""
+		table.insert(chunks, "")
 	end
 
 	return chunks
@@ -443,7 +443,7 @@ function TableUtil.join(
 
 	local res: string = ""
 
-	for index: number, value: string | number in ipairs(stringTable) do
+	for index: number, value: string | number in stringTable do
 		local _value: string | number? = value
 
 		if typeof(_value) == "number" then
@@ -661,7 +661,7 @@ function TableUtil.insertIf(
 		else condition()
 
 	if canInsert == true then
-		target[#target + 1] = value
+		table.insert(target, value)
 	end
 end
 
@@ -683,7 +683,7 @@ function TableUtil.instanceChildrenToTable(instance: Instance): { [string]: Inst
 
 	local children = {}
 
-	for _, child in pairs(instance:GetChildren()) do
+	for _, child in instance:GetChildren() do
 		children[child.Name] = child
 	end
 
@@ -742,23 +742,43 @@ function TableUtil.tableRandomIndex(obj: { [any]: any } | Instance): any
 
 	-- Map all children names and indexes into a table
 	for index, _ in pairs(collection) do
-		indexes[#indexes + 1] = index
+		table.insert(indexes, index)
 	end
 
 	return #indexes > 0 and indexes[Random.new():NextInteger(1, #indexes)] or nil
 end
 
-function TableUtil.indexOf(obj, value)
+--[=[
+	Returns the index of a value in a table.
+	This works for both dictionaries and arrays.
+
+	#### Example:
+	```lua
+	Util.indexOf({ 1, 2, 3 }, 2) -- 2
+	Util.indexOf({ a = 1, b = 2, c = 3 }, 2) -- "b"
+	```
+
+	Use `table.find` for a more efficient way to find the index of a value in an array.
+	```lua
+	table.find({ 1, 2, 3 }, 2) -- 2
+	```
+
+	@within Util
+	@param obj { [any]: any } -- The table you want to get the index from
+	@param value any -- The value you want to find the index of
+	@return any
+]=]
+function TableUtil.indexOf(obj: { [any]: any }, value: any): any
 	assert(obj, "Util.indexOf - Missing object")
 	assert(typeof(obj) == "table", "Util.indexOf - Cannot index " .. typeof(obj))
 
-	for k, v in pairs(obj) do
-		if v == value then
-			return k
+	for index, childValue in pairs(obj) do
+		if childValue == value then
+			return index
 		end
 	end
 
-	return 0 -- No index found
+	return nil -- No index found
 end
 
 function TableUtil.tableRandom(obj: { [any]: any } | Instance): any
@@ -809,7 +829,7 @@ function TableUtil.makeConfigFromValues(folder: Folder | Configuration): { [stri
 
 	local config: { [string]: any } = {}
 
-	for _, child: Instance in pairs(folder:GetChildren()) do
+	for _, child: Instance in folder:GetChildren() do
 		if child:IsA("Folder") or child:IsA("Configuration") then -- Nest
 			config[child.Name] = TableUtil.makeConfigFromValues(child)
 		elseif valueClasses[child.ClassName] then
@@ -848,7 +868,7 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 		end
 	elseif typeof(removeTest) == "table" then
 		test = function(value, _newIndex, _i)
-			for _, v in ipairs(removeTest) do
+			for _, v in removeTest do
 				return value == v
 			end
 
@@ -862,7 +882,7 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 
 	local newIndex = 1
 
-	for i, value in ipairs(obj) do
+	for i, value in obj do
 		if not test(value, newIndex, i) then
 			if i ~= newIndex then
 				obj[newIndex] = obj[i] -- Move to new index
@@ -876,6 +896,38 @@ function TableUtil.tableRemove(obj: { [any]: any }, removeTest: number | { any }
 	end
 end
 
+--[=[
+	Executes a series of tasks in a waterfall fashion.
+
+	#### Example:
+	```lua
+	Util.waterfall(
+		function(a, b, callback)
+			print("Task 1:", a, b)
+			callback(nil, "Task 1 result")
+		end,
+		function(result, callback)
+			print("Task 2:", result)
+			callback(nil, "Task 2 result")
+		end,
+		function(result, callback)
+			print("Task 3:", result)
+			callback(nil, "Task 3 result")
+		end,
+		function(err, result)
+			if err then
+				print("Error:", err)
+			else
+				print("Final result:", result)
+			end
+		end
+	)
+	```
+
+	@within Util
+	@param tasks { (...any) -> ...any } -- The tasks to execute
+	@param finalCallback (err: any, ...any) -> () -- The final callback to execute
+]=]
 function TableUtil.waterfall(
 	tasks: { (...any) -> ...any },
 	finalCallback: (err: any, ...any) -> ()

@@ -44,7 +44,7 @@ function Ragdoll.setup(character: Model) -- Sets up the player's collision group
 		local playerGroupExists
 		local ragdollGroupExists
 
-		for _, group in pairs(PhysicsService:GetRegisteredCollisionGroups()) do
+		for _, group in PhysicsService:GetRegisteredCollisionGroups() do
 			if group.name == PLAYER_COLLISION_GROUP_NAME then
 				playerGroupExists = true
 			elseif group.name == RAGDOLL_COLLISION_GROUP_NAME then
@@ -83,7 +83,7 @@ function Ragdoll.setup(character: Model) -- Sets up the player's collision group
 	humanoid.BreakJointsOnDeath = false
 
 	if not Ragdoll.isCollidable then
-		for _, obj: BasePart | Instance in pairs(character:GetDescendants()) do
+		for _, obj: BasePart | Instance in character:GetDescendants() do
 			if obj:IsA("BasePart") then
 				obj.CollisionGroup = PLAYER_COLLISION_GROUP_NAME
 			end
@@ -112,9 +112,7 @@ local function createRagdoll(character: Model)
 		force.Parent = partAttachment
 	end
 
-	for _, obj: Motor6D | BasePart | Script | Instance in
-		pairs(character:GetDescendants())
-	do
+	for _, obj: Motor6D | BasePart | Script | Instance in character:GetDescendants() do
 		if obj:IsA("Motor6D") then
 			local root: Attachment = Instance.new("Attachment")
 			local attachment: Attachment = Instance.new("Attachment")
@@ -183,7 +181,7 @@ function Ragdoll.playerDied(
 	if parent then
 		-- Place parts inside the ragdoll model (newCharacter)
 		-- and filter out unwanted instances and scripts
-		for _, obj in pairs(player.Character:GetChildren()) do
+		for _, obj in player.Character:GetChildren() do
 			if not obj:IsA("Tool") then
 				obj.Parent = parent
 			elseif obj:FindFirstChild("Handle") then
@@ -207,7 +205,7 @@ function Ragdoll.playerDied(
 	elseif not keepRagdollInWorld then
 		parent:Destroy()
 	else
-		for _, obj: BasePart | Instance in pairs(parent:GetDescendants()) do
+		for _, obj: BasePart | Instance in parent:GetDescendants() do
 			if obj:IsA("BasePart") then
 				obj.Anchored = true
 			end

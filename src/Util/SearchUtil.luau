@@ -27,7 +27,7 @@ function SearchUtil.getPartCount(instance: Instance?): number
 
 	local count: number = 0
 
-	for _, part in pairs(instance:GetDescendants()) do
+	for _, part in instance:GetDescendants() do
 		if part:IsA("BasePart") then
 			count += 1
 		end
@@ -56,9 +56,9 @@ function SearchUtil.getDescendantParts(instance: Instance): { BasePart }
 
 	local parts: { BasePart } = {}
 
-	for _, part in pairs(instance:GetDescendants()) do
+	for _, part: Instance | BasePart in instance:GetDescendants() do
 		if part:IsA("BasePart") then
-			parts[#parts + 1] = part
+			table.insert(parts, part)
 		end
 	end
 
@@ -323,7 +323,7 @@ function SearchUtil.exists(
 
 	if typeof(node) == "Instance" then
 		-- Insert all children into a table with their name as the key
-		for _, child: Instance in pairs(node:GetChildren()) do
+		for _, child: Instance in node:GetChildren() do
 			nodes[child.Name] = child
 		end
 	elseif typeof(node) == "table" then

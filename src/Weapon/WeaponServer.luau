@@ -309,7 +309,7 @@ function methods:shoot(data)
 		local hit = self:raycast(data.origin, direction)
 
 		if self.config.tracerRound and self.config.tool:IsDescendantOf(Workspace) then
-			for _, player in pairs(Players:GetPlayers()) do
+			for _, player in Players:GetPlayers() do
 				if player ~= self.localPlayer then
 					globalWeaponRemote:FireClient(player, {
 						type = "WEAPON_TRACER",
@@ -510,7 +510,7 @@ function WeaponServer.new(config)
 	self.raycastFilter.FilterType = Enum.RaycastFilterType.Exclude
 
 	-- Weld extra parts to the handle
-	--[[for _, obj in pairs(config.tool:GetDescendants()) do
+	--[[for _, obj in config.tool:GetDescendants() do
 		if obj:IsA("BasePart") and obj ~= self.handle then
 			Util.weld(obj, self.handle)
 			obj.Parent = self.handle

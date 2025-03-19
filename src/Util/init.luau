@@ -228,7 +228,7 @@ local valueObjectClassNames: { [string]: string } = {
 ]=]
 export type ValueBaseType = ValueBase & { Value: any }
 
-function Util.get(path, parent) -- expiremental
+function Util.get(path, parent)
 	local res = parent
 
 	local chunks = Util.split(path, ".")
@@ -239,7 +239,7 @@ function Util.get(path, parent) -- expiremental
 
 	res = res or (chunks[1] == "game" and game or game[chunks[1]])
 
-	for _, child in pairs(chunks) do
+	for _, child in chunks do
 		res = res[child]
 	end
 
@@ -598,7 +598,7 @@ function Util.weldModel(model: Model): Model?
 		return nil
 	end
 
-	for _, part: BasePart | Instance in pairs(model:GetDescendants()) do
+	for _, part: BasePart | Instance in model:GetDescendants() do
 		if part:IsA("BasePart") and part ~= model.PrimaryPart then
 			Util.weld(part, model.PrimaryPart)
 		end
@@ -624,7 +624,7 @@ function Util.clearWelds(instance: Instance)
 		"Util.clearWelds - First argument must be an instance"
 	)
 
-	for _, obj: WeldConstraint | Weld | Instance in pairs(instance:GetDescendants()) do
+	for _, obj: WeldConstraint | Weld | Instance in instance:GetDescendants() do
 		if obj:IsA("WeldConstraint") or obj:IsA("Weld") then
 			obj:Destroy()
 		end
@@ -648,7 +648,7 @@ function Util.breakJoints(instance: Instance)
 		"Util.breakJoints - instance argument must be an instance"
 	)
 
-	for _, child: Instance in pairs(instance:GetDescendants()) do
+	for _, child: Instance in instance:GetDescendants() do
 		if child:IsA("WeldConstraint") or child:IsA("Weld") or child:IsA("Motor6D") then
 			child:Destroy()
 		end
@@ -673,8 +673,8 @@ function Util.getMass(model: Model): number?
 
 	local mass: number = 0
 
-	for _, part: BasePart in pairs(Util.getDescendantParts(model)) do
-		mass += part:GetMass()
+	for _, part: BasePart in Util.getDescendantParts(model) do
+		mass += part.AssemblyMass
 	end
 
 	return mass
@@ -683,7 +683,7 @@ end
 function Util.rotateModel(model: Model, angle: number)
 	local rotate: CFrame = CFrame.fromEulerAnglesXYZ(0, angle, 0)
 
-	for _, object: BasePart | Instance in pairs(model:GetChildren()) do
+	for _, object: BasePart | Instance in model:GetChildren() do
 		if object:IsA("BasePart") then
 			object.CFrame = rotate * object.CFrame
 		end
@@ -699,7 +699,7 @@ function Util.moveModel(model: Model, to: CFrame)
 
 	local origin: Vector3 = firstPart.CFrame.Position
 
-	for _, part: BasePart | Instance in pairs(model:GetDescendants()) do
+	for _, part: BasePart | Instance in model:GetDescendants() do
 		if not part:IsA("BasePart") then
 			continue
 		end

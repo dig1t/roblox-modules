@@ -87,7 +87,7 @@ function Animation.weldModel(model)
 
 	model.PrimaryPart.Anchored = true
 
-	for _, part in pairs(model:GetDescendants()) do
+	for _, part in model:GetDescendants() do
 		if part ~= model.PrimaryPart and part:IsA("BasePart") then
 			Util.weld(part, model.PrimaryPart)
 			part.Anchored = false
