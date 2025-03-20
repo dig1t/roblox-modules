@@ -9,5 +9,5 @@ onBrokenLinks = "throw"
 onBrokenMarkdownLinks = "warn"
 
 [footer]
-style = "dark"
+style = "light"
 copyright = "Copyright © dig1t. Built with Moonwave and Docusaurus"
