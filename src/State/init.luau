@@ -48,6 +48,11 @@
 	print("state destroyed:", not success) -- expect: state destroyed: true
 	```
 
+	### Signals
+
+	`State.Changed :: Signal.Signal<newState: T, prevState: T>`
+	Signal that is fired when the state changes
+
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
 	State = "dig1t/state@1.1.2"
@@ -108,7 +113,7 @@ end
 -- Number of first level children
 
 --[=[
-	Returns the length of the state
+	Returns the size of the state if the state is a table.
 
 	Example:
 	```lua
