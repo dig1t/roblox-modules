@@ -29,7 +29,7 @@ export type ReplicaClient = typeof(setmetatable(
 
 		keyChangedSignals: { [string]: { Signal.Signal<any> } },
 
-		Updated: Signal.Signal<ReplicaTypes.Data>,
+		Changed: Signal.Signal<ReplicaTypes.Data>,
 	},
 	ReplicaClient
 ))
@@ -48,7 +48,7 @@ local function newReplicaClient(
 
 		keyChangedSignals = {},
 
-		Updated = Signal.new(),
+		Changed = Signal.new(),
 	}, ReplicaClient) :: ReplicaClient
 
 	table.insert(replicas, self)
@@ -193,7 +193,7 @@ if RunService:IsClient() then
 
 			replica.data[action.payload.key] = action.payload.value
 
-			replica.Updated:Fire(replica.data)
+			replica.Changed:Fire(replica.data)
 
 			if replica.keyChangedSignals[action.payload.key] then
 				for _, signal in replica.keyChangedSignals[action.payload.key] do

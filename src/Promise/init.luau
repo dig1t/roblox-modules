@@ -63,7 +63,7 @@ export type PromiseExecutor = (resolve: Callback, reject: Callback) -> ()
 --[=[
 	Current status of the promise
 
-	@prop statusType table -- The status types of the promise
+	@prop statusType table
 	@within Promise
 ]=]
 Promise.statusType = {

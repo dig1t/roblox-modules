@@ -44,14 +44,14 @@
 
 	Need to track updates to the player's profile data?
 	```lua
-	profile.Updated:Connect(function(profileData)
+	profile.Changed:Connect(function(profileData)
 		print("Player data was updated", profileData.data.coins)
 	end)
 	```
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	ProfileDB = "dig1t/profiledb@1.0.2"
+	ProfileDB = "dig1t/profiledb@1.0.3"
 	```
 ]=]
 
@@ -203,7 +203,7 @@ export type Profile = typeof(setmetatable(
 		versionDataStore: OrderedDataStore,
 
 		-- Signals
-		Updated: Signal.Signal<ProfileData>,
+		Changed: Signal.Signal<ProfileData>,
 		Saved: Signal.Signal<ProfileData>,
 
 		maid: Maid.Maid,
@@ -297,7 +297,7 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 
 	self.lastSave = Workspace:GetServerTimeNow()
 
-	self.Updated = Signal.new()
+	self.Changed = Signal.new()
 	self.Saved = Signal.new()
 
 	self.maid = Maid.new()
@@ -656,7 +656,7 @@ function ProfileDB.Reconcile(self: Profile)
 	end
 
 	if addedKeys then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 end
 
@@ -668,7 +668,7 @@ end
 ]=]
 function ProfileDB.Reset(self: Profile)
 	self.metadata = self:GetNewData()
-	self.Updated:Fire(self.metadata.data)
+	self.Changed:Fire(self.metadata.data)
 end
 
 --[=[
@@ -740,7 +740,7 @@ end
 	@within ProfileDB
 	@param path string -- The path to the value
 	@param value any -- The value to set
-	@param skipUpdate boolean? -- Whether or not to skip firing the Updated signal
+	@param skipUpdate boolean? -- Whether or not to skip firing the Changed signal
 	@return boolean -- Whether or not the value was set
 ]=]
 function ProfileDB.Set(
@@ -762,7 +762,7 @@ function ProfileDB.Set(
 
 	if #split == 1 then
 		self.metadata.data[path] = value
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 		return true
 	end
 
@@ -801,7 +801,7 @@ function ProfileDB.Set(
 	end
 
 	if not skipUpdate then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return true
@@ -830,7 +830,7 @@ function ProfileDB.SetMultiple(self: Profile, data: { [string]: any }): { string
 	end
 
 	if #updatedKeys > 0 then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return updatedKeys
@@ -873,7 +873,7 @@ function ProfileDB.UnsetMultiple(self: Profile, data: { string }): { string }
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return removedKeys
@@ -904,7 +904,7 @@ end
 	@within ProfileDB
 	@param path string -- The path to the table
 	@param value any -- The value to insert
-	@param skipUpdate boolean? -- Whether or not to skip firing the Updated signal
+	@param skipUpdate boolean? -- Whether or not to skip firing the Changed signal
 	@return boolean -- Whether or not the value was inserted
 ]=]
 function ProfileDB.Insert(
@@ -950,7 +950,7 @@ function ProfileDB.Insert(
 	table.insert(node[lastKey], value)
 
 	if not skipUpdate then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return true
@@ -980,7 +980,7 @@ function ProfileDB.InsertMultiple(self: Profile, data: { any }): { string }
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return removedKeys
@@ -1002,7 +1002,7 @@ end
 	@within ProfileDB
 	@param path string -- The path to the table
 	@param value any -- The value to remove
-	@param skipUpdate boolean? -- Whether or not to skip firing the Updated signal
+	@param skipUpdate boolean? -- Whether or not to skip firing the Changed signal
 	@return boolean -- Whether or not the value was removed
 ]=]
 function ProfileDB.RemoveValue(
@@ -1054,7 +1054,7 @@ function ProfileDB.RemoveValue(
 	table.remove(node[lastKey], index)
 
 	if not skipUpdate then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return true
@@ -1084,7 +1084,7 @@ function ProfileDB.RemoveValues(self: Profile, data: { [string]: any }): { strin
 	end
 
 	if #removedKeys > 0 then
-		self.Updated:Fire(self.metadata.data)
+		self.Changed:Fire(self.metadata.data)
 	end
 
 	return removedKeys
@@ -1145,7 +1145,7 @@ function ProfileDB.SetData(self: Profile, callback: (ProfileMetadata) -> ()): bo
 		return false
 	end
 
-	self.Updated:Fire(self.metadata.data)
+	self.Changed:Fire(self.metadata.data)
 
 	return true
 end
