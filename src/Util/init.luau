@@ -41,7 +41,6 @@ Util.unix = DateUtil.unix
 Util.elapsedTimeClockFormat = DateUtil.elapsedTimeClockFormat
 
 -- MathUtil
-Util.lerp = MathUtil.lerp
 Util.round = MathUtil.round
 Util.formatNumber = MathUtil.formatNumber
 Util.random = MathUtil.random

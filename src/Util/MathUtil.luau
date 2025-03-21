@@ -3,25 +3,6 @@
 local MathUtil = {}
 
 --[=[
-	Interpolates between two numbers.
-
-	#### Example:
-	```lua
-	Util.lerp(0, 10, .5) -- 5
-	Util.lerp(0, 10, 1) -- 10
-	```
-
-	@within Util
-	@param start number
-	@param stop number
-	@param alpha number
-	@return number
-]=]
-function MathUtil.lerp(start: number, stop: number, alpha: number): number
-	return start * (1 - alpha) + stop * alpha
-end
-
---[=[
 	Rounds a number to the nearest integer.
 
 	#### Example:
