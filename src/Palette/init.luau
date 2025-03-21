@@ -103,7 +103,7 @@ local paletteColors = {
 		{ 78, 30, 103 },
 	},
 
-	["blue-grey"] = {
+	["blue-gray"] = {
 		{ 237, 239, 242 },
 		{ 209, 212, 219 },
 		{ 187, 193, 203 },
@@ -116,7 +116,7 @@ local paletteColors = {
 		{ 53, 59, 69 },
 	},
 
-	grey = {
+	gray = {
 		{ 224, 224, 224 },
 		{ 199, 199, 199 },
 		{ 179, 179, 179 },
@@ -143,8 +143,8 @@ local paletteColors = {
 	- green
 	- blue
 	- purple
-	- blue-grey
-	- grey
+	- blue-gray
+	- gray
 
 	Available shades:
 	- 50
@@ -158,9 +158,11 @@ local paletteColors = {
 	- 800
 	- 900
 
+	![Color Guide](https://i.imgur.com/t956Y4J.png)
+
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Palette = "dig1t/palette@1.0.0"
+	Palette = "dig1t/palette@1.0.1"
 	```
 ]=]
 local Palette = {}

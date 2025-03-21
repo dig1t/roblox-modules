@@ -15,7 +15,7 @@ Badge = "dig1t/badge@1.0.4"
 Cache = "dig1t/cache@1.0.9"
 GamePass = "dig1t/gamepass@1.0.8"
 Maid = "dig1t/maid@1.0.7"
-Palette = "dig1t/palette@1.0.0"
+Palette = "dig1t/palette@1.0.1"
 ProfileDB = "dig1t/profiledb@1.0.3"
 Promise = "dig1t/promise@1.1.3"
 Ragdoll = "dig1t/ragdoll@1.0.4"
@@ -48,7 +48,7 @@ Use version ^1.0 on any module to use its latest version.
 - Weapon - Modular weapon system with client/server implementation (WIP)
 
 ## UI & Visuals
-- Palette [`dig1t/palette@1.0.0`](https://dig1t.github.io/roblox-modules/api/Palette) - Color picker that uses the Material color system
+- Palette [`dig1t/palette@1.0.1`](https://dig1t.github.io/roblox-modules/api/Palette) - Color picker that uses the Material color system
 
 ## Usage Examples
 
@@ -105,8 +105,8 @@ local Maid = require(ReplicatedStorage.Packages.Maid)
 local myMaid = Maid.new()
 
 -- Add tasks to be cleaned up later
-myMaid:GiveTask(workspace.ChildAdded:Connect(function() end))
-myMaid:GiveTask(function() print("Cleanup!") end)
+myMaid:Add(workspace.ChildAdded:Connect(function() end))
+myMaid:Add(function() print("Cleanup!") end)
 
 -- Clean up all tasks
 myMaid:Clean()
