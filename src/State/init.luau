@@ -15,7 +15,7 @@
 		}
 	})
 
-	state:Listen(function(newState, prevState)
+	local connection: RBXScriptConnection = state.Changed:Connect(function(newState, prevState)
 		print(prevState, newState)
 	end)
 
@@ -37,6 +37,8 @@
 
 	state:Reset() -- Reset the state to the initial state
 
+	connection:Disconnect()
+
 	state:Destroy()
 
 	local success = pcall(function()
@@ -54,19 +56,31 @@
 
 --!strict
 
+local Signal = require(script.Parent.Signal)
 local Util = require(script.Parent.Util)
 
 local State = {}
 State.__index = State
 
-export type SubscriptionId = string
-
 export type State<T> = typeof(setmetatable(
 	{} :: {
+		--[=[
+			Signal that is fired when the state changes
+
+			Example:
+			```lua
+			local connection: RBXScriptConnection = state.Changed:Connect(function(newState, prevState)
+				print(prevState, newState)
+			end)
+			```
+
+			@prop Changed Signal.Signal<T, T>
+			@within State
+			@tag Signal
+		]=]
+		Changed: Signal.Signal<T, T>,
+
 		_context: T,
-		_listeners: {
-			[SubscriptionId]: (newState: T, prevState: T) -> (),
-		}?,
 		_initialState: T,
 	},
 	State
@@ -84,8 +98,9 @@ function State.new<T>(initialState: T): State<T>
 			return _self._context[key] or _self[key]
 		end,
 
+		Changed = Signal.new(),
+
 		_context = initialState :: T,
-		_listeners = {},
 		_initialState = initialState,
 	}, State) :: State<T>
 end
@@ -167,95 +182,14 @@ function State.Get<T>(
 end
 
 --[=[
-	Listens for state changes
-
-	Example:
-	```lua
-	local state = State.new({
-		val = 1,
-		time = tick(),
-		nest = {
-			val = 123123
-		}
-	})
-
-	state:Listen(function(newState, prevState)
-		print(prevState, newState)
-	end)
-	```
-
-	@method Listen
-	@within State
-	@param callback (newState: any, prevStates: any) -> nil
-	@return SubscriptionId?
-]=]
-function State.Listen<T>(
-	self: State<T>,
-	callback: (newState: any, prevStates: any) -> ()
-): SubscriptionId?
-	if not self._listeners then
-		return
-	end
-
-	assert(typeof(callback) == "function", "Callback argument must be a function")
-
-	-- Unique reference ID used for unsubscribing
-	local subscriptionId: SubscriptionId = Util.randomString(8)
-
-	self._listeners[subscriptionId] = callback
-
-	return subscriptionId
-end
-
---[=[
-	Unlistens for state changes
-
-	Example:
-	```lua
-	local state = State.new({
-		val = 1,
-		time = tick(),
-		nest = {
-			val = 123123
-		}
-	})
-
-	local subscriptionId = state:Listen(function(newState, prevState)
-		print(prevState, newState)
-	end)
-
-	state:Unlisten(subscriptionId)
-	```
-
-	@method Unlisten
-	@within State
-	@param subscriptionId SubscriptionId
-]=]
-function State.Unlisten<T>(self: State<T>, subscriptionId: SubscriptionId)
-	if not self._listeners then
-		return
-	end
-
-	assert(self._listeners[subscriptionId], "State listener does not exist")
-
-	self._listeners[subscriptionId] = nil
-end
-
---[=[
-	Fires to all listeners with the new state
+	Fires the Changed signal with the new state
 
 	@private
 ]=]
 function State._pushUpdates<T>(self: State<T>, newState: T, prevState: T)
-	if not self._context or not self._listeners then
-		return
-	end
-
 	local _newState = newState or self._context
 
-	for _, callback in pairs(self._listeners) do
-		pcall(callback, _newState, prevState)
-	end
+	self.Changed:Fire(_newState, prevState)
 end
 
 --[=[
@@ -538,7 +472,6 @@ end
 ]=]
 function State.Destroy<T>(self: State<T>)
 	self._context = nil :: any
-	self._listeners = nil
 
 	pcall(setmetatable, self, {})
 end

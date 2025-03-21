@@ -201,7 +201,7 @@ if RunService:IsClient() then
 				end
 			end
 
-			-- FIRE ANY ATTACHED SIGNALS THAT LISTEN FOR THE REPLICA_UPDATED KEY
+			-- FIRE ANY ATTACHED SIGNALS THAT LISTEN FOR THE REPLICA_UPDATE KEY
 		elseif action.type == "REPLICA_DESTROY" then
 			local replica = ReplicaClient.getReplicaById(action.payload.replicaId)
 
