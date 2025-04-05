@@ -7,7 +7,7 @@ local Util = require(script.Parent.Util)
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Maid = "dig1t/maid@1.0.7"
+	Maid = "dig1t/maid@1.0.8"
 	```
 ]=]
 local Maid = {}
@@ -26,7 +26,7 @@ export type MaidTask = {
 	Destroy: (any) -> (),
 	Destructor: (task: any) -> (),
 	Stop: () -> (),
-}? | () -> ()? | Instance
+}? | () -> ()? | Instance | RBXScriptConnection
 
 --[=[
 	Creates a new Maid instance.
