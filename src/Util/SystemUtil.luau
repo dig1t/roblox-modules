@@ -14,6 +14,8 @@ function SystemUtil.generateUUID(): string
 end
 
 --[=[
+	Alternative for `task.delay`.
+
 	Runs a function after `delay` seconds.
 	Returns the time elapsed in seconds.
 
@@ -28,7 +30,7 @@ end
 	@param delay number
 	@param callback function
 ]=]
-function SystemUtil.timeout(delay: number, callback: (number) -> boolean?)
+function SystemUtil.timeout(delay: number, callback: (number) -> ())
 	assert(typeof(delay) == "number", "Util.timeout - delay must be a number")
 	assert(typeof(callback) == "function", "Util.timeout - callback must be a function")
 
