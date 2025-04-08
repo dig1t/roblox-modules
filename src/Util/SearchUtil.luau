@@ -377,7 +377,7 @@ function SearchUtil.getFirstPart(instance: Instance?): BasePart?
 	local index: number = 1
 	local current: Instance? = nil
 
-	while index < #children do
+	while index <= #children do
 		current = children[index]
 
 		if current and current:IsA("BasePart") then

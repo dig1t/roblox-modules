@@ -16,7 +16,7 @@ local _cache: { [string]: any } = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Util = "dig1t/util@1.0.16"
+	Util = "dig1t/util@1.0.17"
 	```
 ]=]
 local Util = {}
@@ -98,6 +98,7 @@ Util.treePath = TableUtil.treePath
 Util.trimLeadingWhitespace = TableUtil.trimLeadingWhitespace
 Util.trimTrailingWhitespace = TableUtil.trimTrailingWhitespace
 Util.trimWhitespace = TableUtil.trimWhitespace
+Util.safeSet = TableUtil.safeSet
 
 --[=[
 	Injects a module into the Util module.

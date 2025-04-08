@@ -125,10 +125,14 @@ end
 	```
 
 	@within Util
-	@param object Instance
+	@param object Instance?
 	@return Humanoid?
 ]=]
 function PlayerUtil.getHumanoid(object: Instance?): Humanoid?
+	if not object then
+		return nil
+	end
+
 	if typeof(object) ~= "Instance" then
 		warn(`Util.getHumanoid - expected Instance, got type "{typeof(object)}"`)
 	elseif object:IsA("Humanoid") then
@@ -154,13 +158,17 @@ end
 	```
 
 	@within Util
-	@param obj Instance
+	@param obj Instance?
 	@return boolean
 ]=]
-function PlayerUtil.isAlive(obj: Instance): boolean
+function PlayerUtil.isAlive(obj: Instance?): boolean
+	if not obj then
+		return false
+	end
+
 	local humanoid: Humanoid? = PlayerUtil.getHumanoid(obj)
 
-	return humanoid and humanoid.Health > 0 or false
+	return if humanoid then humanoid.Health > 0 else false
 end
 
 --[=[
@@ -173,10 +181,10 @@ end
 	```
 
 	@within Util
-	@param obj Instance
+	@param obj Instance?
 	@return boolean
 ]=]
-function PlayerUtil.hasHumanoid(obj: Instance): boolean
+function PlayerUtil.hasHumanoid(obj: Instance?): boolean
 	return PlayerUtil.getHumanoid(obj) ~= nil
 end
 

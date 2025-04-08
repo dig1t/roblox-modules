@@ -14,13 +14,13 @@ local valueClasses = {
 local TableUtil = {}
 
 --[=[
-	Unsafely sets a key in a table or Instance without erroring.
+	Safely sets a key in an Instance or table without erroring.
 
 	Returns a boolean indicating if the operation was successful.
 
 	#### Example:
 	```lua
-	Util.unsafeSet(Workspace.Player1.Humanoid, "Health", 100)
+	Util.safeSet(Workspace.Player1.Humanoid, "Health", 100)
 	```
 
 	@within Util
@@ -29,14 +29,14 @@ local TableUtil = {}
 	@param value any
 	@return boolean -- Whether the operation was successful
 ]=]
-function TableUtil.unsafeSet(
+function TableUtil.safeSet(
 	object: Instance | { [any]: any },
 	key: any,
 	value: any
 ): boolean
 	assert(
 		typeof(object) == "Instance" or typeof(object) == "table",
-		"Util.unsafeSet - object must be an Instance or table"
+		"Util.safeSet - object must be an Instance or table"
 	)
 
 	return pcall(function()
