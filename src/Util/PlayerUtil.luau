@@ -189,6 +189,37 @@ function PlayerUtil.hasHumanoid(obj: Instance?): boolean
 end
 
 --[=[
+	Gets the character model from a BasePart.
+
+	Useful for getting the character model from a Touched event or a raycast.
+
+	#### Example:
+	```lua
+	local rig: Model? = Util.getCharacterFromInstance(hit.Part)
+	local rigPlayer: Player? = Players:GetPlayerFromCharacter(rig)
+	```
+
+	@within Util
+	@param instance Instance?
+	@return Model?
+]=]
+function PlayerUtil.getCharacterFromInstance(instance: Instance?): Model?
+	if typeof(instance) ~= "Instance" or not instance:IsA("BasePart") then
+		return nil
+	end
+
+	local node: BasePart? = instance
+	local humanoid: Humanoid?
+
+	while node ~= nil and humanoid == nil and node ~= game do
+		humanoid = node and node:FindFirstChildOfClass("Humanoid")
+		node = node.Parent :: BasePart?
+	end
+
+	return if humanoid then humanoid.Parent :: Model else nil
+end
+
+--[=[
 	Gets the player object from a BasePart.
 
 	#### Example:
@@ -201,22 +232,12 @@ end
 	@return Player?
 ]=]
 function PlayerUtil.getPlayerFromInstance(instance: Instance?): Player?
-	if typeof(instance) ~= "Instance" or not instance:IsA("BasePart") then
-		return nil
-	end
+	local character: Model? = PlayerUtil.getCharacterFromInstance(instance)
 
-	local node: Instance? = instance
-	local humanoid: Humanoid?
-
-	while node ~= nil and humanoid == nil and node ~= game do
-		humanoid = node and node:FindFirstChildOfClass("Humanoid")
-		node = node.Parent :: Instance?
-	end
-
-	return humanoid and Players:GetPlayerFromCharacter(humanoid.Parent) or nil
+	return if character then Players:GetPlayerFromCharacter(character) else nil
 end
 
--- Alias
+-- Alias for getPlayerFromInstance
 PlayerUtil.getPlayerFromPart = PlayerUtil.getPlayerFromInstance
 
 return PlayerUtil
