@@ -1,6 +1,6 @@
 [package]
 name = "dig1t/util"
-version = "1.0.18"
+version = "1.0.19"
 description = "Module part of the dig1t/roblox-modules repository. Find the API here: https://dig1t.github.io/roblox-modules/api/Util"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"

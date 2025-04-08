@@ -16,7 +16,7 @@ local _cache: { [string]: any } = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Util = "dig1t/util@1.0.18"
+	Util = "dig1t/util@1.0.19"
 	```
 ]=]
 local Util = {}
@@ -55,6 +55,7 @@ Util.getPartBottomSurface = MathUtil.getPartBottomSurface
 -- PlayerUtil
 Util.getGroupRank = PlayerUtil.getGroupRank
 Util.getHumanoid = PlayerUtil.getHumanoid
+Util.getCharacterFromInstance = PlayerUtil.getCharacterFromInstance
 Util.getPlayerFromInstance = PlayerUtil.getPlayerFromInstance
 Util.getPlayerFromPart = PlayerUtil.getPlayerFromPart
 Util.getUserLevel = PlayerUtil.getUserLevel
