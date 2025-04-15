@@ -43,6 +43,7 @@ export type ReplicaServer = typeof(setmetatable(
 	@within ReplicaServer
 	.players { Player }? -- If defined, only these players will receive the replicated object
 	.initialState { [string]: any }? -- The initial state of the replicated object. Keys must be strings.
+	.class string -- The class of the replicated object
 ]=]
 export type ReplicaServerConfig = {
 	players: { Player }?,
@@ -94,7 +95,7 @@ end
 --[=[
 	Create a new ReplicaServer object
 
-	@param config ReplicaServertedConfig -- Configuration for the replicated object
+	@param config ReplicaServerConfig -- Configuration for the replicated object
 	@return ReplicaServer -- The new ReplicaServer object
 ]=]
 function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer
