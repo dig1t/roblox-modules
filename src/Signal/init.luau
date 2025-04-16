@@ -79,6 +79,7 @@ Signal.__index = Signal
 
 export type Signal<T...> = {
 	_connections: { [string]: any },
+	_waitingCoroutines: { thread },
 	_buffer: { BufferItem },
 	_bufferSize: number,
 	_charCount: number,
@@ -119,6 +120,7 @@ function Signal.new<T...>(options: BufferOptions?): Signal<T...>
 
 	return setmetatable({
 		_connections = {},
+		_waitingCoroutines = {},
 		_buffer = {},
 		_bufferSize = 0,
 		_charCount = 0,
@@ -303,12 +305,21 @@ function Signal.Wait<T...>(self: Signal<T...>): T...
 	local _coroutine = coroutine.running()
 	local connection: RBXScriptConnection
 
+	table.insert(self._waitingCoroutines, _coroutine)
+
 	connection = self:Connect(function(...)
 		if not connection.Connected then
 			return
 		end
 
 		connection:Disconnect()
+
+		local waitingIndex = table.find(self._waitingCoroutines, _coroutine)
+
+		if waitingIndex then
+			table.remove(self._waitingCoroutines, waitingIndex)
+		end
+
 		task.spawn(_coroutine, ...)
 	end)
 
@@ -327,11 +338,19 @@ end
 function Signal.Destroy<T...>(self: Signal<T...>)
 	self:_stopTimer()
 
+	-- Clear connections
 	for _, connection in pairs(self._connections) do
 		connection:Disconnect()
 	end
 
 	self._connections = {}
+
+	-- Clear waiting coroutines to prevent memory leaks
+	for _, waitingCoroutine in self._waitingCoroutines do
+		task.spawn(waitingCoroutine) -- Call the coroutine so the Wait returns
+	end
+
+	self._waitingCoroutines = {}
 
 	if self.onDestroy then
 		self.onDestroy()
