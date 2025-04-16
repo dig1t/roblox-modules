@@ -152,8 +152,6 @@ end
 	@param action ReplicaTypes.Action -- The action to fire
 ]=]
 function ReplicaServer.Fire(self: ReplicaServer, action: ReplicaTypes.Action)
-	print("firing", action.type, action)
-
 	if self.replicatedTo then
 		for _, player in self.replicatedTo do
 			remote:FireClient(player, action)

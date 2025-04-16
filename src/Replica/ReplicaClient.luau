@@ -165,8 +165,6 @@ if RunService:IsClient() then
 	remote = script.Parent:WaitForChild("ReplicaEvents", 8)
 
 	remote.OnClientEvent:Connect(function(action: ReplicaTypes.Action)
-		print("recevied from server", action.type)
-
 		if action.type == "FETCH_CLASS_REPLICAS" then
 			assert(not replicas[action.payload.replicaId], "Replica already exists")
 
