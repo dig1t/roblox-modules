@@ -7,7 +7,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Signal = "dig1t/signal@1.0.0"
+	Signal = "dig1t/signal@1.0.1"
 	```
 ]=]
 

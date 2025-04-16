@@ -55,7 +55,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	State = "dig1t/state@1.1.2"
+	State = "dig1t/state@1.2.1"
 	```
 ]=]
 
