@@ -51,7 +51,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	ProfileDB = "dig1t/profiledb@1.0.3"
+	ProfileDB = "dig1t/profiledb@1.0.4"
 	```
 ]=]
 
