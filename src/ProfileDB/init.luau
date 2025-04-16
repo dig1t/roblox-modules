@@ -352,6 +352,10 @@ function ProfileDB.StartSaveInterval(self: Profile)
 	end))
 end
 
+function ProfileDB.IsPlayerInGame(self: Profile): boolean
+	return Players:GetPlayerByUserId(self.userId) ~= nil
+end
+
 --[=[
 	Returns the template given in the constructor
 
@@ -379,16 +383,38 @@ function ProfileDB.ConnectToDataStore(self: Profile): boolean
 
 	-- Load the profile data store
 	local dbSuccess, dataStore: GlobalDataStore = Util.attempt(function()
+		if not self:IsPlayerInGame() then
+			return nil
+		end
+
 		return DataStoreService:GetDataStore(self.dataStoreName, self.dataStoreVersion)
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
+	if not self:IsPlayerInGame() then
+		self.saveToDataStore = false
+
+		return false
+	end
+
 	-- Load the version data store
 	local versionDBSuccess, versionDataStore: OrderedDataStore = Util.attempt(function()
+		-- Verify player is still in the game
+		if not self:IsPlayerInGame() then
+			return nil
+		end
+
 		return DataStoreService:GetOrderedDataStore(
 			self.dataStoreName,
 			self.dataStoreVersion
 		)
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
+
+	-- Is player still in the game?
+	if not self:IsPlayerInGame() then
+		self.saveToDataStore = false
+
+		return false
+	end
 
 	if dbSuccess and versionDBSuccess then
 		self.dataStore = dataStore
