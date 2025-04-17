@@ -14,7 +14,7 @@ local DEFAULT_TWEEN_TIME = 0.2
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Animation = "dig1t/animation@1.0.7"
+	Animation = "dig1t/animation@1.0.8"
 	```
 ]=]
 local Animation = {}
@@ -252,11 +252,11 @@ function Animation.new(config: AnimationConfig): (Tween, Promise.Promise?)
 	local maid = Maid.new()
 
 	if config.frameCallback then
-		maid:Task(RunService.Stepped:Connect(config.frameCallback))
+		maid:Add(RunService.Stepped:Connect(config.frameCallback))
 	end
 
 	if config.stopped then
-		maid:Task(newTween.Completed:Connect(config.stopped))
+		maid:Add(newTween.Completed:Connect(config.stopped))
 	end
 
 	newTween.Completed:Once(function()

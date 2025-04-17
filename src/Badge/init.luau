@@ -31,7 +31,7 @@ local badges = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Badge = "dig1t/badge@1.0.4"
+	Badge = "dig1t/badge@1.0.5"
 	```
 ]=]
 local Badge = {}

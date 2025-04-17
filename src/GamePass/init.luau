@@ -19,7 +19,7 @@ local Maid = require(script.Parent.Maid)
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	GamePass = "dig1t/gamepass@1.0.8"
+	GamePass = "dig1t/gamepass@1.0.9"
 	```
 ]=]
 local GamePass = {}
@@ -111,14 +111,14 @@ function GamePass.watch()
 		return
 	end
 
-	_maid:Task(function()
+	_maid:Add(function()
 		watching = false
 		callbacks = {}
 	end)
 
 	watching = true
 
-	_maid:Task(
+	_maid:Add(
 		MarketplaceService.PromptGamePassPurchaseFinished:Connect(
 			function(player: Player, gamePassId: number, purchased: boolean)
 				if not purchased then
@@ -134,7 +134,7 @@ function GamePass.watch()
 		)
 	)
 
-	_maid:Task(Players.PlayerRemoving:Connect(function(player: Player)
+	_maid:Add(Players.PlayerRemoving:Connect(function(player: Player)
 		for key: Cache.Key, _owned: boolean in pairs(cache:Keys()) do
 			if string.sub(key, 1, #tostring(player.UserId) + 1) == `{player.UserId}-` then
 				-- Remove cache record in case the ownership changed

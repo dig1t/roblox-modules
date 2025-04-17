@@ -7,7 +7,7 @@ local Util = require(script.Parent.Util)
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Maid = "dig1t/maid@1.0.8"
+	Maid = "dig1t/maid@1.1.0"
 	```
 ]=]
 local Maid = {}
@@ -26,7 +26,7 @@ export type MaidTask = {
 	Destroy: (any) -> (),
 	Destructor: (task: any) -> (),
 	Stop: () -> (),
-}? | () -> ()? | Instance | RBXScriptConnection
+}? | () -> ()? | Instance | RBXScriptConnection | Maid
 
 --[=[
 	Creates a new Maid instance.
@@ -51,7 +51,7 @@ end
 	```lua
 	local maid = Maid.new()
 
-	maid:Task(function()
+	maid:Add(function()
 		print("Hello world!")
 	end)
 	```
@@ -62,17 +62,17 @@ end
 	local maid: Maid.Maid = Maid.new()
 
 	-- Functions
-	maid:Task(function()
+	maid:Add(function()
 		print("Hello world!")
 	end)
 
 	-- RBXScriptConnections
-	maid:Task(workspace.ChildAdded:Connect(function()
+	maid:Add(workspace.ChildAdded:Connect(function()
 		print("Hello world!")
 	end))
 
 	-- Instances with "Destroy" methods
-	maid:Task(Instance.new("Part"))
+	maid:Add(Instance.new("Part"))
 
 	-- Packages with "Destroy", "destroy", or "destructor" methods
 	local instance = Class.new({
@@ -82,15 +82,15 @@ end
 		end
 	})
 
-	maid:Task(instance)
+	maid:Add(instance)
 	```
 
-	@method Task
+	@method Add
 	@within Maid
 	@param _task MaidTask -- The task to add
 	@return (MaidTask, string) -- The task and the task id are returned
 ]=]
-function Maid.Task(self: Maid, _task: MaidTask): (MaidTask, string)
+function Maid.Add(self: Maid, _task: MaidTask): (MaidTask, string)
 	local taskId = Util.randomString(14)
 
 	self._tasks[taskId] = _task
@@ -99,35 +99,23 @@ function Maid.Task(self: Maid, _task: MaidTask): (MaidTask, string)
 end
 
 --[=[
-	Alias for Maid.Task
-
-	@method Add
-	@within Maid
-	@param _task MaidTask -- The task to add
-	@return (MaidTask, string) -- The task and the task id are returned
-]=]
-function Maid.Add(self: Maid, _task: MaidTask): (MaidTask, string)
-	return self:Task(_task)
-end
-
---[=[
 	Removes a task from the Maid instance.
 
 	```lua
 	local maid: Maid.Maid = Maid.new()
 
-	local taskId = maid:Task(function()
+	local taskId = maid:Add(function()
 		print("Hello world!")
 	end)
 
-	maid:RemoveTask(taskId)
+	maid:Remove(taskId)
 	```
 
-	@method RemoveTask
+	@method Remove
 	@within Maid
 	@param taskToRemove any -- The task item to remove.
 ]=]
-function Maid.RemoveTask(self: Maid, taskToRemove: string | MaidTask): ()
+function Maid.Remove(self: Maid, taskToRemove: string | MaidTask): ()
 	-- Remove by task id
 	if typeof(taskToRemove) == "string" then
 		self._tasks[taskToRemove] = nil
@@ -149,7 +137,7 @@ end
 	```lua
 	local maid: Maid.Maid = Maid.new()
 
-	maid:Task(function()
+	maid:Add(function()
 		print("Hello world!")
 	end)
 
@@ -161,7 +149,7 @@ end
 	@tag Cleanup
 ]=]
 function Maid.Clean(self: Maid)
-	for taskId, _task: MaidTask in pairs(self._tasks) do
+	for taskId, _task: any in pairs(self._tasks) do
 		if typeof(_task) == "function" then
 			_task() -- Run cleaning _task
 		elseif typeof(_task) == "RBXScriptConnection" and _task.Connected then
@@ -186,23 +174,12 @@ function Maid.Clean(self: Maid)
 end
 
 --[=[
-	Alias for Maid.Clean
-
-	@method Cleanup
-	@within Maid
-	@tag Cleanup
-]=]
-function Maid.Cleanup(self: Maid)
-	self:Clean()
-end
-
---[=[
 	Destroys the Maid instance.
 
 	```lua
 	local maid = Maid.new()
 
-	maid:Task(function()
+	maid:Add(function()
 		print("Hello world!")
 	end)
 

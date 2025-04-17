@@ -10,7 +10,7 @@ local Util = require(script.Parent.Util)
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Cache = "dig1t/cache@1.0.9"
+	Cache = "dig1t/cache@1.0.10"
 	```
 ]=]
 local Cache = {}
@@ -93,7 +93,7 @@ function Cache.new(options: CacheOptions?): Cache
 		_maid = Maid.new(),
 	}, Cache) :: Cache
 
-	self._maid:Task(Util.interval(self.options.checkInterval, function()
+	self._maid:Add(Util.interval(self.options.checkInterval, function()
 		local timestamp: number = Util.unix()
 
 		for key: Key, cacheEntry: CacheEntry in pairs(self._cache) do

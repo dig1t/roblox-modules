@@ -51,7 +51,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	ProfileDB = "dig1t/profiledb@1.0.4"
+	ProfileDB = "dig1t/profiledb@1.0.5"
 	```
 ]=]
 
@@ -329,7 +329,7 @@ function ProfileDB.StartSaveInterval(self: Profile)
 
 	self.saveIntervalRunning = true
 
-	-- self.maid:Task(function()
+	-- self.maid:Add(function()
 	-- 	repeat
 	-- 		local start = os.clock()
 
@@ -343,7 +343,7 @@ function ProfileDB.StartSaveInterval(self: Profile)
 	-- 	until not player or not player.Parent
 	-- end)
 
-	self.maid:Task(RunService.Stepped:Connect(function()
+	self.maid:Add(RunService.Stepped:Connect(function()
 		local now = Workspace:GetServerTimeNow()
 
 		if now - self.lastSave >= self.saveInterval then
