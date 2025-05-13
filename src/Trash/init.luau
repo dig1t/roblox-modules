@@ -35,11 +35,6 @@
 		end
 	end
 	```
-
-	Install with wally by adding the following to your `wally.toml`:
-	```toml
-	Trash = "dig1t/trash@1.0.3"
-	```
 ]=]
 
 --!native
@@ -62,6 +57,16 @@ export type Trash = typeof(setmetatable(
 	Trash
 ))
 
+local function isInstanceValid(instance: any): boolean
+	-- For Roblox Instances, check if Parent is not nil
+	if typeof(instance) == "Instance" then
+		return instance.Parent ~= nil
+	end
+
+	-- For custom objects, assume valid if not nil
+	return instance ~= nil
+end
+
 local function destroyTrash(trashIndex: number)
 	local debris = trash[trashIndex]
 
@@ -69,7 +74,9 @@ local function destroyTrash(trashIndex: number)
 		return
 	end
 
-	pcall(debris.instance.Destroy, debris.instance) -- Safely destroy the instance
+	if isInstanceValid(debris.instance) then
+		pcall(debris.instance.Destroy, debris.instance) -- Safely destroy the instance
+	end
 
 	if debris.callback then
 		task.spawn(debris.callback)
@@ -117,18 +124,15 @@ function Trash.new(instance: any, life: number?, callback: () -> ()?): Trash
 
 	table.insert(trash, self)
 
-	-- Order the trash by destruction time
+	-- Order the trash by destruction time (ascending)
 	table.sort(trash, function(a, b)
-		return a.destroyAt > b.destroyAt
+		return a.destroyAt < b.destroyAt
 	end)
 
-	-- Is this instance has a Destroying signal
-	-- Connect to it to remove the instance from the trash list
-	-- If the instance is destroyed before the time is up
+	-- If this instance has a Destroying signal
 	if instance.Destroying then
 		instance.Destroying:Once(function()
 			local trashIndex = table.find(trash, self)
-
 			if trashIndex then
 				table.remove(trash, trashIndex)
 			end
@@ -138,13 +142,7 @@ function Trash.new(instance: any, life: number?, callback: () -> ()?): Trash
 	return self
 end
 
---[=[
-	Destroys a Trash object
-
-	@method Destroy
-	@within Trash
-	@tag Cleanup
-]=]
+--- Destroys a Trash object
 function Trash.Destroy(self: Trash)
 	local trashIndex = table.find(trash, self)
 
@@ -161,34 +159,13 @@ RunService.Stepped:Connect(function()
 		return
 	end
 
-	for trashIndex = trashAmount, 1, -1 do
-		local debris = trash[trashIndex]
+	while #trash > 0 do
+		local debris = trash[1] -- Always check the first item (earliest destroyAt)
 
-		if debris.destroyAt <= now then
-			destroyTrash(trashIndex)
-		end
-	end
-
-	trashAmount = #trash -- Update the trash amount
-
-	if trashAmount == 0 then
-		return
-	end
-
-	for garbageIndex = trashAmount, 1, -1 do
-		local debris = trash[garbageIndex]
-
-		if not debris then
-			continue
-		end
-
-		if now > debris.destroyAt then
-			destroyTrash(garbageIndex)
+		if debris and debris.destroyAt <= now then
+			destroyTrash(1)
 		else
-			-- The trash list is ordered by destruction time
-			-- If we reach an instance that has not yet expired,
-			-- we can safely break the loop
-			return
+			break -- List is sorted, so stop at first not ready
 		end
 	end
 end)

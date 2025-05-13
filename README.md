@@ -23,7 +23,7 @@ ReactUtil = "dig1t/react-util@1.0.6"
 Replica = "dig1t/replica@1.0.4"
 Signal = "dig1t/signal@1.0.1"
 State = "dig1t/state@1.2.1"
-Trash = "dig1t/trash@1.0.3"
+Trash = "dig1t/trash@1.0.4"
 Util = "dig1t/util@1.0.19"
 ```
 
@@ -35,7 +35,7 @@ Use version ^1.0 on any module to use its latest version.
 - Signal [`dig1t/signal@1.0.1`](https://dig1t.github.io/roblox-modules/api/Signal) - Event handling system similar to BindableEvents
 - Maid [`dig1t/maid@1.1.0`](https://dig1t.github.io/roblox-modules/api/Maid) - Utility for managing the lifetime of objects, connections, and callbacks
 - Cache [`dig1t/cache@1.0.10`](https://dig1t.github.io/roblox-modules/api/Cache) - Memory cache system for storing and retrieving data
-- Trash [`dig1t/trash@1.0.3`](https://dig1t.github.io/roblox-modules/api/Trash) - Garbage collection utility
+- Trash [`dig1t/trash@1.0.4`](https://dig1t.github.io/roblox-modules/api/Trash) - Garbage collection utility
 
 ## Game Systems
 - Animation [`dig1t/animation@1.0.8`](https://dig1t.github.io/roblox-modules/api/Animation) - Animation management utilities
