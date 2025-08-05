@@ -6,6 +6,7 @@
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
   "luau-lsp.diagnostics.strictDatamodelTypes": false,
   "luau-lsp.sourcemap.includeNonScripts": true,
+  "luau-lsp.completion.imports.enabled": true,
   "luau-lsp.types.definitionFiles": [
     "testez.d.luau"
   ],
@@ -13,9 +14,13 @@
     "**/_Index/**",
     "*.d.luau"
   ],
-  // "testez-companion.runTestsOnSave": true,
+
   "editor.defaultFormatter": "EditorConfig.EditorConfig",
   "editor.formatOnSave": true,
+
+  "[jsonc]": {
+    "editor.formatOnSave": false
+  },
   "[luau]": {
     "editor.defaultFormatter": "JohnnyMorganz.stylua",
     "editor.formatOnSave": true
