@@ -1,5 +1,6 @@
 local BadgeService = game:GetService("BadgeService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local Cache = require(script.Parent.Cache)
 
@@ -31,10 +32,12 @@ local badges = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Badge = "dig1t/badge@1.0.5"
+	Badge = "dig1t/badge@1.0.6"
 	```
 ]=]
-local Badge = {}
+local Badge = {
+	debug = false, -- Enable debug logging
+}
 local cache = Cache.new()
 
 --[=[
@@ -122,8 +125,13 @@ function Badge.award(player: Player | number, badgeName: string): boolean
 		return true
 	end
 
-	local success =
-		pcall(BadgeService.AwardBadge, BadgeService, userId, badges[badgeName])
+	if Badge.debug then
+		print(`Badge.award - Awarding badge {badgeName} to {_player.Name} [{userId}]`)
+	end
+
+	-- Return true in studio
+	local success = RunService:IsStudio()
+		or pcall(BadgeService.AwardBadge, BadgeService, userId, badges[badgeName])
 
 	if success then
 		cache:Set(`${userId}-${badgeName}`, true)
