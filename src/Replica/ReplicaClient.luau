@@ -30,6 +30,7 @@ export type ReplicaClient = typeof(setmetatable(
 		keyChangedSignals: { [string]: { Signal.Signal<any> } },
 
 		Changed: Signal.Signal<ReplicaTypes.Data>,
+		Destroyed: Signal.Signal<nil>,
 	},
 	ReplicaClient
 ))
@@ -49,6 +50,7 @@ local function newReplicaClient(
 		keyChangedSignals = {},
 
 		Changed = Signal.new(),
+		Destroyed = Signal.new(),
 	}, ReplicaClient) :: ReplicaClient
 
 	table.insert(replicas, self)
@@ -209,9 +211,9 @@ if RunService:IsClient() then
 
 			for index, child: ReplicaClient in replicas do
 				if child == replica then
-					-- if child.Destroying then
-					-- 	child.Destroying:Fire()
-					-- end
+					if child.Destroyed then
+						child.Destroyed:Fire()
+					end
 
 					table.remove(replicas, index)
 					break
