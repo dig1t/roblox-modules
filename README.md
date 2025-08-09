@@ -14,7 +14,7 @@ Animation = "dig1t/animation@1.0.8"
 Badge = "dig1t/badge@1.0.6"
 Cache = "dig1t/cache@1.0.10"
 GamePass = "dig1t/gamepass@1.0.9"
-Maid = "dig1t/maid@1.1.0"
+Maid = "dig1t/maid@1.1.1"
 Palette = "dig1t/palette@1.0.1"
 ProfileDB = "dig1t/profiledb@1.0.5"
 Promise = "dig1t/promise@1.1.3"
@@ -33,7 +33,7 @@ Use version ^1.0 on any module to use its latest version.
 - Util [`dig1t/util@1.0.19`](https://dig1t.github.io/roblox-modules/api/Util) - General utility functions for common game development tasks
 - Promise [`dig1t/promise@1.1.3`](https://dig1t.github.io/roblox-modules/api/Promise) - A Promise implementation for asynchronous operations
 - Signal [`dig1t/signal@1.0.1`](https://dig1t.github.io/roblox-modules/api/Signal) - Event handling system similar to BindableEvents
-- Maid [`dig1t/maid@1.1.0`](https://dig1t.github.io/roblox-modules/api/Maid) - Utility for managing the lifetime of objects, connections, and callbacks
+- Maid [`dig1t/maid@1.1.1`](https://dig1t.github.io/roblox-modules/api/Maid) - Utility for managing the lifetime of objects, connections, and callbacks
 - Cache [`dig1t/cache@1.0.10`](https://dig1t.github.io/roblox-modules/api/Cache) - Memory cache system for storing and retrieving data
 - Trash [`dig1t/trash@1.0.4`](https://dig1t.github.io/roblox-modules/api/Trash) - Garbage collection utility
 
