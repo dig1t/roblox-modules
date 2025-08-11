@@ -1,6 +1,6 @@
 [package]
 name = "dig1t/signal"
-version = "1.0.1"
+version = "1.0.2"
 description = "Module part of the dig1t/roblox-modules repository. Find the API here: https://dig1t.github.io/roblox-modules/api/Signal"
 license = "Apache-2.0"
 registry = "https://github.com/UpliftGames/wally-index"

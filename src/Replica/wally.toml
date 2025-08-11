@@ -9,6 +9,6 @@ exclude = ["*.spec.luau"]
 
 [dependencies]
 Util = "dig1t/util@1.0.19"
-Signal = "dig1t/signal@1.0.1"
+Signal = "dig1t/signal@1.0.2"
 Maid = "dig1t/maid@1.1.1"
 t = "osyrisrblx/t@3.1.1"

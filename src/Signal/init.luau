@@ -7,7 +7,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Signal = "dig1t/signal@1.0.1"
+	Signal = "dig1t/signal@1.0.2"
 	```
 ]=]
 
@@ -105,9 +105,13 @@ export type Signal<T...> = {
 }
 
 local function getTableCharacterCount(table: { any }): number
-	local json: string = HttpService:JSONEncode(table)
+	local success, count = pcall(function()
+		local json: string = HttpService:JSONEncode(table)
 
-	return #json
+		return #json
+	end)
+
+	return if success then count else 1
 end
 
 --[=[
