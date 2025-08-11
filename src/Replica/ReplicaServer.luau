@@ -224,7 +224,7 @@ if RunService:IsServer() then
 		local res: { ReplicaTypes.ReplicaFetchPayloadItem } = {}
 
 		for _, replica: ReplicaServer in replicas do
-			if replica.class ~= action.payload then
+			if replica.class == action.payload then
 				table.insert(
 					res,
 					{
