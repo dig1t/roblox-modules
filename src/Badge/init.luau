@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local Cache = require(script.Parent.Cache)
+local Signal = require(script.Parent.Signal)
 
 local badges = {}
 
@@ -32,12 +33,15 @@ local badges = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Badge = "dig1t/badge@1.0.6"
+	Badge = "dig1t/badge@1.0.7"
 	```
 ]=]
 local Badge = {
 	debug = false, -- Enable debug logging
+
+	BadgeAwarded = Signal.new() :: Signal.Signal<Player, string, number>,
 }
+
 local cache = Cache.new()
 
 --[=[
@@ -135,6 +139,8 @@ function Badge.award(player: Player | number, badgeName: string): boolean
 
 	if success then
 		cache:Set(`${userId}-${badgeName}`, true)
+
+		Badge.BadgeAwarded:Fire(_player, badgeName, badges[badgeName])
 
 		return true
 	end
