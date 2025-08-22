@@ -163,7 +163,7 @@ local connectedToRobloxAPI = game.PlaceId > 0
 	and Util.attempt(function()
 		local dataStore: GlobalDataStore = DataStoreService:GetDataStore("ProfileDB")
 
-		dataStore:SetAsync("last_run", Workspace:GetServerTimeNow())
+		dataStore:SetAsync("last_run", math.floor(Workspace:GetServerTimeNow()))
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
 --[=[
@@ -293,9 +293,9 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 
 	self.newPlayer = true
 	self.userId = userId
-	self.sessionStart = Workspace:GetServerTimeNow()
+	self.sessionStart = math.floor(Workspace:GetServerTimeNow())
 
-	self.lastSave = Workspace:GetServerTimeNow()
+	self.lastSave = math.floor(Workspace:GetServerTimeNow())
 
 	self.Changed = Signal.new()
 	self.Saved = Signal.new()
@@ -344,7 +344,7 @@ function ProfileDB.StartSaveInterval(self: Profile)
 	-- end)
 
 	self.maid:Add(RunService.Stepped:Connect(function()
-		local now = Workspace:GetServerTimeNow()
+		local now = math.floor(Workspace:GetServerTimeNow())
 
 		if now - self.lastSave >= self.saveInterval then
 			self:Save()
@@ -457,7 +457,7 @@ end
 	@return ProfileMetadata -- A new profile data object
 ]=]
 function ProfileDB.GetNewData(self: Profile): ProfileMetadata
-	local now: number = Workspace:GetServerTimeNow()
+	local now: number = math.floor(Workspace:GetServerTimeNow())
 
 	return {
 		data = self:GetTemplate(),
@@ -486,10 +486,11 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 		return newData
 	end
 
-	local startedLoadingAt: number = Workspace:GetServerTimeNow()
+	local startedLoadingAt: number = math.floor(Workspace:GetServerTimeNow())
 
 	local function inSessionLockCooldown(): boolean
-		return Workspace:GetServerTimeNow() - startedLoadingAt < SESSION_LOCK_TIMEOUT
+		return math.floor(Workspace:GetServerTimeNow()) - startedLoadingAt
+			< SESSION_LOCK_TIMEOUT
 	end
 
 	while not self.destroyed do
@@ -556,7 +557,7 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 		-- to prevent other servers from saving the player's data
 		-- preventing data loss, exploits, and overwrites
 		decodedData.sessionData = {
-			lastUpdate = Workspace:GetServerTimeNow(),
+			lastUpdate = math.floor(Workspace:GetServerTimeNow()),
 			jobId = game.JobId,
 		}
 
@@ -587,13 +588,13 @@ end
 	@return boolean -- Whether or not the profile was saved
 ]=]
 function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
-	self.lastSave = Workspace:GetServerTimeNow()
+	self.lastSave = math.floor(Workspace:GetServerTimeNow())
 
 	if not self.saveToDataStore then
 		return true
 	end
 
-	self.metadata.last_seen = Workspace:GetServerTimeNow() -- Update the last seen time
+	self.metadata.last_seen = math.floor(Workspace:GetServerTimeNow()) -- Update the last seen time
 
 	-- `self.metadata` will be formatted to be saved to the data store
 	local serializedData: { [any]: any } = {}
