@@ -9,4 +9,4 @@ exclude = ["*.spec.luau"]
 
 [dependencies]
 Cache = "dig1t/cache@1.0.10"
-Signal = "dig1t/signal@1.0.2"
+Signal = "dig1t/signal@1.0.3"

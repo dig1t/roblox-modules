@@ -7,7 +7,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Signal = "dig1t/signal@1.0.2"
+	Signal = "dig1t/signal@1.0.3"
 	```
 ]=]
 
@@ -36,6 +36,7 @@ type BufferItem = { any }
 	.bufferTime number?
 ]=]
 export type BufferOptions = {
+	bufferEnabled: boolean?, -- Enabled by default
 	sizeLimit: number?,
 	bufferTime: number?,
 }
@@ -86,6 +87,7 @@ export type Signal<T...> = {
 	_elapsedTime: number,
 	_timerConnection: RBXScriptConnection?,
 
+	bufferEnabled: boolean,
 	sizeLimit: number,
 	bufferTime: number,
 
@@ -104,14 +106,18 @@ export type Signal<T...> = {
 	_stopTimer: (Signal<T...>) -> (),
 }
 
-local function getTableCharacterCount(table: { any }): number
+local function getTableCharacterCount(table: { any }): number?
 	local success, count = pcall(function()
 		local json: string = HttpService:JSONEncode(table)
 
 		return #json
 	end)
 
-	return if success then count else 1
+	if success then
+		return count
+	end
+
+	return nil
 end
 
 --[=[
@@ -131,6 +137,10 @@ function Signal.new<T...>(options: BufferOptions?): Signal<T...>
 		_elapsedTime = 0,
 		_timerConnection = nil,
 
+		bufferEnabled = if bufferOptions.bufferEnabled == nil
+			then true
+			else bufferOptions.bufferEnabled,
+		-- Enabled by default
 		sizeLimit = bufferOptions.sizeLimit or SIZE_LIMIT,
 		bufferTime = bufferOptions.bufferTime or BUFFER_TIME,
 	}, Signal) :: any
@@ -145,10 +155,22 @@ end
 	@param ... tuple -- The arguments to pass to the signal
 ]=]
 function Signal.Fire<T...>(self: Signal<T...>, ...)
+	local count: number? = getTableCharacterCount(self._buffer)
+
+	if not count or not self.bufferEnabled then
+		for _, connection in pairs(self._connections) do
+			if connection.Connected then
+				task.spawn(connection._callback, ...)
+			end
+		end
+
+		return
+	end
+
 	table.insert(self._buffer, { ... } :: BufferItem)
 
 	self._bufferSize += 1
-	self._charCount += getTableCharacterCount(self._buffer)
+	self._charCount += count
 
 	-- Prevent dropped signals by checking the character count
 	if self._charCount >= BUFFER_CHAR_LIMIT then
