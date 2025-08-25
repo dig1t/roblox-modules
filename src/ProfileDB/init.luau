@@ -159,7 +159,8 @@ local ProfileDB = {}
 ProfileDB.__index = ProfileDB
 
 -- Check if the game is connected to the Roblox API
-local connectedToRobloxAPI = game.PlaceId > 0
+local connectedToRobloxAPI = RunService:IsServer()
+	and game.PlaceId > 0
 	and Util.attempt(function()
 		local dataStore: GlobalDataStore = DataStoreService:GetDataStore("ProfileDB")
 
