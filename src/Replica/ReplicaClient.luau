@@ -181,8 +181,20 @@ if RunService:IsClient() then
 			assert(not replicas[action.payload.replicaId], "Replica already exists")
 
 			-- Create new replica instances for each existing replica
+			-- while checking if they already exist
 			for _, existingReplica: ReplicaTypes.ReplicaFetchPayloadItem in action.payload do
-				newReplicaClient(existingReplica)
+				local alreadyExists = false
+
+				for _, replica: ReplicaClient in replicas do
+					if replica.replicaId == existingReplica.replicaId then
+						alreadyExists = true
+						break
+					end
+				end
+
+				if not alreadyExists then
+					newReplicaClient(existingReplica)
+				end
 			end
 		elseif action.type == "REPLICA_NEW" then
 			-- Does the replica already exist?
