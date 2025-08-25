@@ -16,9 +16,13 @@ local ReplicaTypes = require(script.Parent.ReplicaTypes)
 local Util = require(script.Parent.Parent.Util)
 local t = require(script.Parent.Parent.t) :: any -- HACK: any to avoid type errors during linting
 
-local remote: RemoteEvent = Instance.new("RemoteEvent")
-remote.Name = "ReplicaEvents"
-remote.Parent = script.Parent
+local remote: RemoteEvent
+
+if RunService:IsServer() then
+	remote = Instance.new("RemoteEvent")
+	remote.Name = "ReplicaEvents"
+	remote.Parent = script.Parent
+end
 
 local ReplicaServer = {}
 ReplicaServer.__index = ReplicaServer
