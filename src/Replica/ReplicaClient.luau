@@ -16,7 +16,7 @@ local remote: RemoteEvent
 local ReplicaClient = {}
 ReplicaClient.__index = ReplicaClient
 
--- Replicated replcia objects
+-- Replicated replica objects
 local replicas: { ReplicaClient } = {}
 local signals = {} :: { [string]: Signal.Signal<ReplicaClient> }
 
@@ -55,11 +55,14 @@ local function newReplicaClient(
 
 	table.insert(replicas, self)
 
+	local newIndex = table.find(replicas, self) :: number
+	local newItem = replicas[newIndex]
+
 	if signals[self.class] then
-		signals[self.class]:Fire(self)
+		signals[self.class]:Fire(newItem)
 	end
 
-	return self
+	return newItem
 end
 
 --[=[
@@ -82,7 +85,7 @@ end
 function ReplicaClient.GetKeyChangedSignal(
 	self: ReplicaClient,
 	key: string
-): Signal.Signal<ReplicaClient>
+): Signal.Signal<any>
 	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
 	assert(type(key) == "string", "Expected string for key")
 
@@ -138,10 +141,14 @@ function ReplicaClient.getReplicaAddedSignal(
 
 	-- Create a new listener signal if it doesn't exist
 	if not signals[class] then
-		signals[class] = Signal.new()
+		signals[class] = Signal.new({
+			bufferEnabled = false,
+		})
 	end
 
-	local newSignal: Signal.Signal<ReplicaClient> = Signal.new()
+	local newSignal: Signal.Signal<ReplicaClient> = Signal.new({
+		bufferEnabled = false,
+	})
 
 	signals[class].onDestroy = function()
 		signals[class] = nil
@@ -153,11 +160,14 @@ function ReplicaClient.getReplicaAddedSignal(
 
 	if fireForExisting then
 		-- Fire the signal for any existing replicas
-		for _, replica in replicas do
-			if replica.class == class then
-				newSignal:Fire(replica)
+		task.defer(function()
+			-- Delay to ensure the signal is returned before firing
+			for _, replica in replicas do
+				if replica.class == class then
+					newSignal:Fire(replica)
+				end
 			end
-		end
+		end)
 	end
 
 	return newSignal

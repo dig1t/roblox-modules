@@ -93,20 +93,20 @@ export type ProfileData = { [string]: any }
 	@within ProfileDB
 
 	.data ProfileData -- The player's data.
-	.created number -- The time the profile was created.
-	.last_seen number -- The time the player was last seen.
+	.created string -- The time the profile was created.
+	.last_seen string -- The time the player was last seen.
 	.sessions number -- The number of times the player has joined the game.
-	.sessionData { lastUpdate: number, jobId: string }? -- Session data for the player.
+	.sessionData { lastUpdate: string, jobId: string }? -- Session data for the player.
 ]=]
 export type ProfileMetadata = {
 	data: ProfileData,
 
-	created: number,
-	last_seen: number,
+	created: string,
+	last_seen: string,
 	sessions: number,
 
 	sessionData: {
-		lastUpdate: number,
+		lastUpdate: string,
 		jobId: string,
 	}?,
 }
@@ -163,7 +163,7 @@ local connectedToRobloxAPI = game.PlaceId > 0
 	and Util.attempt(function()
 		local dataStore: GlobalDataStore = DataStoreService:GetDataStore("ProfileDB")
 
-		dataStore:SetAsync("last_run", Workspace:GetServerTimeNow())
+		dataStore:SetAsync("last_run", math.floor(Workspace:GetServerTimeNow()))
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
 --[=[
@@ -293,9 +293,9 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 
 	self.newPlayer = true
 	self.userId = userId
-	self.sessionStart = Workspace:GetServerTimeNow()
+	self.sessionStart = math.floor(Workspace:GetServerTimeNow())
 
-	self.lastSave = Workspace:GetServerTimeNow()
+	self.lastSave = math.floor(Workspace:GetServerTimeNow())
 
 	self.Changed = Signal.new()
 	self.Saved = Signal.new()
@@ -457,12 +457,12 @@ end
 	@return ProfileMetadata -- A new profile data object
 ]=]
 function ProfileDB.GetNewData(self: Profile): ProfileMetadata
-	local now: number = Workspace:GetServerTimeNow()
+	local nowIso: string = DateTime.now():ToIsoDate() -- Use Roblox's DateTime.now():ToIsoDate() if available
 
 	return {
 		data = self:GetTemplate(),
-		created = now,
-		last_seen = now,
+		created = nowIso,
+		last_seen = nowIso,
 		sessions = 1,
 	}
 end
@@ -513,7 +513,7 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 		end
 
 		-- Fetch the player's profile data from the data store
-		local success, profileData: ProfileMetadata? = Util.attempt(function()
+		local success, profileData: string? = Util.attempt(function()
 			-- Never use cache when fetching player data
 			local getOptions: DataStoreGetOptions = Instance.new("DataStoreGetOptions")
 			getOptions.UseCache = false
@@ -544,7 +544,7 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 
 		if
 			decodedData.sessionData
-			and decodedData.sessionData.lastUpdate < SESSION_LOCK_TIMEOUT
+			and DateTime.fromIsoDate(decodedData.sessionData.lastUpdate).UnixTimestampMillis < SESSION_LOCK_TIMEOUT
 			and inSessionLockCooldown()
 		then
 			-- Session is still locked, delay and repeat the loop
@@ -556,12 +556,15 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 		-- to prevent other servers from saving the player's data
 		-- preventing data loss, exploits, and overwrites
 		decodedData.sessionData = {
-			lastUpdate = Workspace:GetServerTimeNow(),
+			lastUpdate = DateTime.now():ToIsoDate(),
 			jobId = game.JobId,
 		}
 
 		self.metadata = decodedData
 		self.metadata.sessions += 1 -- Increment the session count
+
+		-- Convert last_seen to ISO string
+		self.metadata.last_seen = DateTime.now():ToIsoDate()
 
 		self.newPlayer = false -- Mark the profile as not new
 		self.dataFetched = true
@@ -587,13 +590,14 @@ end
 	@return boolean -- Whether or not the profile was saved
 ]=]
 function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
-	self.lastSave = Workspace:GetServerTimeNow()
+	self.lastSave = math.floor(Workspace:GetServerTimeNow())
 
 	if not self.saveToDataStore then
 		return true
 	end
 
-	self.metadata.last_seen = Workspace:GetServerTimeNow() -- Update the last seen time
+	-- Update last_seen to ISO string
+	self.metadata.last_seen = DateTime.now():ToIsoDate()
 
 	-- `self.metadata` will be formatted to be saved to the data store
 	local serializedData: { [any]: any } = {}
