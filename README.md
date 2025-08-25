@@ -19,7 +19,7 @@ Palette = "dig1t/palette@1.0.1"
 ProfileDB = "dig1t/profiledb@1.0.6"
 Promise = "dig1t/promise@1.1.3"
 Ragdoll = "dig1t/ragdoll@1.0.4"
-Replica = "dig1t/replica@1.0.6"
+Replica = "dig1t/replica@1.0.7"
 Signal = "dig1t/signal@1.0.3"
 State = "dig1t/state@1.2.1"
 Trash = "dig1t/trash@1.0.4"
@@ -42,7 +42,7 @@ Use version ^1.0 on any module to use its latest version.
 - GamePass [`dig1t/gamepass@1.0.9`](https://dig1t.github.io/roblox-modules/api/GamePass) - Game Pass verification and management
 - ProfileDB [`dig1t/profiledb@1.0.6`](https://dig1t.github.io/roblox-modules/api/ProfileDB) - Player data persistence system
 - Ragdoll [`dig1t/ragdoll@1.0.4`](https://dig1t.github.io/roblox-modules/api/Ragdoll) - Character ragdoll physics system
-- Replica [`dig1t/replica@1.0.6`](https://dig1t.github.io/roblox-modules/api/Replica) - Server-client data replication
+- Replica [`dig1t/replica@1.0.7`](https://dig1t.github.io/roblox-modules/api/Replica) - Server-client data replication
 - State [`dig1t/state@1.2.1`](https://dig1t.github.io/roblox-modules/api/State) - State management system
 - Weapon - Modular weapon system with client/server implementation (WIP)
 
