@@ -185,6 +185,18 @@ function ReplicaServer.Push(self: ReplicaServer, key: string)
 end
 
 --[=[
+	Gets the value of a key in the ReplicaServer object
+
+	@method Get
+	@within ReplicaServer
+	@param key string? -- The key to get. If nil, returns the entire data table
+	@return any -- The value of the key, or the entire data table if key is nil
+]=]
+function ReplicaServer.Get(self: ReplicaServer, key: string?): any
+	return key and self.data[key] or self.data
+end
+
+--[=[
 	Sets the value of a key in the ReplicaServer object and pushes the change to the clients
 
 	@method Set

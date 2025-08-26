@@ -8,7 +8,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Replica = "dig1t/replica@1.0.8"
+	Replica = "dig1t/replica@1.0.9"
 	```
 ]=]
 

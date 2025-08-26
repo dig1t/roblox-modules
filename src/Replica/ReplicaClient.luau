@@ -65,6 +65,10 @@ local function newReplicaClient(
 	return newItem
 end
 
+function ReplicaClient.Get(self: ReplicaClient, key: string): any
+	return key and self.data[key] or nil
+end
+
 --[=[
 	Returns a Signal that fires when a key in the replica is updated
 
