@@ -13,6 +13,7 @@ local RunService = game:GetService("RunService")
 
 local Maid = require(script.Parent.Parent.Maid)
 local ReplicaTypes = require(script.Parent.ReplicaTypes)
+local Signal = require(script.Parent.Parent.Signal)
 local Util = require(script.Parent.Parent.Util)
 local t = require(script.Parent.Parent.t) :: any -- HACK: any to avoid type errors during linting
 
@@ -36,6 +37,8 @@ export type ReplicaServer = typeof(setmetatable(
 
 		replicatedTo: { Player }?,
 		data: ReplicaTypes.Data,
+
+		keyChangedSignals: { [string]: { Signal.Signal<any> } },
 
 		maid: Maid.Maid,
 	},
@@ -115,6 +118,8 @@ function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer
 		data = config.initialData or {},
 		replicatedTo = config.players,
 
+		keyChangedSignals = {},
+
 		maid = Maid.new(),
 	}, ReplicaServer) :: ReplicaServer
 
@@ -182,6 +187,12 @@ function ReplicaServer.Push(self: ReplicaServer, key: string)
 			value = self.data[key],
 		},
 	} :: ReplicaTypes.ReplicaUpdateAction)
+
+	if self.keyChangedSignals[key] then
+		for _, signal in self.keyChangedSignals[key] do
+			signal:Fire(self.data[key])
+		end
+	end
 end
 
 --[=[
@@ -194,6 +205,50 @@ end
 ]=]
 function ReplicaServer.Get(self: ReplicaServer, key: string?): any
 	return key and self.data[key] or self.data
+end
+
+--[=[
+	Returns a Signal that fires when a key in the replica is updated
+
+	Usage:
+	```lua
+	local replica = ReplicaServer.getReplicaById("replicaId")
+
+	replica:GetKeyChangedSignal("key"):Connect(function(value)
+		print("Key changed:", value)
+	end)
+	```
+
+	@method GetKeyChangedSignal
+	@within ReplicaServer
+	@param key string -- The key to get the value of
+	@return Signal.Signal<ReplicaServer>
+]=]
+function ReplicaServer.GetKeyChangedSignal(
+	self: ReplicaServer,
+	key: string
+): Signal.Signal<any>
+	assert(RunService:IsServer(), "ReplicaServer can only be used on the server")
+	assert(type(key) == "string", "Expected string for key")
+
+	local signal = Signal.new()
+
+	if not self.keyChangedSignals[key] then
+		self.keyChangedSignals[key] = {}
+	end
+
+	table.insert(self.keyChangedSignals[key], signal)
+
+	signal.onDestroy = function()
+		for index, storedSignal in self.keyChangedSignals[key] do
+			if storedSignal == signal then
+				table.remove(self.keyChangedSignals[key], index)
+				break
+			end
+		end
+	end
+
+	return signal
 end
 
 --[=[
