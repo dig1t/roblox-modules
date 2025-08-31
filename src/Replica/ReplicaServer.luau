@@ -28,15 +28,15 @@ end
 local ReplicaServer = {}
 ReplicaServer.__index = ReplicaServer
 
-local replicas: { ReplicaServer } = {}
+local replicas: { ReplicaServer<any> } = {}
 
-export type ReplicaServer = typeof(setmetatable(
+export type ReplicaServer<T> = typeof(setmetatable(
 	{} :: {
 		replicaId: string,
 		class: string,
 
 		replicatedTo: { Player }?,
-		data: ReplicaTypes.Data,
+		data: T,
 
 		keyChangedSignals: { [string]: { Signal.Signal<any> } },
 
@@ -71,10 +71,10 @@ local tNewReplica = t.strictInterface({
 	@param class string -- The class of the ReplicaServer objects
 	@return { ReplicaServer }
 ]=]
-function ReplicaServer.getReplicasByClass(class: string): { ReplicaServer }
-	local res: { ReplicaServer } = {}
+function ReplicaServer.getReplicasByClass(class: string): { ReplicaServer<any> }
+	local res: { ReplicaServer<any> } = {}
 
-	for _, replica: ReplicaServer in replicas do
+	for _, replica: ReplicaServer<any> in pairs(replicas) do
 		if replica.class == class then
 			table.insert(res, replica)
 		end
@@ -89,8 +89,8 @@ end
 	@param replicaId string -- The replicaId of the ReplicaServer object
 	@return ReplicaServer?
 ]=]
-function ReplicaServer.getReplicaById(replicaId: string): ReplicaServer?
-	for _, replica: ReplicaServer in replicas do
+function ReplicaServer.getReplicaById(replicaId: string): ReplicaServer<any>?
+	for _, replica: ReplicaServer<any> in pairs(replicas) do
 		if replica.replicaId == replicaId then
 			return replica
 		end
@@ -105,7 +105,7 @@ end
 	@param config ReplicaServerConfig -- Configuration for the replicated object
 	@return ReplicaServer -- The new ReplicaServer object
 ]=]
-function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer
+function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer<any>
 	assert(RunService:IsServer(), "ReplicaServers can only be created on the server")
 	tNewReplica(config)
 
@@ -121,7 +121,7 @@ function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer
 		keyChangedSignals = {},
 
 		maid = Maid.new(),
-	}, ReplicaServer) :: ReplicaServer
+	}, ReplicaServer) :: ReplicaServer<any>
 
 	table.insert(replicas, self)
 
@@ -135,6 +135,15 @@ function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer
 	} :: ReplicaTypes.InitialReplicaAction)
 
 	self.maid:Add(function()
+		-- Clear key changed signals
+		for _, keySignals in self.keyChangedSignals do
+			for _, signal in keySignals do
+				signal:Destroy()
+			end
+		end
+	end)
+
+	self.maid:Add(function()
 		self:Fire({
 			type = "REPLICA_DESTROY",
 			payload = {
@@ -142,7 +151,8 @@ function ReplicaServer.new(config: ReplicaServerConfig): ReplicaServer
 			},
 		} :: ReplicaTypes.EventData)
 
-		for index, replica: ReplicaServer in replicas do
+		-- Remove from replicas list
+		for index, replica: ReplicaServer<any> in pairs(replicas) do
 			if replica == self then
 				table.remove(replicas, index)
 				break
@@ -160,7 +170,7 @@ end
 	@within ReplicaServer
 	@param action ReplicaTypes.Action -- The action to fire
 ]=]
-function ReplicaServer.Fire(self: ReplicaServer, action: ReplicaTypes.Action)
+function ReplicaServer.Fire<T>(self: ReplicaServer<T>, action: ReplicaTypes.Action)
 	if self.replicatedTo then
 		for _, player in self.replicatedTo do
 			remote:FireClient(player, action)
@@ -177,7 +187,7 @@ end
 	@within ReplicaServer
 	@param key string -- The key to push
 ]=]
-function ReplicaServer.Push(self: ReplicaServer, key: string)
+function ReplicaServer.Push<T>(self: ReplicaServer<ReplicaTypes.Data>, key: string)
 	self:Fire({
 		type = "REPLICA_UPDATE",
 		payload = {
@@ -203,8 +213,10 @@ end
 	@param key string? -- The key to get. If nil, returns the entire data table
 	@return any -- The value of the key, or the entire data table if key is nil
 ]=]
-function ReplicaServer.Get(self: ReplicaServer, key: string?): any
-	return key and self.data[key] or self.data
+function ReplicaServer.Get<T>(self: ReplicaServer<T>, key: string?): any
+	local data: ReplicaTypes.Data = self.data :: any
+
+	return key and data[key] or data
 end
 
 --[=[
@@ -224,8 +236,8 @@ end
 	@param key string -- The key to get the value of
 	@return Signal.Signal<ReplicaServer>
 ]=]
-function ReplicaServer.GetKeyChangedSignal(
-	self: ReplicaServer,
+function ReplicaServer.GetKeyChangedSignal<T>(
+	self: ReplicaServer<T>,
 	key: string
 ): Signal.Signal<any>
 	assert(RunService:IsServer(), "ReplicaServer can only be used on the server")
@@ -259,7 +271,11 @@ end
 	@param key string -- The key to REPLICA_UPDATE
 	@param value any -- The value to set
 ]=]
-function ReplicaServer.Set(self: ReplicaServer, key: string, value: any)
+function ReplicaServer.Set<T>(
+	self: ReplicaServer<ReplicaTypes.Data>,
+	key: string,
+	value: any
+)
 	self.data[key] = value
 
 	self:Push(key)
@@ -272,7 +288,7 @@ end
 	@within ReplicaServer
 	@tag Cleanup
 ]=]
-function ReplicaServer.Destroy(self: ReplicaServer)
+function ReplicaServer.Destroy<T>(self: ReplicaServer<T>)
 	self.maid:Clean()
 end
 
@@ -294,7 +310,7 @@ if RunService:IsServer() then
 
 		local res: { ReplicaTypes.ReplicaFetchPayloadItem } = {}
 
-		for _, replica: ReplicaServer in replicas do
+		for _, replica: ReplicaServer<any> in pairs(replicas) do
 			if replica.class == action.payload then
 				table.insert(
 					res,

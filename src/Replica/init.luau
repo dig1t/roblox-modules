@@ -8,7 +8,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Replica = "dig1t/replica@1.0.10"
+	Replica = "dig1t/replica@1.0.11"
 	```
 ]=]
 
@@ -18,8 +18,8 @@ local ReplicaClient = require(script.ReplicaClient)
 local ReplicaServer = require(script.ReplicaServer)
 local ReplicaTypes = require(script.ReplicaTypes)
 
-export type ReplicaServer = ReplicaServer.ReplicaServer
-export type ReplicaClient = ReplicaClient.ReplicaClient
+export type ReplicaServer<T> = ReplicaServer.ReplicaServer<T>
+export type ReplicaClient<T> = ReplicaClient.ReplicaClient<T>
 
 export type EventData = ReplicaTypes.EventData
 export type Data = ReplicaTypes.Data
