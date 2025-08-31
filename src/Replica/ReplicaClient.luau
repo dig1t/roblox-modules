@@ -101,6 +101,15 @@ function ReplicaClient.GetKeyChangedSignal(
 
 	table.insert(self.keyChangedSignals[key], signal)
 
+	signal.onDestroy = function()
+		for index, storedSignal in self.keyChangedSignals[key] do
+			if storedSignal == signal then
+				table.remove(self.keyChangedSignals[key], index)
+				break
+			end
+		end
+	end
+
 	return signal
 end
 
