@@ -17,15 +17,15 @@ local ReplicaClient = {}
 ReplicaClient.__index = ReplicaClient
 
 -- Replicated replica objects
-local replicas: { ReplicaClient } = {}
-local signals = {} :: { [string]: Signal.Signal<ReplicaClient> }
+local replicas: { ReplicaClient<any> } = {}
+local signals = {} :: { [string]: Signal.Signal<ReplicaClient<any>> }
 
-export type ReplicaClient = typeof(setmetatable(
+export type ReplicaClient<T> = typeof(setmetatable(
 	{} :: {
 		replicaId: string,
 		class: string,
 
-		data: ReplicaTypes.Data,
+		data: T,
 
 		keyChangedSignals: { [string]: { Signal.Signal<any> } },
 
@@ -38,9 +38,17 @@ export type ReplicaClient = typeof(setmetatable(
 -- Used to create a new ReplicaClient object
 local function newReplicaClient(
 	existingReplica: ReplicaTypes.ReplicaFetchPayloadItem
-): ReplicaClient
+): ReplicaClient<any>
 	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
 	assert(existingReplica, "Expected existing replica")
+	assert(
+		typeof(existingReplica.data) == "table",
+		"Expected table for existing replica data"
+	)
+
+	for indexType, _ in existingReplica.data do
+		assert(type(indexType) == "string", "All keys in replica data must be strings")
+	end
 
 	local self = setmetatable({
 		replicaId = existingReplica.replicaId,
@@ -51,7 +59,7 @@ local function newReplicaClient(
 
 		Changed = Signal.new(),
 		Destroyed = Signal.new(),
-	}, ReplicaClient) :: ReplicaClient
+	}, ReplicaClient) :: ReplicaClient<any>
 
 	table.insert(replicas, self)
 
@@ -65,8 +73,18 @@ local function newReplicaClient(
 	return newItem
 end
 
-function ReplicaClient.Get(self: ReplicaClient, key: string): any
-	return key and self.data[key] or nil
+--[=[
+	Gets the value of a key in the ReplicaClient object
+
+	@method Get
+	@within ReplicaClient
+	@param key string? -- The key to get. If nil, returns the entire data table
+	@return any -- The value of the key, or the entire data table if key is nil
+]=]
+function ReplicaClient.Get<T>(self: ReplicaClient<ReplicaTypes.Data>, key: string?): any
+	local data: ReplicaTypes.Data = self.data :: any
+
+	return key and data[key] or data
 end
 
 --[=[
@@ -86,8 +104,8 @@ end
 	@param key string -- The key to get the value of
 	@return Signal.Signal<ReplicaClient>
 ]=]
-function ReplicaClient.GetKeyChangedSignal(
-	self: ReplicaClient,
+function ReplicaClient.GetKeyChangedSignal<T>(
+	self: ReplicaClient<T>,
 	key: string
 ): Signal.Signal<any>
 	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
@@ -119,8 +137,8 @@ end
 	@param replicaId string -- The id of the replica to get
 	@return ReplicaClient?
 ]=]
-function ReplicaClient.getReplicaById(replicaId: string): ReplicaClient?
-	for _, replica in replicas do
+function ReplicaClient.getReplicaById<any>(replicaId: string): ReplicaClient<any>?
+	for _, replica: ReplicaClient<any> in pairs(replicas) do
 		if replica.replicaId == replicaId then
 			return replica
 		end
@@ -141,7 +159,7 @@ end
 function ReplicaClient.getReplicaAddedSignal(
 	class: string,
 	fireForExisting: boolean? -- If true, fire the signal for all existing replicas
-): Signal.Signal<ReplicaClient>
+): Signal.Signal<ReplicaClient<any>>
 	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
 	assert(type(class) == "string", "Expected string for class")
 	assert(
@@ -159,7 +177,7 @@ function ReplicaClient.getReplicaAddedSignal(
 		})
 	end
 
-	local newSignal: Signal.Signal<ReplicaClient> = Signal.new({
+	local newSignal: Signal.Signal<ReplicaClient<any>> = Signal.new({
 		bufferEnabled = false,
 	})
 
@@ -167,7 +185,7 @@ function ReplicaClient.getReplicaAddedSignal(
 		signals[class] = nil
 	end
 
-	signals[class]:Connect(function(replica: ReplicaClient)
+	signals[class]:Connect(function(replica: ReplicaClient<any>)
 		newSignal:Fire(replica)
 	end)
 
@@ -175,7 +193,7 @@ function ReplicaClient.getReplicaAddedSignal(
 		-- Fire the signal for any existing replicas
 		task.defer(function()
 			-- Delay to ensure the signal is returned before firing
-			for _, replica in replicas do
+			for _, replica: ReplicaClient<any> in pairs(replicas) do
 				if replica.class == class then
 					newSignal:Fire(replica)
 				end
@@ -198,7 +216,7 @@ if RunService:IsClient() then
 			for _, existingReplica: ReplicaTypes.ReplicaFetchPayloadItem in action.payload do
 				local alreadyExists = false
 
-				for _, replica: ReplicaClient in replicas do
+				for _, replica: ReplicaClient<any> in pairs(replicas) do
 					if replica.replicaId == existingReplica.replicaId then
 						alreadyExists = true
 						break
@@ -211,7 +229,7 @@ if RunService:IsClient() then
 			end
 		elseif action.type == "REPLICA_NEW" then
 			-- Does the replica already exist?
-			for _, replica: ReplicaClient in replicas do
+			for _, replica: ReplicaClient<any> in pairs(replicas) do
 				if replica.replicaId == action.payload.replicaId then
 					return
 				end
@@ -244,10 +262,17 @@ if RunService:IsClient() then
 				return
 			end
 
-			for index, child: ReplicaClient in replicas do
+			for index, child: ReplicaClient<any> in pairs(replicas) do
 				if child == replica then
 					if child.Destroyed then
 						child.Destroyed:Fire()
+					end
+
+					-- Clear key changed signals
+					for _, keySignals in child.keyChangedSignals do
+						for _, signal in keySignals do
+							signal:Destroy()
+						end
 					end
 
 					table.remove(replicas, index)
