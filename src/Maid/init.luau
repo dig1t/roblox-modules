@@ -193,9 +193,7 @@ end
 	@tag Cleanup
 ]=]
 function Maid.Destroy(self: Maid)
-	for key: any, _ in pairs(self) do
-		self[key] = nil
-	end
+	self:Clean()
 end
 
 return Maid
