@@ -7,7 +7,7 @@ local Util = require(script.Parent.Util)
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Maid = "dig1t/maid@1.1.1"
+	Maid = "dig1t/maid@1.1.2"
 	```
 ]=]
 local Maid = {}
