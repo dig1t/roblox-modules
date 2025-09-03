@@ -36,24 +36,26 @@ export type ReplicaClient<T> = typeof(setmetatable(
 ))
 
 -- Used to create a new ReplicaClient object
-local function newReplicaClient(
-	existingReplica: ReplicaTypes.ReplicaFetchPayloadItem
-): ReplicaClient<any>
-	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
-	assert(existingReplica, "Expected existing replica")
-	assert(
-		typeof(existingReplica.data) == "table",
-		"Expected table for existing replica data"
-	)
+local function newReplicaClient(newReplica: ReplicaTypes.ReplicaFetchPayloadItem)
+	-- Does the replica already exist?
+	for _, replica: ReplicaClient<any> in pairs(replicas) do
+		if replica.replicaId == newReplica.replicaId then
+			return
+		end
+	end
 
-	for indexType, _ in existingReplica.data do
+	assert(RunService:IsClient(), "ReplicaClient can only be used on the client")
+	assert(newReplica, "Expected existing replica")
+	assert(typeof(newReplica.data) == "table", "Expected table for existing replica data")
+
+	for indexType, _ in newReplica.data do
 		assert(type(indexType) == "string", "All keys in replica data must be strings")
 	end
 
 	local self = setmetatable({
-		replicaId = existingReplica.replicaId,
-		class = existingReplica.class,
-		data = existingReplica.data or {},
+		replicaId = newReplica.replicaId,
+		class = newReplica.class,
+		data = newReplica.data or {},
 
 		keyChangedSignals = {},
 
@@ -185,9 +187,11 @@ function ReplicaClient.getReplicaAddedSignal(
 		signals[class] = nil
 	end
 
-	signals[class]:Connect(function(replica: ReplicaClient<any>)
-		newSignal:Fire(replica)
-	end)
+	local function listenForReplicas()
+		signals[class]:Connect(function(replica: ReplicaClient<any>)
+			newSignal:Fire(replica)
+		end)
+	end
 
 	if fireForExisting then
 		-- Fire the signal for any existing replicas
@@ -198,7 +202,11 @@ function ReplicaClient.getReplicaAddedSignal(
 					newSignal:Fire(replica)
 				end
 			end
+
+			listenForReplicas()
 		end)
+	else
+		listenForReplicas()
 	end
 
 	return newSignal
@@ -214,27 +222,9 @@ if RunService:IsClient() then
 			-- Create new replica instances for each existing replica
 			-- while checking if they already exist
 			for _, existingReplica: ReplicaTypes.ReplicaFetchPayloadItem in action.payload do
-				local alreadyExists = false
-
-				for _, replica: ReplicaClient<any> in pairs(replicas) do
-					if replica.replicaId == existingReplica.replicaId then
-						alreadyExists = true
-						break
-					end
-				end
-
-				if not alreadyExists then
-					newReplicaClient(existingReplica)
-				end
+				newReplicaClient(existingReplica)
 			end
 		elseif action.type == "REPLICA_NEW" then
-			-- Does the replica already exist?
-			for _, replica: ReplicaClient<any> in pairs(replicas) do
-				if replica.replicaId == action.payload.replicaId then
-					return
-				end
-			end
-
 			-- Create a new replica instance
 			newReplicaClient(action.payload :: ReplicaTypes.ReplicaFetchPayloadItem)
 		elseif action.type == "REPLICA_UPDATE" then
