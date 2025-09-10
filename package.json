@@ -1,6 +1,6 @@
 {
   "name": "roblox-modules",
-  "version": "1.2.18",
+  "version": "1.2.28",
   "description": "Module part of the dig1t/roblox-modules repository",
   "main": "src/init.luau",
   "scripts": {

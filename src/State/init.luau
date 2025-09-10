@@ -55,7 +55,7 @@
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	State = "dig1t/state@1.2.1"
+	State = "dig1t/state@1.2.2"
 	```
 ]=]
 
@@ -177,13 +177,11 @@ function State.Get<T>(
 
 	if typeof(path) == "number" then
 		return self._context[path] -- Return the index, if exists
-	end
-
-	if typeof(path) == "table" then
+	elseif typeof(path) == "string" then
 		return Util.treePath(self._context, path, ".")
 	end
 
-	error("Invalid path type")
+	return
 end
 
 --[=[
