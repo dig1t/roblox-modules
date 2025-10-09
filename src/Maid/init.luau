@@ -7,7 +7,7 @@ local Util = require(script.Parent.Util)
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Maid = "dig1t/maid@1.1.2"
+	Maid = "dig1t/maid@1.1.3"
 	```
 ]=]
 local Maid = {}
@@ -161,8 +161,11 @@ function Maid.Clean(self: Maid)
 				_task:Destroy()
 			end
 		elseif typeof(_task) == "table" then
+			-- Check for Signal instances first (they have _connections and Destroy method)
+			if _task.Connected and _task.Disconnect then
+				_task:Disconnect()
 			-- Type workaround for non-roblox instances with Destroy methods
-			if _task.Destroy then
+			elseif _task.Destroy then
 				_task:Destroy()
 			elseif _task.Destructor then
 				_task:Destructor()
