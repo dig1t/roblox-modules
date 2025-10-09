@@ -177,6 +177,20 @@ function Maid.Clean(self: Maid)
 end
 
 --[=[
+	Binds the Maid to an instance.
+	When the instance is destroyed, the Maid will also be destroyed.
+
+	@method BindToInstance
+	@within Maid
+	@param instance Instance -- The instance to bind to
+]=]
+function  Maid.BindToInstance(self: Maid, instance: Instance)
+	self:Add(instance.Destroying:Connect(function()
+		self:Destroy()
+	end))
+end
+
+--[=[
 	Destroys the Maid instance.
 
 	```lua
