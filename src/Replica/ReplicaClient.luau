@@ -86,7 +86,7 @@ end
 function ReplicaClient.Get<T>(self: ReplicaClient<ReplicaTypes.Data>, key: string?): any
 	local data: ReplicaTypes.Data = self.data :: any
 
-	return key and data[key] or data
+	return if key then data[key] else data
 end
 
 --[=[
