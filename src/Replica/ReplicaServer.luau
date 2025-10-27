@@ -311,16 +311,22 @@ if RunService:IsServer() then
 		local res: { ReplicaTypes.ReplicaFetchPayloadItem } = {}
 
 		for _, replica: ReplicaServer<any> in pairs(replicas) do
-			if replica.class == action.payload then
-				table.insert(
-					res,
-					{
-						replicaId = replica.replicaId,
-						class = replica.class,
-						data = replica.data,
-					} :: ReplicaTypes.ReplicaFetchPayloadItem
-				)
+			if replica.class ~= action.payload then
+				continue
 			end
+
+			if replica.replicatedTo and not table.find(replica.replicatedTo, player) then
+				continue
+			end
+
+			table.insert(
+				res,
+				{
+					replicaId = replica.replicaId,
+					class = replica.class,
+					data = replica.data,
+				} :: ReplicaTypes.ReplicaFetchPayloadItem
+			)
 		end
 
 		remote:FireClient(
