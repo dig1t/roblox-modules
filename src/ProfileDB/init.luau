@@ -101,6 +101,7 @@ export type ProfileData = { [string]: any }
 export type ProfileMetadata = {
 	data: ProfileData,
 
+	version: number,
 	created: string,
 	last_seen: string,
 	sessions: number,
@@ -167,6 +168,23 @@ local connectedToRobloxAPI = RunService:IsServer()
 		dataStore:SetAsync("last_run", math.floor(Workspace:GetServerTimeNow()))
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
+local function decodeData(savedValue: string | ProfileMetadata?): ProfileMetadata?
+	if typeof(savedValue) == "table" then
+		return savedValue :: ProfileMetadata
+	elseif typeof(savedValue) == "string" then
+		local decodeSuccess, decoded: ProfileMetadata? =
+			pcall(HttpService.JSONDecode, HttpService, savedValue)
+
+		if decodeSuccess and typeof(decoded) == "table" then
+			return decoded
+		end
+	else
+		warn(`[ProfileDB] - Unexpected data type for profile data: {typeof(savedValue)}`)
+	end
+
+	return nil
+end
+
 --[=[
 	@prop canSaveToDataStore boolean
 	@within ProfileDB
@@ -199,6 +217,7 @@ export type Profile = typeof(setmetatable(
 		sessionStart: number,
 
 		lastSave: number,
+		lastSavedVersion: number?,
 
 		dataStore: GlobalDataStore,
 		versionDataStore: OrderedDataStore,
@@ -462,6 +481,7 @@ function ProfileDB.GetNewData(self: Profile): ProfileMetadata
 
 	return {
 		data = self:GetTemplate(),
+		version = math.floor(Workspace:GetServerTimeNow()),
 		created = nowIso,
 		last_seen = nowIso,
 		sessions = 1,
@@ -500,7 +520,7 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 
 		-- Could not fetch the last version from the version data store
 		-- Fall back to the template data with disabled saving
-		if not profileVersionSuccess or not profileVersion or self.destroyed then
+		if not profileVersionSuccess or self.destroyed then
 			-- Only enable saving if the version fetch was successful
 			-- This would mean the player is new.
 			-- Dont save if the ProfileDB instance was destroyed (player left)
@@ -508,6 +528,13 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 				self.saveToDataStore = false
 			end
 
+			self.dataFetched = true
+
+			return newData
+		end
+
+		if not profileVersion then
+			-- No version found, meaning the player is new
 			self.dataFetched = true
 
 			return newData
@@ -522,8 +549,7 @@ function ProfileDB.LoadData(self: Profile): ProfileMetadata
 			return self.dataStore:GetAsync(profileVersion, getOptions)
 		end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
-		local decodedData: ProfileMetadata? = profileData
-			and HttpService:JSONDecode(profileData)
+		local decodedData: ProfileMetadata? = decodeData(profileData)
 
 		if
 			self.destroyed
@@ -600,6 +626,9 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 	-- Update last_seen to ISO string
 	self.metadata.last_seen = DateTime.now():ToIsoDate()
 
+	-- Save the version to the profile
+	self.metadata.version = self.lastSave
+
 	-- `self.metadata` will be formatted to be saved to the data store
 	local serializedData: { [any]: any } = {}
 
@@ -616,17 +645,11 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 		serializedData.sessionData = nil
 	end
 
-	local saveString: string? = HttpService:JSONEncode(serializedData)
-
-	if not saveString then
-		return false
-	end
-
 	local newVersion = self.lastSave
 	local newVersionString = tostring(newVersion)
 
 	local profileSaveSuccess: boolean = Util.attempt(function()
-		self.dataStore:SetAsync(newVersionString, saveString, { self.userId })
+		self.dataStore:SetAsync(newVersionString, serializedData, { self.userId })
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
 	if not profileSaveSuccess then
@@ -652,7 +675,14 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 	-- This will not return false if the API request fails
 	-- because the player's data is already saved to the data store
 	if self.apiURL then
-		pcall(HttpService.PostAsync, HttpService, self.apiURL, saveString)
+		local success, saveString: string? =
+			pcall(HttpService.JSONEncode, HttpService, serializedData)
+
+		if not success or not saveString then
+			return false
+		end
+
+		pcall(HttpService.PostAsync, HttpService, self.apiURL, serializedData)
 	end
 
 	self.Saved:Fire(self.metadata.data)
