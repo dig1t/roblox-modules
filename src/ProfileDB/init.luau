@@ -650,6 +650,40 @@ function ProfileDB.Save(self: Profile, releaseSession: boolean?): boolean
 
 	local profileSaveSuccess: boolean = Util.attempt(function()
 		self.dataStore:SetAsync(newVersionString, serializedData, { self.userId })
+		local updatedData: ProfileMetadata? = self.dataStore:UpdateAsync(
+			`profile_{self.userId}`,
+			function(prevValue)
+				if prevValue == nil then
+					-- No previous data, return the new serialized data
+					return serializedData, { self.userId }
+				end
+
+				local decodedData = decodeData(prevValue) :: ProfileMetadata?
+
+				assert(
+					decodedData ~= nil,
+					"[ProfileDB] - Failed to decode previous profile data during save update."
+				)
+
+				-- Validate: make sure the sessionData's jobId and lastUpdate match
+				-- To support legacy profiles, allow nil version (versions were not tracked before)
+				assert(
+					decodedData.version == nil
+						or decodedData.version == self.metadata.version,
+					"[ProfileDB] - Session data mismatch during profile save update."
+				)
+
+				return serializedData, { self.userId }
+			end
+		)
+
+		assert(
+			updatedData ~= nil,
+			"[ProfileDB] - Failed to update profile data during save."
+		)
+
+		self.lastSavedVersion = updatedData.version
+		self.dataStore:SetAsync(newVersionString, serializedData, { self.userId })
 	end, MAX_CONNECTION_ATTEMPTS, MAX_CONNECTION_ATTEMPT_DELAY)
 
 	if not profileSaveSuccess then
