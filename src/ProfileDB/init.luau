@@ -145,6 +145,8 @@ export type Settings = {
 	keysToIgnore: { string }?,
 
 	template: Template?,
+
+	mockUser: MockUser?,
 }
 
 local defaultSettings: Settings = {
@@ -185,6 +187,14 @@ local function decodeData(savedValue: string | ProfileMetadata?): ProfileMetadat
 	return nil
 end
 
+local function createMockup(mockUser: MockUser): Player
+	return {
+		UserId = mockUser.userId,
+		Name = mockUser.username,
+		DisplayName = mockUser.username,
+	} :: any
+end
+
 --[=[
 	@prop canSaveToDataStore boolean
 	@within ProfileDB
@@ -192,6 +202,11 @@ end
 	Whether or not the game can save to the data store.
 ]=]
 ProfileDB.canSaveToDataStore = connectedToRobloxAPI :: boolean
+
+export type MockUser = {
+	userId: number,
+	username: string,
+}
 
 export type Profile = typeof(setmetatable(
 	{} :: {
@@ -208,6 +223,7 @@ export type Profile = typeof(setmetatable(
 		keysToIgnore: { string },
 		destroyed: boolean,
 		dataFetched: boolean,
+		mockUser: MockUser?,
 
 		connectedToDataStore: boolean,
 		saveIntervalRunning: boolean,
@@ -251,7 +267,12 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 	assert(settings == nil or type(settings) == "table", "Settings must be a table")
 
 	local _settings: Settings = Util.extend({}, defaultSettings, settings)
-	local player: Player? = Players:GetPlayerByUserId(userId)
+	local player: Player? = _settings.mockUser and createMockup(_settings.mockUser)
+		or Players:GetPlayerByUserId(userId)
+
+	if _settings.mockUser then
+		userId = _settings.mockUser.userId
+	end
 
 	assert(
 		typeof(_settings.saveToDataStore) == "boolean",
@@ -293,34 +314,35 @@ function ProfileDB.new(userId: number, settings: Settings?): Profile
 		_settings.saveToDataStore = false
 	end
 
-	local self: Profile = setmetatable({}, ProfileDB) :: Profile
+	local self: Profile = setmetatable({
+		_template = if typeof(_settings.template) == "function"
+			then _settings.template(player)
+			else table.clone(_settings.template) :: Template,
 
-	self._template = if typeof(_settings.template) == "function"
-		then _settings.template(player)
-		else table.clone(_settings.template)
+		connectedToDataStore = false,
 
-	self.connectedToDataStore = false
+		dataStoreName = `{_settings.dataStoreName}_{userId}`,
+		dataStoreVersion = _settings.dataStoreVersion,
+		saveToDataStore = _settings.saveToDataStore,
+		saveInStudio = _settings.saveInStudio,
+		apiURL = _settings.apiURL,
+		saveInterval = _settings.saveInterval,
+		keysToIgnore = _settings.keysToIgnore or {} :: { string },
+		destroyed = false,
+		dataFetched = false,
+		mockUser = _settings.mockUser,
 
-	self.dataStoreName = `{_settings.dataStoreName}_{userId}` :: string
-	self.dataStoreVersion = _settings.dataStoreVersion :: number
-	self.saveToDataStore = _settings.saveToDataStore :: boolean
-	self.saveInStudio = _settings.saveInStudio :: boolean
-	self.apiURL = _settings.apiURL :: string
-	self.saveInterval = _settings.saveInterval :: number
-	self.keysToIgnore = _settings.keysToIgnore or {} :: { string }
-	self.destroyed = false
-	self.dataFetched = false
+		newPlayer = true,
+		userId = userId,
+		sessionStart = math.floor(Workspace:GetServerTimeNow()),
 
-	self.newPlayer = true
-	self.userId = userId
-	self.sessionStart = math.floor(Workspace:GetServerTimeNow())
+		lastSave = math.floor(Workspace:GetServerTimeNow()),
 
-	self.lastSave = math.floor(Workspace:GetServerTimeNow())
+		Changed = Signal.new(),
+		Saved = Signal.new(),
 
-	self.Changed = Signal.new()
-	self.Saved = Signal.new()
-
-	self.maid = Maid.new()
+		maid = Maid.new(),
+	}, ProfileDB) :: Profile
 
 	self.maid:Add(function()
 		self.destroyed = true
@@ -373,7 +395,19 @@ function ProfileDB.StartSaveInterval(self: Profile)
 end
 
 function ProfileDB.IsPlayerInGame(self: Profile): boolean
-	return Players:GetPlayerByUserId(self.userId) ~= nil
+	if self.mockUser then
+		return true
+	end
+
+	return self:GetPlayer() ~= nil
+end
+
+function ProfileDB.GetPlayer(self: Profile): Player?
+	if self.mockUser then
+		return createMockup(self.mockUser)
+	end
+
+	return Players:GetPlayerByUserId(self.userId)
 end
 
 --[=[
@@ -385,7 +419,7 @@ end
 ]=]
 function ProfileDB.GetTemplate(self: Profile): ProfileData
 	return if typeof(self._template) == "function"
-		then self._template(Players:GetUserByUserId(self.userId))
+		then self._template(self:GetPlayer())
 		else table.clone(self._template) :: ProfileData
 end
 
