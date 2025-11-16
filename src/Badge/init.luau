@@ -33,7 +33,7 @@ local badges = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Badge = "dig1t/badge@1.0.7"
+	Badge = "dig1t/badge@1.0.8"
 	```
 ]=]
 local Badge = {
@@ -89,7 +89,9 @@ function Badge.has(player: Player | number, badgeName: string): boolean?
 	local cachedResult: boolean? = cache:Get(cacheKey)
 
 	if cachedResult == nil then
-		cachedResult = BadgeService:UserHasBadgeAsync(userId, badges[badgeName])
+		local success, res =
+			pcall(BadgeService.UserHasBadgeAsync, BadgeService, userId, badges[badgeName])
+		cachedResult = success and res or false
 		cache:Set(cacheKey, cachedResult)
 	end
 

@@ -11,7 +11,7 @@ A comprehensive collection of utility modules and libraries for Roblox game deve
 **Available modules:**
 ```toml
 Animation = "dig1t/animation@1.0.8"
-Badge = "dig1t/badge@1.0.7"
+Badge = "dig1t/badge@1.0.8"
 Cache = "dig1t/cache@1.0.10"
 GamePass = "dig1t/gamepass@1.0.9"
 Maid = "dig1t/maid@1.1.3"
@@ -38,7 +38,7 @@ Use version ^1.0 on any module to use its latest version.
 
 ## Game Systems
 - Animation [`dig1t/animation@1.0.8`](https://dig1t.github.io/roblox-modules/api/Animation) - Animation management utilities
-- Badge [`dig1t/badge@1.0.7`](https://dig1t.github.io/roblox-modules/api/Badge) - Badge awarding system
+- Badge [`dig1t/badge@1.0.8`](https://dig1t.github.io/roblox-modules/api/Badge) - Badge awarding system
 - GamePass [`dig1t/gamepass@1.0.9`](https://dig1t.github.io/roblox-modules/api/GamePass) - Game Pass verification and management
 - ProfileDB [`dig1t/profiledb@1.0.10`](https://dig1t.github.io/roblox-modules/api/ProfileDB) - Player data persistence system
 - Ragdoll [`dig1t/ragdoll@1.0.4`](https://dig1t.github.io/roblox-modules/api/Ragdoll) - Character ragdoll physics system
