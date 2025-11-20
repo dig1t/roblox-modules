@@ -23,13 +23,19 @@ local secondsInDay: number = secondsInHour * 24
 local secondsInMonth: number = 2629746
 local secondsInYear: number = 31556952
 
-local timeNames: { { any } } = {
-	{ secondsInYear, "year" },
-	{ secondsInMonth, "month" },
-	{ secondsInDay, "day" },
-	{ secondsInHour, "hour" },
-	{ secondsInMinute, "minute" },
-	{ 1, "second" },
+export type TimeName = {
+	threshold: number,
+	name: string,
+	shortName: string,
+}
+
+local timeNames: { TimeName } = {
+	{ threshold = secondsInYear, name = "year", shortName = "y" },
+	{ threshold = secondsInMonth, name = "month", shortName = "mo" },
+	{ threshold = secondsInDay, name = "day", shortName = "d" },
+	{ threshold = secondsInHour, name = "hour", shortName = "h" },
+	{ threshold = secondsInMinute, name = "minute", shortName = "m" },
+	{ threshold = 1, name = "second", shortName = "s" },
 }
 
 --[=[
@@ -180,9 +186,14 @@ end
 	@within Util
 	@param timestamp number
 	@param endTimestamp number? -- The timestamp to compare to. Defaults to current time.
+	@param shorten boolean? -- Whether to shorten the unit names (e.g. "m" instead of "minute", "h" instead of "hour"). Defaults to false.
 	@return string
 ]=]
-function DateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
+function DateUtil.timeAgo(
+	timestamp: number,
+	endTimestamp: number?,
+	shorten: boolean?
+): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(
 		typeof(endTimestamp) == "number" or endTimestamp == nil,
@@ -198,11 +209,13 @@ function DateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 
 	local current: number = 1
 	local previousUnitSeconds: number = 0
+	local shouldShorten = shorten == true
 
 	while current <= #timeNames do
 		local _time: {} = timeNames[current]
-		local unitThreshold: number = timeNames[current][1]
-		local unit: string = timeNames[current][2]
+		local unitThreshold: number = timeNames[current].threshold
+		local unit: string = shouldShorten and timeNames[current].shortName
+			or timeNames[current].name
 
 		if (timeAgo >= unitThreshold) and current <= #timeNames then
 			local amount: number =
@@ -211,9 +224,10 @@ function DateUtil.timeAgo(timestamp: number, endTimestamp: number?): string
 			previousUnitSeconds += amount * unitThreshold
 
 			if amount > 0 then
-				local plural: string = amount > 1 and "s" or ""
+				local plural: string = not shouldShorten and amount > 1 and "s" or ""
+				local spacing = shouldShorten and "" or " "
 
-				result = `{result}{amount} {unit}{plural} `
+				result = `{result}{amount}{spacing}{unit}{plural} `
 			end
 		end
 
@@ -239,13 +253,15 @@ end
 	@param endTimestamp number? -- The timestamp to compare to. Defaults to current time.
 	@param separator string? -- The separator to use between each unit. Defaults to a space.
 	@param depth number? -- The maximum number of units to return.
+	@param shorten boolean? -- Whether to shorten the unit names (e.g. "m" instead of "minute", "h" instead of "hour"). Defaults to false.
 	@return string
 ]=]
 function DateUtil.totalTime(
 	timestamp: number,
 	endTimestamp: number?,
 	separator: string?,
-	depth: number?
+	depth: number?,
+	shorten: boolean?
 ): string
 	assert(typeof(timestamp) == "number", "Timestamp must be a number")
 	assert(
@@ -262,6 +278,7 @@ function DateUtil.totalTime(
 
 	local timeAgo: number = DateUtil.timeAgoUnix(timestamp, endTimestamp)
 	local result: string = ""
+	local shouldShorten = shorten == true
 
 	if timeAgo < 1 then
 		return "now"
@@ -273,8 +290,9 @@ function DateUtil.totalTime(
 
 	while current <= #timeNames and (depth == nil or iteration < depth) do
 		local _time: {} = timeNames[current]
-		local unitThreshold: number = timeNames[current][1]
-		local unit: string = timeNames[current][2]
+		local unitThreshold: number = timeNames[current].threshold
+		local unit: string = shouldShorten and timeNames[current].shortName
+			or timeNames[current].name
 
 		if (timeAgo >= unitThreshold) and current <= #timeNames then
 			local amount: number =
@@ -283,9 +301,10 @@ function DateUtil.totalTime(
 			previousUnitSeconds += amount * unitThreshold
 
 			if amount > 0 then
-				local plural: string = amount > 1 and "s" or ""
+				local plural: string = not shouldShorten and amount > 1 and "s" or ""
+				local spacing = shouldShorten and "" or " "
 
-				result = `{result}{amount} {unit}{plural}{_separator}`
+				result = `{result}{amount}{spacing}{unit}{plural}{_separator}`
 				iteration += 1
 			end
 		end

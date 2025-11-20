@@ -16,7 +16,7 @@ local _cache: { [string]: any } = {}
 
 	Install with wally by adding the following to your `wally.toml`:
 	```toml
-	Util = "dig1t/util@1.0.19"
+	Util = "dig1t/util@1.0.20"
 	```
 ]=]
 local Util = {}
