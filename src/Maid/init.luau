@@ -20,13 +20,20 @@ export type Maid = typeof(setmetatable(
 	Maid
 ))
 
-export type MaidTask = {
-	Connected: boolean?,
-	Disconnect: () -> (),
-	Destroy: (any) -> (),
-	Destructor: (task: any) -> (),
-	Stop: () -> (),
-}? | () -> ()? | Instance | RBXScriptConnection | Maid | thread | any
+export type MaidTask =
+	{
+		Connected: boolean?,
+		Disconnect: () -> (),
+		Destroy: (any) -> (),
+		Destructor: (task: any) -> (),
+		Stop: () -> (),
+	}?
+	| () -> ()?
+	| Instance
+	| RBXScriptConnection
+	| Maid
+	| thread
+	| any
 
 --[=[
 	Creates a new Maid instance.
@@ -184,10 +191,18 @@ end
 	@within Maid
 	@param instance Instance -- The instance to bind to
 ]=]
-function  Maid.BindToInstance(self: Maid, instance: Instance)
+function Maid.BindToInstance(self: Maid, instance: Instance)
 	self:Add(instance.Destroying:Connect(function()
 		self:Destroy()
 	end))
+end
+
+function Maid.Connect(
+	self: Maid,
+	signal: RBXScriptSignal,
+	callback: (...any) -> ...any
+): RBXScriptConnection
+	return self:Add(signal:Connect(callback)) :: RBXScriptConnection
 end
 
 --[=[
