@@ -57,16 +57,6 @@ export type Trash = typeof(setmetatable(
 	Trash
 ))
 
-local function isInstanceValid(instance: any): boolean
-	-- For Roblox Instances, check if Parent is not nil
-	if typeof(instance) == "Instance" then
-		return instance.Parent ~= nil
-	end
-
-	-- For custom objects, assume valid if not nil
-	return instance ~= nil
-end
-
 local function destroyTrash(trashIndex: number)
 	local debris = trash[trashIndex]
 
@@ -74,15 +64,15 @@ local function destroyTrash(trashIndex: number)
 		return
 	end
 
-	if isInstanceValid(debris.instance) then
-		pcall(debris.instance.Destroy, debris.instance) -- Safely destroy the instance
-	end
+	-- Remove from the list before destroying, so the Destroying
+	-- handler firing mid-Destroy can't remove a different item
+	table.remove(trash, trashIndex)
+
+	pcall(debris.instance.Destroy, debris.instance) -- Safely destroy the instance
 
 	if debris.callback then
 		task.spawn(debris.callback)
 	end
-
-	table.remove(trash, trashIndex)
 end
 
 --- Destroys all instances waiting to be destroyed.
@@ -122,12 +112,20 @@ function Trash.new(instance: any, life: number?, callback: () -> ()?): Trash
 		callback = callback,
 	}, Trash) :: Trash
 
-	table.insert(trash, self)
+	-- Binary-search insert to keep the list sorted by destroyAt (ascending)
+	local low, high = 1, #trash
 
-	-- Order the trash by destruction time (ascending)
-	table.sort(trash, function(a, b)
-		return a.destroyAt < b.destroyAt
-	end)
+	while low <= high do
+		local mid = (low + high) // 2
+
+		if trash[mid].destroyAt <= self.destroyAt then
+			low = mid + 1
+		else
+			high = mid - 1
+		end
+	end
+
+	table.insert(trash, low, self)
 
 	-- If this instance has a Destroying signal
 	if instance.Destroying then
